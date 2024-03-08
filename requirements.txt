@@ -1,0 +1,5 @@
+Flask
+rq
+redis
+boto3
+requests

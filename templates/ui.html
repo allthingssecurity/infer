@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>File Upload and Job Tracking</title>
+    <script>
+        // Function to submit the form data and start job tracking
+        async function uploadFileAndTrackJob() {
+            const formData = new FormData(document.getElementById('upload-form'));
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if (data.job_id) {
+                trackJobStatus(data.job_id);
+            } else {
+                alert('Failed to start the job.');
+            }
+        }
+
+        // Function to track the job status
+        function trackJobStatus(jobId) {
+            const statusElement = document.getElementById('job-status');
+            statusElement.innerHTML = 'Processing...';
+
+            const intervalId = setInterval(async () => {
+                const response = await fetch(`/status/${jobId}`);
+                const data = await response.json();
+                if (data.status) {
+                    statusElement.innerHTML = `Job Status: ${data.status}`;
+                    if (data.status === 'finished' || data.status === 'failed') {
+                        clearInterval(intervalId);
+                    }
+                }
+            }, 2000); // Poll every 2 seconds
+        }
+    </script>
+</head>
+<body>
+    <h2>Upload File and Select Speaker</h2>
+    <form id="upload-form" enctype="multipart/form-data">
+        <label for="file">File:</label>
+        <input type="file" id="file" name="file" required><br><br>
+        <label for="speaker_name">Speaker:</label>
+        <select id="speaker_name" name="speaker_name" required>
+            <option value="khujli">Khujli</option>
+            <option value="trips">Trips</option>
+            <option value="modi">Modi</option>
+        </select><br><br>
+        <button type="button" onclick="uploadFileAndTrackJob()">Upload and Track Job</button>
+    </form>
+    <div id="job-status"></div>
+</body>
+</html>
