@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify,render_template_string
+from flask import Flask, request, jsonify,render_template
 from redis import Redis
 from rq import Queue
 from infer_client import main
