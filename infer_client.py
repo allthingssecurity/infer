@@ -83,7 +83,7 @@ def convert_voice(pod_id,file_paths,spk_id):
     files = [('file', (open(file_path, 'rb'))) for file_path in file_paths]
     data = {'spk_id': spk_id, 'voice_transform': '0'}  # Assuming spk_id is passed here and voice_transform hardcoded to 0
 
-    response = requests.post(url, files=files, data=data, timeout=180)  # 3 minutes timeout
+    response = requests.post(url, files=files, data=data, timeout=600)  # 3 minutes timeout
 
     if response.status_code == 200:
         print("converted successfully.")
