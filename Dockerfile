@@ -17,12 +17,7 @@ COPY . .
 EXPOSE 5000
 
 # Define environment variables for Redis connection and AWS credentials
-ENV REDIS_HOST=""
-ENV REDIS_PORT=""
-ENV REDIS_USERNAME=""
-ENV REDIS_PASSWORD=""
-ENV ACCESS_ID=""
-ENV SECRET_KEY=""
+
 
 ENV FLASK_APP=ep.py
 
