@@ -7,7 +7,7 @@ import boto3
 import os
 from botocore.exceptions import ClientError
 import time
-
+from rq import get_current_job
 
 
 # Get all my pods
