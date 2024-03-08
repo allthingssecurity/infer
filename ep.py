@@ -43,7 +43,8 @@ def upload_file():
         file.save(filepath)
         # Adjusted to pass filepath and speaker_name to the main function
         job = q.enqueue(main, filepath, speaker_name)
-        
+        p = Process(target=start_worker)
+        p.start()     
         return jsonify({'message': 'File uploaded successfully', 'job_id': job.get_id()})
 
 def start_worker():
@@ -65,7 +66,6 @@ def check_status(job_id):
     return jsonify({'status': job.get_status(), 'job_id': job_id})
 
 if __name__ == "__main__":
-    p = Process(target=start_worker)
-    p.start()
+   
     app.run(debug=False)
-    p.join()
+    
