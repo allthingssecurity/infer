@@ -48,10 +48,11 @@ def upload_file():
 
 def start_worker():
     queues_to_listen = ['default']
-
+    print("start the worker")
 
     with Connection(redis_conn):
         worker = Worker(map(Queue, queues_to_listen))
+        print("before starting work")
         worker.work()
 
 
