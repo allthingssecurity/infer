@@ -4,7 +4,10 @@ from rq import Queue
 from infer_client import main
 import os
 import uuid
+from rq import Worker, Queue, Connection
+from redis import Redis
 
+from multiprocessing import Process
 
 app = Flask(__name__)
 
@@ -40,7 +43,16 @@ def upload_file():
         file.save(filepath)
         # Adjusted to pass filepath and speaker_name to the main function
         job = q.enqueue(main, filepath, speaker_name)
+        
         return jsonify({'message': 'File uploaded successfully', 'job_id': job.get_id()})
+
+def start_worker():
+    queues_to_listen = ['default']
+
+
+    with Connection(redis_conn):
+        worker = Worker(map(Queue, queues_to_listen))
+        worker.work()
 
 
 
@@ -52,4 +64,7 @@ def check_status(job_id):
     return jsonify({'status': job.get_status(), 'job_id': job_id})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    p = Process(target=start_worker)
+    p.start()
+    app.run(debug=False)
+    p.join()
