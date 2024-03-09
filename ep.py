@@ -12,6 +12,9 @@ from multiprocessing import Process
 app = Flask(__name__)
 
 UPLOAD_FOLDER = 'uploads'
+MAX_WORKERS = 4  # Adjust based on your requirements
+WORKER_COUNT_KEY = 'worker_count'
+
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 # Setup Redis connection
@@ -48,13 +51,23 @@ def upload_file():
         return jsonify({'message': 'File uploaded successfully', 'job_id': job.get_id()})
 
 def start_worker():
-    queues_to_listen = ['default']
-    print("start the worker")
-
-    with Connection(redis_conn):
-        worker = Worker(map(Queue, queues_to_listen))
-        print("before starting work")
-        worker.work()
+    # Fetch the current number of workers
+    current_worker_count = int(redis_conn.get(WORKER_COUNT_KEY) or 0)
+    
+    if current_worker_count < MAX_WORKERS:
+        # Increment the worker count atomically
+        redis_conn.incr(WORKER_COUNT_KEY)
+        
+        try:
+            queues_to_listen = ['default']
+            with Connection(redis_conn):
+                worker = Worker(map(Queue, queues_to_listen))
+                worker.work()
+        finally:
+            # Ensure the worker count is decremented when the worker stops working
+            redis_conn.decr(WORKER_COUNT_KEY)
+    else:
+        print("Maximum number of workers reached. Not starting a new worker.")
 
 
 
