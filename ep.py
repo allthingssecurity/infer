@@ -12,7 +12,7 @@ from multiprocessing import Process
 app = Flask(__name__)
 
 UPLOAD_FOLDER = 'uploads'
-MAX_WORKERS = 4  # Adjust based on your requirements
+MAX_WORKERS = 6  # Adjust based on your requirements
 WORKER_COUNT_KEY = 'worker_count'
 
 if not os.path.exists(UPLOAD_FOLDER):
@@ -44,6 +44,7 @@ def upload_file():
         filename = uuid.uuid4().hex + '_' + file.filename
         filepath = os.path.join(UPLOAD_FOLDER, filename)
         file.save(filepath)
+        print(filepath)
         # Adjusted to pass filepath and speaker_name to the main function
         job = q.enqueue(main, filepath, speaker_name)
         p = Process(target=start_worker)
