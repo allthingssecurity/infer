@@ -117,34 +117,34 @@ def check_file_in_space(access_id, secret_key, bucket_name, file_key, check_inte
 
 
 
-def upload_files(access_id, secret_key,url, model_name, bucket_name,file_paths):
+
+
+def upload_files(access_id, secret_key, url, model_name, bucket_name, file_path):
     """
-    Uploads multiple files to a specified URL.
+    Uploads a single file to a specified URL.
 
     :param url: The URL of the Flask endpoint.
-    :param model_name: The name of the model to process the files.
-    :param file_paths: A list of file paths of the audio files to upload.
+    :param model_name: The name of the model to process the file.
+    :param file_path: The file path of the audio file to upload.
     """
-    # Prepare the files in the correct format for uploading
-    
-    files = [('file', (open(file_path, 'rb'))) for file_path in file_paths]
-    
-    # Include any additional data as a dictionary
-    data = {'model_name': model_name}
+    # Open the file in binary read mode
+    with open(file_path, 'rb') as file:
+        files = {'file': file}
+        
+        # Include any additional data as a dictionary
+        data = {'model_name': model_name}
 
-    # Send a POST request to the server
-    
-    try:
-        # Your existing upload logic here
-        response = requests.post(url, files=files, data=data, timeout=600)
-        response.raise_for_status()  # This will raise an exception for HTTP error codes
-        return True, "Files uploaded successfully."
-    except requests.exceptions.RequestException as e:
-        print("start doing file check")
-        file_key = f'{model_name}.pth'
-        check_file_in_space(access_id, secret_key, bucket_name, file_key)
-        return False, str(e)
-
+        # Send a POST request to the server
+        try:
+            response = requests.post(url, files=files, data=data, timeout=600)
+            response.raise_for_status()  # This will raise an exception for HTTP error codes
+            return True, "File uploaded successfully."
+        except requests.exceptions.RequestException as e:
+            print("Starting file check")
+            # Assuming check_file_in_space is defined elsewhere to check the file presence in the cloud storage
+            file_key = f'{model_name}.pth'
+            check_file_in_space(access_id, secret_key, bucket_name, file_key)
+            return False, str(e)
 
 # Ensure all file objects are properly closed after upload
 def close_files(files):
