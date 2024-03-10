@@ -8,7 +8,7 @@ import boto3
 import os
 from botocore.exceptions import ClientError
 import logging
-
+from upload import download_from_do
 runpod.api_key =os.getenv("RUNPOD_KEY")
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -126,6 +126,7 @@ def upload_files(access_id, secret_key,url, model_name, bucket_name,file_paths):
     :param file_paths: A list of file paths of the audio files to upload.
     """
     # Prepare the files in the correct format for uploading
+    
     files = [('file', (open(file_path, 'rb'))) for file_path in file_paths]
     
     # Include any additional data as a dictionary
@@ -150,7 +151,7 @@ def close_files(files):
     for _, file_obj in files:
         file_obj.close()
 
-def main(file_path,model_name):
+def main(file_name,model_name):
     
     
     
@@ -165,9 +166,9 @@ def main(file_path,model_name):
         #upload_files(url)
         
         # Proceed with asynchronous file upload
-        print("file uploaded to ",file_path)
-        logger.info("This is an info message from the background task. file_path is valid: {}".format(file_path is not None))
-
+        #print("file uploaded to ",file_path)
+        #logger.info("This is an info message from the background task. file_path is valid: {}".format(file_path is not None))
+        file_path=download_from_do(file_name)
         upload_files(ACCESS_ID,SECRET_KEY,url, model_name,bucket_name, file_path)
  
         # Check for the file in the S3 bucket (DigitalOcean Spaces)

@@ -7,6 +7,7 @@ import os
 import uuid
 from rq import Worker, Queue, Connection
 from redis import Redis
+from upload import upload_to_do
 
 from multiprocessing import Process
 
@@ -63,9 +64,11 @@ def process_audio():
         filename = uuid.uuid4().hex + '_' + file.filename
         filepath = os.path.join(UPLOAD_FOLDER, filename)
         file.save(filepath)
+        
         print(filepath)
+        response = upload_to_do(filepath)
         # Adjusted to pass filepath and speaker_name to the main function
-        job = q.enqueue(main, filepath, model_name)
+        job = q.enqueue(main, filename, model_name)
         p = Process(target=start_worker)
         p.start()     
         return jsonify({'message': 'File uploaded successfully', 'job_id': job.get_id()})
