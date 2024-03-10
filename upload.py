@@ -38,7 +38,7 @@ def download_from_do(file_key):
     full_local_path = os.path.join(downloads_dir, file_key)
     
     # Download the file from your Space
-    client.download_file('your-space-name', file_key, full_local_path)
+    client.download_file('sing', file_key, full_local_path)
     
     # Verify the download
     if os.path.exists(full_local_path):
