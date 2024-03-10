@@ -26,6 +26,24 @@ redis_password = os.getenv('REDIS_PASSWORD', '')
 redis_conn = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
 q = Queue(connection=redis_conn)
 
+@app.route('/login/callback')
+def authorize():
+    token = google.authorize_access_token()
+    user_info = google.parse_id_token(token)
+    
+    # Assuming user_info contains an email field
+    user_email = user_info.get('email')
+    
+    # Use user's email as a key to store their information in Redis
+    redis_conn.hset(f"user:{user_email}", mapping=user_info)
+    
+    # Set session or a cookie to indicate that the user is logged in
+    session['user_email'] = user_email
+    session['logged_in'] = True
+    
+    return 'Login Successful'
+
+
 
 @app.route('/')
 def index():

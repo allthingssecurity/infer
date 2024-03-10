@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Form</title>
+</head>
+<body>
+    <h2>Upgrade to Premium</h2>
+
+<form action="/process_payment" method="post">
+    <label for="cardNumber">Card Number:</label>
+    <input type="text" id="cardNumber" name="cardNumber" required>
+    <label for="cardExp">Expiration Date:</label>
+    <input type="text" id="cardExp" name="cardExp" required>
+    <label for="cardCVC">CVC:</label>
+    <input type="text" id="cardCVC" name="cardCVC" required>
+    <input type="submit" value="Submit Payment">
+</form>
+</body>
+</html>
