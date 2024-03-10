@@ -51,8 +51,8 @@ def index():
     return render_template('train.html')
 
 # Adjust this part in your Flask app
-@app.route('/upload', methods=['POST'])
-def upload_file():
+@app.route('/process_audio', methods=['POST'])
+def process_audio():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'})
     file = request.files['file']
