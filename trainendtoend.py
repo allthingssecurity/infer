@@ -7,9 +7,11 @@ import aiohttp
 import boto3
 import os
 from botocore.exceptions import ClientError
+import logging
 
 runpod.api_key =os.getenv("RUNPOD_KEY")
-
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 # Get all my pods
@@ -164,6 +166,8 @@ def main(file_path,model_name):
         
         # Proceed with asynchronous file upload
         print("file uploaded to ",file_path)
+        logger.info("This is an info message from the background task. file_path is valid: {}".format(file_path is not None))
+
         upload_files(ACCESS_ID,SECRET_KEY,url, model_name,bucket_name, file_path)
  
         # Check for the file in the S3 bucket (DigitalOcean Spaces)
