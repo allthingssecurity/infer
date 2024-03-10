@@ -56,7 +56,7 @@ def upload_file():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'})
     file = request.files['file']
-    model_name = request.form.get('speaker_name', '')
+    model_name = request.form.get('model_name', '')
     if file.filename == '':
         return jsonify({'error': 'No selected file'})
     if file:

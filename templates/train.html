@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload or Record Audio Files</title>
+</head>
+<body>
+    <h2>Upload Audio Files for Processing</h2>
+    <form id="uploadForm" action="{{ url_for('process_audio') }}" method="post" enctype="multipart/form-data">
+        <label for="files">Choose audio files:</label>
+        <input type="file" id="file" name="file" multiple><br><br>
+        
+        <label for="model_name">Model Name:</label>
+        <input type="text" id="model_name" name="model_name" required><br><br>
+        
+        <input type="submit" value="Upload">
+    </form>
+
+    <hr>
+
+    <h2>Or Record Audio</h2>
+	
+    <h2>Read the Following Aloud and Record</h2>
+    <textarea id="readingText" rows="20" cols="70" readonly>
+The North Wind and the Sun were disputing which was the stronger when a traveler came along wrapped in a warm cloak. They agreed that the one who first succeeded in making the traveler take his cloak off should be considered stronger than the other. Then the North Wind blew as hard as he could, but the more he blew, the more closely did the traveler fold his cloak around him; and at last, the North Wind gave up the attempt. Then the Sun shined out warmly, and immediately the traveler took off his cloak. And so, the North Wind was obliged to confess that the Sun was the stronger of the two.
+
+This tale illustrates the power of persuasion over force and highlights the importance of understanding and adapting to the situation at hand. It reminds us that sometimes, a gentle and warm approach can achieve results that force and bluster cannot. Through this simple story, we are taught the value of kindness and the impact it can have on the world around us.
+    </textarea>
+    <button id="startRecording">Start Recording</button>
+    <button id="stopRecording" disabled>Stop Recording</button>
+<!-- Place these inside the body, where appropriate -->
+<audio id="audioPlayback" controls hidden></audio>
+<button id="confirmUpload" hidden>Confirm Upload</button>
+
+   <script>
+    let mediaRecorder;
+    let audioChunks = [];
+    let audioBlob;
+
+    document.getElementById("startRecording").addEventListener("click", function() {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
+            mediaRecorder.start();
+
+            document.getElementById("startRecording").disabled = true;
+            document.getElementById("stopRecording").disabled = false;
+        }).catch(error => console.error("Error accessing the microphone: ", error));
+    });
+
+    document.getElementById("stopRecording").addEventListener("click", function() {
+        mediaRecorder.stop();
+        document.getElementById("stopRecording").disabled = true;
+
+        mediaRecorder.onstop = () => {
+            audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+            let audioUrl = URL.createObjectURL(audioBlob);
+            document.getElementById("audioPlayback").src = audioUrl;
+            document.getElementById("audioPlayback").hidden = false;
+            document.getElementById("confirmUpload").hidden = false;
+        };
+    });
+
+    document.getElementById("confirmUpload").addEventListener("click", function() {
+        const formData = new FormData(document.getElementById("uploadForm"));
+        formData.append('file', audioBlob, 'recorded_audio.mp3');
+        fetch('{{ url_for("process_audio") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            // Handle successful upload here, e.g., display a message to the user
+        })
+        .catch(error => console.error("Error submitting the audio: ", error));
+
+        // Optionally, reset/hide the playback controls and confirm button
+        document.getElementById("audioPlayback").hidden = true;
+        document.getElementById("confirmUpload").hidden = true;
+    });
+</script>
+
+</body>
+</html>
