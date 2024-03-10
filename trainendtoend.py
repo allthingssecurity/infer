@@ -113,7 +113,7 @@ def check_file_in_space(access_id, secret_key, bucket_name, file_key, check_inte
 
 
 
-def upload_files(access_id, secret_key,url, model_name, bucket_name,file_paths,timeout=600):
+def upload_files(access_id, secret_key,url, model_name, bucket_name,file_paths):
     """
     Uploads multiple files to a specified URL.
 
@@ -131,7 +131,7 @@ def upload_files(access_id, secret_key,url, model_name, bucket_name,file_paths,t
     
     try:
         # Your existing upload logic here
-        response = requests.post(url, files=files, data=data, timeout=timeout)
+        response = requests.post(url, files=files, data=data, timeout=600)
         response.raise_for_status()  # This will raise an exception for HTTP error codes
         return True, "Files uploaded successfully."
     except requests.exceptions.RequestException as e:

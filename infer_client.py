@@ -109,6 +109,7 @@ def convert_voice1(url,file_paths,spk_id):
     """
     #url = f'https://{pod_id}--5000.proxy.runpod.net/convert_voice'
     
+    
     files = [('file', (open(file_path, 'rb'))) for file_path in file_paths]
     data = {'spk_id': spk_id, 'voice_transform': '0'}  # Assuming spk_id is passed here and voice_transform hardcoded to 0
 
