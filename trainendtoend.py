@@ -113,6 +113,8 @@ def check_file_in_space(access_id, secret_key, bucket_name, file_key, check_inte
 
 
 
+
+
 def upload_files(access_id, secret_key,url, model_name, bucket_name,file_paths):
     """
     Uploads multiple files to a specified URL.
@@ -169,8 +171,7 @@ def main(file_path,model_name):
     else:
         print("Failed to create the pod or retrieve the pod ID.")
 
-if __name__ == "__main__":
-    main()
+
     
     
 
