@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify,render_template
 from redis import Redis
 from rq import Queue
-from infer_client import main
+#from infer_client import main
 from trainendtoend import main
 import os
 import uuid

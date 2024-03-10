@@ -171,7 +171,8 @@ def main(file_path,model_name):
     else:
         print("Failed to create the pod or retrieve the pod ID.")
 
-
+if __name__ == "__main__":
+    main()
     
     
 
