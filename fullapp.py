@@ -188,21 +188,37 @@ def song_conversion_submit():
     song_limit = 4 if user_status == "premium" else 2
     
     songs_converted = int(redis_client.hget(f"user:{user_email}", "songs_converted") or 0)
+    recharge_balance = int(redis_conn.hget(f"user:{user_email}", "recharge_balance") or 0)
     
-    if songs_converted >= song_limit:
-        return f"Song conversion limit of {song_limit} reached. Upgrade for more."
+    
+    if user_status == 'premium':
+        if recharge_balance > 0:
+            # For premium users with enough recharge balance
+            result = dummy_song_converted()
+            redis_client.hincrby(f"user:{user_email}", "recharge_balance", -1)
+        elif song_conversions < 2:
+            # Allow up to 2 free conversions for premium users without balance
+            result = dummy_song_converted()
+            redis_client.hincrby(f"user:{user_email}", "songs_converted", 1)
+        else:
+            return jsonify({'error': 'No more free conversions available'}), 403
+    elif song_conversions < song_limit:
+        # Allow free users up to 2 conversions
+        result = dummy_song_converted()
+        redis_client.hincrby(f"user:{user_email}", "songs_converted", 1)
+    else:
+        return jsonify({'error': 'Upgrade to premium for more conversions'}), 403
+    
+    
+    
+    
+    
     
     # If under limit, proceed with model training
-    result = dummy_song_converted()
+    
     
     # Update Redis to reflect the new model count
-    redis_client.hincrby(f"user:{user_email}", "songs_converted", 1)
     
-    songs_converted = redis_client.hget(f"user:{user_email}", "songs_converted")
-    if songs_converted is None:
-        songs_converted = 0
-    else:
-        songs_converted = int(songs_converted)
 
     print(f"Song converted for {user_email}: {songs_converted}")  # Debugging line
     
@@ -232,6 +248,34 @@ def process_payment():
     else:
         flash("Payment failed. Please check your card details and try again.")
         return redirect(url_for('payment_form'))
+
+@app.route('/process-recharge', methods=['POST'])
+@login_required
+def process_recharge():
+    user_email = session.get('user_email')
+
+    if not user_email:
+        return "User not logged in.", 403
+
+    # Check if the user is a premium user
+    user_status = redis_client.hget(f"user:{user_email}", "status").decode('utf-8')
+    if user_status != 'premium':
+        return jsonify({'error': 'Only premium users can recharge'}), 403
+
+    amount = request.form.get('amount')
+
+    if amount:
+        # In a real app, you would process the payment details with a payment gateway
+        # Simulate successful payment by updating the user's recharge balance
+        current_balance = int(redis_client.hget(f"user:{user_email}", "recharge_balance") or 0)
+        new_balance = current_balance + int(amount)
+        redis_client.hset(f"user:{user_email}", "recharge_balance", new_balance)
+
+        return jsonify({'message': 'Recharge successful, new balance: ' + str(new_balance) + ' credits.'})
+    else:
+        return "Invalid request", 400
+
+
 
 @app.route('/samples')
 @login_required

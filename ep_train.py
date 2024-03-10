@@ -56,7 +56,7 @@ def upload_file():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'})
     file = request.files['file']
-    speaker_name = request.form.get('speaker_name', '')
+    model_name = request.form.get('speaker_name', '')
     if file.filename == '':
         return jsonify({'error': 'No selected file'})
     if file:
@@ -65,7 +65,7 @@ def upload_file():
         file.save(filepath)
         print(filepath)
         # Adjusted to pass filepath and speaker_name to the main function
-        job = q.enqueue(main, filepath, speaker_name)
+        job = q.enqueue(main, filepath, model_name)
         p = Process(target=start_worker)
         p.start()     
         return jsonify({'message': 'File uploaded successfully', 'job_id': job.get_id()})
