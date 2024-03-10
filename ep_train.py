@@ -48,7 +48,7 @@ def authorize():
 
 @app.route('/')
 def index():
-    return render_template('ui.html')
+    return render_template('train.html')
 
 # Adjust this part in your Flask app
 @app.route('/upload', methods=['POST'])
