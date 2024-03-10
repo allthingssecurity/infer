@@ -26,7 +26,7 @@ redis_port = int(os.getenv('REDIS_PORT', 25061))  # Default Redis port
 redis_username = os.getenv('REDIS_USERNAME', 'default')
 redis_password = os.getenv('REDIS_PASSWORD', '')
 redis_conn = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
-q = Queue(connection=redis_conn,default_timeout=1000)
+q = Queue(connection=redis_conn)
 
 @app.route('/login/callback')
 def authorize():
@@ -68,7 +68,13 @@ def process_audio():
         print(filepath)
         response = upload_to_do(filepath)
         # Adjusted to pass filepath and speaker_name to the main function
-        job = q.enqueue(main, filename, model_name)
+        job = q.enqueue_call(
+            func=main, 
+            args=(filename, model_name),  # Positional arguments for my_function
+            
+            timeout=1000  # Job-specific parameters like timeout
+)
+        #job = q.enqueue(main, filename, model_name)
         p = Process(target=start_worker)
         p.start()     
         return jsonify({'message': 'File uploaded successfully', 'job_id': job.get_id()})
