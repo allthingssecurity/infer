@@ -161,6 +161,7 @@ def main(file_path,model_name):
         #upload_files(url)
         
         # Proceed with asynchronous file upload
+        print("file uploaded to ",file_path)
         upload_files(ACCESS_ID,SECRET_KEY,url, model_name,bucket_name, file_path)
  
         # Check for the file in the S3 bucket (DigitalOcean Spaces)
