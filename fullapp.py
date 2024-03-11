@@ -61,9 +61,13 @@ def generate_nonce(length=32):
 @app.route('/login/callback')
 def authorize():
     # The code to handle the callback and authorization logic goes here
-    print("Request URL:", request.url)
+    app.logger.info("entered authorize code")
+    app.logger.info(f'Request URL:: {request.url}')
+    app.logger.info(f'Request URL:: {request.args}')
+    print("Query Parameters::", request.url)
     print("Query Parameters:", request.args)
     token = google.authorize_access_token()
+    app.logger.info(f"token={token}")
     nonce = session.pop('oauth_nonce', None)
     user_info = google.parse_id_token(token, nonce=nonce)
     print(user_info['email'])
