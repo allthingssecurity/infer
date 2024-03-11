@@ -200,20 +200,20 @@ def process_audio():
 
 def start_worker():
     # Fetch the current number of workers
-    current_worker_count = int(redis_conn.get(WORKER_COUNT_KEY) or 0)
+    current_worker_count = int(redis_client.get(WORKER_COUNT_KEY) or 0)
     
     if current_worker_count < MAX_WORKERS:
         # Increment the worker count atomically
-        redis_conn.incr(WORKER_COUNT_KEY)
+        redis_client.incr(WORKER_COUNT_KEY)
         
         try:
             queues_to_listen = ['default']
-            with Connection(redis_conn):
+            with Connection(redis_client):
                 worker = Worker(map(Queue, queues_to_listen))
                 worker.work()
         finally:
             # Ensure the worker count is decremented when the worker stops working
-            redis_conn.decr(WORKER_COUNT_KEY)
+            redis_client.decr(WORKER_COUNT_KEY)
     else:
         print("Maximum number of workers reached. Not starting a new worker.")
 
@@ -236,7 +236,7 @@ def song_conversion_submit():
     song_limit = 4 if user_status == "premium" else 2
     
     songs_converted = int(redis_client.hget(f"user:{user_email}", "songs_converted") or 0)
-    recharge_balance = int(redis_conn.hget(f"user:{user_email}", "recharge_balance") or 0)
+    recharge_balance = int(redis_client.hget(f"user:{user_email}", "recharge_balance") or 0)
     
     
     if user_status == 'premium':
