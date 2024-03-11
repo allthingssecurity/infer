@@ -1,4 +1,4 @@
-from flask import Flask, session, redirect, url_for, request,render_template,flash
+from flask import Flask, session, redirect, url_for, request,render_template,flash,jsonify
 from authlib.integrations.flask_client import OAuth
 import redis
 from redis import Redis
