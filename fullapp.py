@@ -354,7 +354,7 @@ def reset_redis():
 @app.route('/status/<job_id>', methods=['GET'])
 def check_status(job_id):
     from rq.job import Job
-    job = Job.fetch(job_id, connection=redis_conn)
+    job = Job.fetch(job_id, connection=redis_client)
     return jsonify({'status': job.get_status(), 'job_id': job_id})
 
 
