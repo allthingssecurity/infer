@@ -9,7 +9,7 @@ import os
 from botocore.exceptions import ClientError
 import logging
 from upload import download_from_do
-from fullapp import update_model_count
+
 runpod.api_key =os.getenv("RUNPOD_KEY")
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -30,6 +30,36 @@ env_vars = {
     "ACCESS_ID": ACCESS_ID,
     "SECRET_KEY": SECRET_KEY,
 }
+
+
+
+
+
+def update_model_count(user_email,redis_client):
+    user_data = redis_client.hgetall(f"user:{user_email}")
+    if not user_data:
+        return jsonify({'error': 'User not found'}), 404
+    
+    user_status_raw = user_data.get(b"status", b"trial")  # Redis returns bytes
+    
+    # Check for bytes type and decode if necessary
+    user_status = user_status_raw.decode("utf-8") if isinstance(user_status_raw, bytes) else user_status_raw
+
+    # Determine the model training limit based on user status
+    model_training_limit = 3 if user_status == "premium" else 1
+    
+    models_trained = int(redis_client.hget(f"user:{user_email}", "models_trained") or 0)
+    
+    if models_trained < model_training_limit:
+        # If the user hasn't exceeded their limit, train another model
+        
+        redis_client.hincrby(f"user:{user_email}", "models_trained", 1)
+        app.logger.info("update of model train done in queue")
+        return jsonify({'message': result}), 200
+    else:
+        # If the user has exceeded their limit
+        return jsonify({'error': 'Upgrade to premium for more model trainings or wait for the limit to reset'}), 403
+
 
 # Create a pod
 def create_pod_and_get_id(name, image_name, gpu_type_id, ports, container_disk_in_gb, env_vars):
@@ -153,7 +183,7 @@ def close_files(files):
         file_obj.close()
 
 
-def main(file_name,model_name,user_email):
+def main(file_name,model_name,user_email,redis_client):
     
     
     
@@ -172,7 +202,7 @@ def main(file_name,model_name,user_email):
         #logger.info("This is an info message from the background task. file_path is valid: {}".format(file_path is not None))
         file_path=download_from_do(file_name)
         upload_files(ACCESS_ID,SECRET_KEY,url, model_name,bucket_name, file_path)
-        update_model_count(user_email)
+        update_model_count(user_email,redis_client)
         # Check for the file in the S3 bucket (DigitalOcean Spaces)
         #await check_file_in_space('DO0026WEQUG4WF6WQNJ9','UG7kQicGgWmkfVmESWK889RxZG49UqV7vRfYUJDFFUo' , bucket_name, f'{model_name}.pth')
     else:

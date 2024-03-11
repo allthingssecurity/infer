@@ -192,7 +192,7 @@ def process_audio():
         # Adjusted to pass filepath and speaker_name to the main function
         job = q.enqueue_call(
             func=main, 
-            args=(filename, model_name,user_email),  # Positional arguments for my_function
+            args=(filename, model_name,user_email,redis_client),  # Positional arguments for my_function
             
             timeout=1000  # Job-specific parameters like timeout
 )
@@ -222,30 +222,6 @@ def start_worker():
 
 
 
-def update_model_count(user_email):
-    user_data = redis_client.hgetall(f"user:{user_email}")
-    if not user_data:
-        return jsonify({'error': 'User not found'}), 404
-    
-    user_status_raw = user_data.get(b"status", b"trial")  # Redis returns bytes
-    
-    # Check for bytes type and decode if necessary
-    user_status = user_status_raw.decode("utf-8") if isinstance(user_status_raw, bytes) else user_status_raw
-
-    # Determine the model training limit based on user status
-    model_training_limit = 3 if user_status == "premium" else 1
-    
-    models_trained = int(redis_client.hget(f"user:{user_email}", "models_trained") or 0)
-    
-    if models_trained < model_training_limit:
-        # If the user hasn't exceeded their limit, train another model
-        
-        redis_client.hincrby(f"user:{user_email}", "models_trained", 1)
-        app.logger.info("update of model train done in queue")
-        return jsonify({'message': result}), 200
-    else:
-        # If the user has exceeded their limit
-        return jsonify({'error': 'Upgrade to premium for more model trainings or wait for the limit to reset'}), 403
 
 
 
