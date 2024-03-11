@@ -106,7 +106,7 @@ def login():
     redirect_uri = url_for('authorize', _external=True)
     app.logger.info(f'Redirect URI for OAuth: {redirect_uri}')
     print(f"Redirect URI for OAuth: {redirect_uri}")
-    return google.authorize_redirect(redirect_uri, nonce=nonce)
+    return google.authorize_redirect("https://www.maibhisinger.com/login/callback", nonce=nonce)
 
 
     
