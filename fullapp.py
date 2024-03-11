@@ -23,7 +23,7 @@ from multiprocessing import Process
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
-
+UPLOAD_FOLDER = 'uploads'
 oauth = OAuth(app)
 google = oauth.register(
     name='singer',
@@ -35,6 +35,8 @@ google = oauth.register(
     }
 )
 
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 redis_host = os.getenv('REDIS_HOST', 'default_host')
 redis_port = int(os.getenv('REDIS_PORT', 25061))  # Default Redis port
