@@ -87,12 +87,12 @@ def authorize():
         session['user_email'] = user_info['email']
         session['logged_in'] = True
         # Perform any additional processing or actions as needed
-        return 'Authorization successful'
+        return render_template('index.html')
     else:
         # Handle the case where the email is not available
-        return 'Email not found in user info'
+        return redirect(url_for('login'))
     # Process user_info or perform actions such as logging in the user
-    return 'Authorization successful'
+    return render_template('index.html')
 
 
 
@@ -148,6 +148,19 @@ def models():
     models = [model.decode('utf-8') for model in models]
     return render_template('models.html', models=models)
     pass
+
+@app.route('/deploy_model')
+@login_required
+def deploy_model(model_name):
+    # Check user's model count from Redis and render accordingly
+    user_email = session.get('user_email')  # Assuming current_user has an email attribute
+    models = redis_client.lrange(user_email, 0, -1) # Assuming set usage; adapt if using lists
+    models = [model.decode('utf-8') for model in models]
+    return render_template('models.html', models=models)
+    pass
+
+
+
 
 @app.route('/upgrade')
 @login_required
