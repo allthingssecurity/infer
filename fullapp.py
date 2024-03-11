@@ -9,6 +9,7 @@ from functools import wraps
 from authlib.integrations.flask_client import OAuth
 from flask_session import Session
 import base64
+from flask import request
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -57,6 +58,8 @@ def generate_nonce(length=32):
 @app.route('/login/callback')
 def authorize():
     # The code to handle the callback and authorization logic goes here
+    print("Request URL:", request.url)
+    print("Query Parameters:", request.args)
     token = google.authorize_access_token()
     nonce = session.pop('oauth_nonce', None)
     user_info = google.parse_id_token(token, nonce=nonce)
