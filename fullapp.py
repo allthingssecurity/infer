@@ -2,7 +2,6 @@ from flask import Flask, session, redirect, url_for, request,render_template,fla
 from authlib.integrations.flask_client import OAuth
 import redis
 from redis import Redis
-from rq import Queue
 import os
 import time
 from functools import wraps
@@ -12,6 +11,14 @@ import base64
 from flask import request
 import logging
 from logging.handlers import RotatingFileHandler
+from trainendtoend import main
+import os
+import uuid
+from rq import Worker, Queue, Connection
+from redis import Redis
+from upload import upload_to_do
+
+from multiprocessing import Process
 
 
 app = Flask(__name__)
@@ -154,6 +161,9 @@ def dummy_model_training():
 def train():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
+    else:
+        
+        return redirect("train.html")
 
     user_email = session.get('user_email')
     user_data = redis_client.hgetall(f"user:{user_email}")
@@ -185,6 +195,54 @@ def train():
     print(f"Models trained for {user_email}: {models_trained}")  # Debugging line
     
     return f"Model training successful. {result}"
+
+
+@app.route('/process_audio', methods=['POST'])
+def process_audio():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'})
+    file = request.files['file']
+    model_name = request.form.get('model_name', '')
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'})
+    if file:
+        filename = uuid.uuid4().hex + '_' + file.filename
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(filepath)
+        
+        print(filepath)
+        response = upload_to_do(filepath)
+        user_email = session.get('user_email')
+        # Adjusted to pass filepath and speaker_name to the main function
+        job = q.enqueue_call(
+            func=main, 
+            args=(filename, model_name,user_email),  # Positional arguments for my_function
+            
+            timeout=1000  # Job-specific parameters like timeout
+)
+        #job = q.enqueue(main, filename, model_name)
+        p = Process(target=start_worker)
+        p.start()     
+        return jsonify({'message': 'Model Training Job Started with ', 'job_id': job.get_id()})
+
+def start_worker():
+    # Fetch the current number of workers
+    current_worker_count = int(redis_conn.get(WORKER_COUNT_KEY) or 0)
+    
+    if current_worker_count < MAX_WORKERS:
+        # Increment the worker count atomically
+        redis_conn.incr(WORKER_COUNT_KEY)
+        
+        try:
+            queues_to_listen = ['default']
+            with Connection(redis_conn):
+                worker = Worker(map(Queue, queues_to_listen))
+                worker.work()
+        finally:
+            # Ensure the worker count is decremented when the worker stops working
+            redis_conn.decr(WORKER_COUNT_KEY)
+    else:
+        print("Maximum number of workers reached. Not starting a new worker.")
 
 
 

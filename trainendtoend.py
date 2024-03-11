@@ -152,7 +152,7 @@ def close_files(files):
         file_obj.close()
 
 
-def main(file_name,model_name):
+def main(file_name,model_name,user_email):
     
     
     
@@ -171,7 +171,7 @@ def main(file_name,model_name):
         #logger.info("This is an info message from the background task. file_path is valid: {}".format(file_path is not None))
         file_path=download_from_do(file_name)
         upload_files(ACCESS_ID,SECRET_KEY,url, model_name,bucket_name, file_path)
- 
+        
         # Check for the file in the S3 bucket (DigitalOcean Spaces)
         #await check_file_in_space('DO0026WEQUG4WF6WQNJ9','UG7kQicGgWmkfVmESWK889RxZG49UqV7vRfYUJDFFUo' , bucket_name, f'{model_name}.pth')
     else:
