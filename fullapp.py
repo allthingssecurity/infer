@@ -103,6 +103,7 @@ def login():
     
 @app.route('/')
 def index():
+    print ("helllllllllllllllllllo")
     if 'logged_in' in session and session['logged_in']:
         return render_template('index.html')
     else:
