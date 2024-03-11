@@ -16,8 +16,8 @@ app.secret_key = 'your_secret_key'
 oauth = OAuth(app)
 google = oauth.register(
     name='google',
-    client_id='144930881143-n3e3ubers3vkq7jc9doe4iirasgimdt2.apps.googleusercontent.com',
-    client_secret='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',
+    client_id='158446367723-fie5o9bjnn20ik2c68h06fjd2ran8fdo.apps.googleusercontent.com',
+    client_secret='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',
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_kwargs={
         'scope': 'openid email profile',
