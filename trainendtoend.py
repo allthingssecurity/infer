@@ -53,7 +53,7 @@ env_vars = {
 def update_model_count(user_email,redis_client):
     user_data = redis_client.hgetall(f"user:{user_email}")
     if not user_data:
-        return jsonify({'error': 'User not found'}), 404
+        return 'User not found'
     
     user_status_raw = user_data.get(b"status", b"trial")  # Redis returns bytes
     
@@ -70,10 +70,10 @@ def update_model_count(user_email,redis_client):
         
         redis_client.hincrby(f"user:{user_email}", "models_trained", 1)
         app.logger.info("update of model train done in queue")
-        return jsonify({'message': result}), 200
+        return 'update done'
     else:
         # If the user has exceeded their limit
-        return jsonify({'error': 'Upgrade to premium for more model trainings or wait for the limit to reset'}), 403
+        return 'error: Upgrade to premium for more model trainings or wait for the limit to reset'
 
 
 # Create a pod
