@@ -25,10 +25,11 @@ google = oauth.register(
 )
 
 
-redis_username = 'default'
-redis_password = 'AVNS_HdeT5M04rMTSxI5lLES'
-redis_host = 'redis-do-user-4571001-0.c.db.ondigitalocean.com'
-redis_port = 25061
+redis_host = os.getenv('REDIS_HOST', 'default_host')
+redis_port = int(os.getenv('REDIS_PORT', 25061))  # Default Redis port
+redis_username = os.getenv('REDIS_USERNAME', 'default')
+redis_password = os.getenv('REDIS_PASSWORD', '')
+#redis_conn = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
 
 
 
