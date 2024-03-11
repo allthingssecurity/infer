@@ -163,38 +163,9 @@ def train():
         return redirect(url_for('login'))
     else:
         
-        return redirect("train.html")
+        return render_template('train.html')
 
-    user_email = session.get('user_email')
-    user_data = redis_client.hgetall(f"user:{user_email}")
-    user_status_raw = user_data.get(b"status", b"trial")  # Redis returns bytes
-
-    # Check for bytes type and decode if necessary
-    user_status = user_status_raw.decode("utf-8") if isinstance(user_status_raw, bytes) else user_status_raw
-
-    # Determine the model limit based on user status
-    model_limit = 4 if user_status == "premium" else 2
-    
-    models_trained = int(redis_client.hget(f"user:{user_email}", "models_trained") or 0)
-    
-    if models_trained >= model_limit:
-        return f"Model training limit of {model_limit} reached. Upgrade for more."
-    
-    # If under limit, proceed with model training
-    result = dummy_model_training()
-    
-    # Update Redis to reflect the new model count
-    redis_client.hincrby(f"user:{user_email}", "models_trained", 1)
-    
-    models_trained = redis_client.hget(f"user:{user_email}", "models_trained")
-    if models_trained is None:
-        models_trained = 0
-    else:
-        models_trained = int(models_trained)
-
-    print(f"Models trained for {user_email}: {models_trained}")  # Debugging line
-    
-    return f"Model training successful. {result}"
+   
 
 
 @app.route('/process_audio', methods=['POST'])
