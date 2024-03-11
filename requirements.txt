@@ -4,3 +4,4 @@ redis
 boto3
 requests
 runpod
+authlib
