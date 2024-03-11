@@ -9,6 +9,8 @@ import os
 from botocore.exceptions import ClientError
 import logging
 from upload import download_from_do
+import redis
+from redis import Redis
 
 runpod.api_key =os.getenv("RUNPOD_KEY")
 logging.basicConfig(level=logging.INFO)
