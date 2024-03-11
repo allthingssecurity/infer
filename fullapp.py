@@ -90,11 +90,13 @@ def login_required(f):
 @app.route('/login')
 def login():
     # Generate a nonce and save it in the session
+    print("Accessed the login endpoint")
     nonce = generate_nonce()
     session['oauth_nonce'] = nonce
     
     # Include the nonce in your authorization request
     redirect_uri = url_for('authorize', _external=True)
+    print(f"Redirect URI for OAuth: {redirect_uri}")
     return google.authorize_redirect(redirect_uri, nonce=nonce)
 
 
