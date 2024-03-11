@@ -23,8 +23,21 @@ logger = logging.getLogger(__name__)
 #pod = runpod.get_pod(pod.id)
 
 
+
 ACCESS_ID=os.getenv("ACCESS_ID")
 SECRET_KEY=os.getenv("SECRET_KEY")
+
+redis_host = os.getenv('REDIS_HOST', 'default_host')
+redis_port = int(os.getenv('REDIS_PORT', 25061))  # Default Redis port
+redis_username = os.getenv('REDIS_USERNAME', 'default')
+redis_password = os.getenv('REDIS_PASSWORD', '')
+#redis_conn = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
+
+
+
+
+redis_client = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
+
 
 env_vars = {
     "ACCESS_ID": ACCESS_ID,
@@ -183,7 +196,7 @@ def close_files(files):
         file_obj.close()
 
 
-def main(file_name,model_name,user_email,redis_client):
+def main(file_name,model_name,user_email):
     
     
     

@@ -192,7 +192,7 @@ def process_audio():
         # Adjusted to pass filepath and speaker_name to the main function
         job = q.enqueue_call(
             func=main, 
-            args=(filename, model_name,user_email,redis_client),  # Positional arguments for my_function
+            args=(filename, model_name,user_email),  # Positional arguments for my_function
             
             timeout=1000  # Job-specific parameters like timeout
 )
