@@ -303,4 +303,4 @@ def logout():
 # Add routes for login, logout, login callback as discussed earlier
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=False)
