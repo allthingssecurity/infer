@@ -10,13 +10,16 @@ from authlib.integrations.flask_client import OAuth
 from flask_session import Session
 import base64
 from flask import request
+import logging
+from logging.handlers import RotatingFileHandler
+
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
 oauth = OAuth(app)
 google = oauth.register(
-    name='google',
+    name='singer',
     client_id='158446367723-fie5o9bjnn20ik2c68h06fjd2ran8fdo.apps.googleusercontent.com',
     client_secret='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',
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
@@ -91,11 +94,13 @@ def login_required(f):
 def login():
     # Generate a nonce and save it in the session
     print("Accessed the login endpoint")
+    app.logger.info('Accessed the login endpoint')
     nonce = generate_nonce()
     session['oauth_nonce'] = nonce
     
     # Include the nonce in your authorization request
     redirect_uri = url_for('authorize', _external=True)
+    app.logger.info(f'Redirect URI for OAuth: {redirect_uri}')
     print(f"Redirect URI for OAuth: {redirect_uri}")
     return google.authorize_redirect(redirect_uri, nonce=nonce)
 
@@ -311,4 +316,11 @@ def logout():
 # Add routes for login, logout, login callback as discussed earlier
 print("Starting Flask application ****************************")
 if __name__ == '__main__':
+    handler = RotatingFileHandler('app.log', maxBytes=10000, backupCount=3)
+    handler.setLevel(logging.INFO)
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    handler.setFormatter(formatter)
+    
+    app.logger.addHandler(handler)
+    app.logger.setLevel(logging.INFO)
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=False)
