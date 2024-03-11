@@ -12,7 +12,7 @@ import base64
 from flask import request
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'
+app.secret_key = '163453343'
 
 oauth = OAuth(app)
 google = oauth.register(
