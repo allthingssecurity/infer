@@ -106,6 +106,7 @@ def index():
     if 'logged_in' in session and session['logged_in']:
         return render_template('index.html')
     else:
+        print ("redirecting to ",url_for('login'))
         return redirect(url_for('login'))
 
 @app.route('/song_conversion')
