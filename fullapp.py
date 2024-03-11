@@ -351,6 +351,13 @@ def reset_redis():
     except Exception as e:
         return f"Error clearing Redis data: {e}", 500
 
+@app.route('/status/<job_id>', methods=['GET'])
+def check_status(job_id):
+    from rq.job import Job
+    job = Job.fetch(job_id, connection=redis_conn)
+    return jsonify({'status': job.get_status(), 'job_id': job_id})
+
+
 @app.route('/logout')
 def logout():
     # Clear the session, effectively logging the user out of your application
