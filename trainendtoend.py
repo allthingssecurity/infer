@@ -9,6 +9,7 @@ import os
 from botocore.exceptions import ClientError
 import logging
 from upload import download_from_do
+from fullapp import update_model_count
 runpod.api_key =os.getenv("RUNPOD_KEY")
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -171,7 +172,7 @@ def main(file_name,model_name,user_email):
         #logger.info("This is an info message from the background task. file_path is valid: {}".format(file_path is not None))
         file_path=download_from_do(file_name)
         upload_files(ACCESS_ID,SECRET_KEY,url, model_name,bucket_name, file_path)
-        
+        update_model_count(user_email)
         # Check for the file in the S3 bucket (DigitalOcean Spaces)
         #await check_file_in_space('DO0026WEQUG4WF6WQNJ9','UG7kQicGgWmkfVmESWK889RxZG49UqV7vRfYUJDFFUo' , bucket_name, f'{model_name}.pth')
     else:
