@@ -143,6 +143,10 @@ def song_conversion():
 @login_required
 def models():
     # Check user's model count from Redis and render accordingly
+    user_email = session.get('user_email')  # Assuming current_user has an email attribute
+    models = redis_client.smembers(user_email)  # Assuming set usage; adapt if using lists
+    models = [model.decode('utf-8') for model in models]
+    return render_template('models.html', models=models)
     pass
 
 @app.route('/upgrade')
@@ -167,6 +171,7 @@ def train():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     else:
+        
         
         return render_template('train.html')
 

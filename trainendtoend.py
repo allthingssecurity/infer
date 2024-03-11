@@ -197,6 +197,8 @@ def close_files(files):
     for _, file_obj in files:
         file_obj.close()
 
+def add_model_to_user(user_email, model_name):
+    redis_client.rpush(user_email, model_name)
 
 def main(file_name,model_name,user_email):
     
@@ -217,6 +219,7 @@ def main(file_name,model_name,user_email):
         #logger.info("This is an info message from the background task. file_path is valid: {}".format(file_path is not None))
         file_path=download_from_do(file_name)
         upload_files(ACCESS_ID,SECRET_KEY,url, model_name,bucket_name, file_path)
+        add_model_to_user(user_email,model_name)
         update_model_count(user_email,redis_client)
         # Check for the file in the S3 bucket (DigitalOcean Spaces)
         #await check_file_in_space('DO0026WEQUG4WF6WQNJ9','UG7kQicGgWmkfVmESWK889RxZG49UqV7vRfYUJDFFUo' , bucket_name, f'{model_name}.pth')
