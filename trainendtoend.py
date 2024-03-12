@@ -48,6 +48,13 @@ env_vars = {
 }
 
 
+handler = RotatingFileHandler('train.log', maxBytes=10000, backupCount=3)
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+
+app.logger.addHandler(handler)
+app.logger.setLevel(logging.INFO)
 
 
 
@@ -224,6 +231,7 @@ def main(file_name,model_name,user_email):
         update_model_count(user_email,redis_client)
         ##push model to infer app dir
         push_model_to_infer(user_email)
+        app.logger.info('Training completed. Model pushed to bucket and pulled by Infer')
         
         # Check for the file in the S3 bucket (DigitalOcean Spaces)
         
@@ -249,9 +257,11 @@ def push_model_to_infer(model_name):
         # Step 4: Print or process the response as needed
         print("Response Status Code:", response.status_code)
         print("Response Text:", response.text)
+        app.logger.info(f'Response from  infer push:: {response.text}')
         
     except requests.RequestException as e:
-        print(f"Request failed: {e}")
+        print(f"Request failed: {e}")'
+        app.logger.info('failed to send to infer')
 
 
 
