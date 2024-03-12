@@ -263,17 +263,19 @@ def convert_voice(file_paths,spk_id):
         app.logger.info(f'got job id: {job_id}')
         
         save_path = f"{job_id}.mp3"
-        upload_to_do(save_path)
+        download_and_save_mp3(base_url,audio_id,save_path)
+        app.logger.info(f'downloaded the converted file to save path {save_path}')
+        response=upload_to_do(save_path)
         app.logger.info('uploade converted file to DO space')
         #download_and_save_mp3(audio_id,save_path)
-        return audio_id
+        return response
     else:
         print(f"Failed to upload files. Status: {response.status_code}")
         #print(response.text)
         return None
 
 
-def download_and_save_mp3(audio_id, save_path):
+def download_and_save_mp3(url,audio_id, save_path):
     """
     Downloads an MP3 file using the given 'audio_id' and saves it locally.
 
@@ -281,9 +283,9 @@ def download_and_save_mp3(audio_id, save_path):
     :param audio_id: The unique identifier for the audio file to download.
     :param save_path: The local path where the MP3 file will be saved.
     """
-    url = f'https://{pod_id}--5000.proxy.runpod.net/get_processed_audio/{audio_id}'
-    
-    response = requests.get(url, stream=True)
+    final_url = f'{url}/get_processed_audio/{audio_id}'
+    app.logger.info(f'url for downloading converted file: {final_url}')
+    response = requests.get(final_url, stream=True)
     if response.status_code == 200:
         with open(save_path, 'wb') as f:
             for chunk in response.iter_content(chunk_size=128):
