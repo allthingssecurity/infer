@@ -41,7 +41,7 @@
 <script>
 $(document).ready(function() {
     // Load weights into the dropdown
-    loadWeights();
+    
 
     $('#uploadForm').submit(function(e) {
         e.preventDefault();
@@ -93,21 +93,7 @@ $(document).ready(function() {
     }
 
     // Function to load weights into the dropdown
-    function loadWeights() {
-        $.ajax({
-            url: '/list-weights',
-            type: 'GET',
-            success: function(files) {
-                const dropdown = $('#weightsDropdown');
-                files.forEach(function(file) {
-                    dropdown.append($('<option></option>').attr('value', file).text(file));
-                });
-            },
-            error: function(xhr) {
-                alert("Error loading weights: " + xhr.responseText);
-            }
-        });
-    }
+    
 });
 </script>
 
