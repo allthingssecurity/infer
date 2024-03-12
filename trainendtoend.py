@@ -219,8 +219,11 @@ def main(file_name,model_name,user_email):
     # Run synchronous pod creation and status check in the event loop
     #loop = asyncio.get_running_loop()
     pod_id = create_pod_and_get_id("train", "smjain/train:v6", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
+    app.logger.info('After creating pod for training')
     if pod_id:
+        
         check_pod_is_ready(pod_id)
+        app.logger.info('checked pod is ready')
         url = f'https://{pod_id}--5000.proxy.runpod.net/process_audio'
         #upload_files(url)
         
@@ -228,6 +231,7 @@ def main(file_name,model_name,user_email):
         #print("file uploaded to ",file_path)
         #logger.info("This is an info message from the background task. file_path is valid: {}".format(file_path is not None))
         file_path=download_from_do(file_name)
+        app.logger.info('downloaded audio from space')
         upload_files(ACCESS_ID,SECRET_KEY,url, user_email,bucket_name, file_path)
         app.logger.info('uploaded to DO Space')
         add_model_to_user(user_email,model_name)
