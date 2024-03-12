@@ -238,6 +238,7 @@ def convert_voice(file_path,spk_id):
 
         # Send a POST request to the server
         try:
+            app.logger.info(f'Infer url : {url}')
             response = requests.post(url, files=files, data=data, timeout=600)
             response.raise_for_status()  # This will raise an exception for HTTP error codes
             app.logger.info('Infer done successfully')
