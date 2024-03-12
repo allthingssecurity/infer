@@ -264,7 +264,7 @@ def push_model_to_infer(model_name):
         app.logger.info(f'Response from  infer push:: {response.text}')
         
     except requests.RequestException as e:
-        print(f"Request failed: {e}")'
+        print(f"Request failed: {e}")
         app.logger.info('failed to send to infer')
 
 
