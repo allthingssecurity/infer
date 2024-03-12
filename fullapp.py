@@ -24,7 +24,7 @@ from multiprocessing import Process
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 UPLOAD_FOLDER = 'uploads'
-MAX_WORKERS = 6  # Adjust based on your requirements
+MAX_WORKERS = 20  # Adjust based on your requirements
 WORKER_COUNT_KEY = 'worker_count'
 
 oauth = OAuth(app)
