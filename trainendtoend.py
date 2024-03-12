@@ -242,6 +242,18 @@ def convert_voice(file_path,spk_id):
             response = requests.post(url, files=files, data=data, timeout=600)
             response.raise_for_status()  # This will raise an exception for HTTP error codes
             app.logger.info('Infer done successfully')
+            app.logger.info(f'got response from infer: {response.json()}')
+            audio_id = response.json().get('audio_id')
+            job = get_current_job()
+            job_id = job.id if job else 'default_id'  # Fallback ID in case this runs outside a job context
+            app.logger.info(f'got job id: {job_id}')
+            
+            save_path = f"{job_id}.mp3"
+            download_and_save_mp3(base_url,audio_id,save_path)
+            app.logger.info(f'downloaded the converted file to save path {save_path}')
+            response=upload_to_do(save_path)
+            app.logger.info('uploade converted file to DO space')
+
             return True, "infer went succesfully"
         except requests.exceptions.RequestException as e:
             print("Failed to convert audio")
@@ -251,30 +263,7 @@ def convert_voice(file_path,spk_id):
 
     
     
-    
-
-    if response.status_code == 200:
-        
-        #app.logger.info('Infer of song done successfully')
-        app.logger.info(f'got response from infer: {response.json()}')
-        print(response.json())  # Assuming the server responds with JSON
-        audio_id = response.json().get('audio_id')
-        job = get_current_job()
-        job_id = job.id if job else 'default_id'  # Fallback ID in case this runs outside a job context
-        app.logger.info(f'got job id: {job_id}')
-        
-        save_path = f"{job_id}.mp3"
-        download_and_save_mp3(base_url,audio_id,save_path)
-        app.logger.info(f'downloaded the converted file to save path {save_path}')
-        response=upload_to_do(save_path)
-        app.logger.info('uploade converted file to DO space')
-        #download_and_save_mp3(audio_id,save_path)
-        return response
-    else:
-        print(f"Failed to upload files. Status: {response.status_code}")
-        #print(response.text)
-        return None
-
+   
 
 def download_and_save_mp3(url,audio_id, save_path):
     """
