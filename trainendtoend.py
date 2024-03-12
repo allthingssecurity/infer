@@ -209,6 +209,60 @@ def close_files(files):
 
 def add_model_to_user(user_email, model_name):
     redis_client.rpush(user_email, model_name)
+    training_done_key = f"{user_email}:trained"
+    redis_client.set(training_done_key, "true")
+
+
+def convert_voice(file_paths,spk_id):
+    """
+    Synchronously uploads multiple files.
+
+    :param access_id: Access ID for authentication.
+    :param secret_key: Secret key for authentication.
+    :param file_paths: A list of file paths of the audio files to upload.
+    """
+    #url = f'https://{pod_id}--5000.proxy.runpod.net/convert_voice'
+    
+    base_url = os.environ.get('INFER_URL')
+    url = f"{base_url}/convert_voice/"
+    
+    
+    
+    with open(file_path, 'rb') as file:
+        files = {'file': file}
+        
+        # Include any additional data as a dictionary
+        data = {'spk_id': spk_id, 'voice_transform': '0'}  # Assuming spk_id is passed here and voice_transform hardcoded to 0
+
+        # Send a POST request to the server
+        try:
+            response = requests.post(url, files=files, data=data, timeout=600)
+            response.raise_for_status()  # This will raise an exception for HTTP error codes
+            app.logger.info('Infer done successfully')
+            return True, "infer went succesfully"
+        except requests.exceptions.RequestException as e:
+            print("Failed to convert audio")
+            # Assuming check_file_in_space is defined elsewhere to check the file presence in the cloud storage
+            
+            return False, str(e)
+
+    
+    
+    
+
+    if response.status_code == 200:
+        print("converted successfully.")
+        app.logger.info('Infer of song done successfully')
+        print(response.json())  # Assuming the server responds with JSON
+        audio_id = response.json().get('audio_id')
+        return audio_id
+    else:
+        print(f"Failed to upload files. Status: {response.status_code}")
+        #print(response.text)
+        return None
+
+
+
 
 def main(file_name,model_name,user_email):
     
@@ -256,7 +310,7 @@ def push_model_to_infer(model_name):
         return
     
     # Step 2: Append model_name and .pth extension to the base URL
-    model_url = f"{base_url}/{model_name}.pth"
+    model_url = f"{base_url}/download/{model_name}.pth"
     
     # Step 3: Make a GET request to the constructed URL
     try:

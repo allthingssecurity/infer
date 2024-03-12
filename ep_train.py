@@ -79,6 +79,27 @@ def process_audio():
         p.start()     
         return jsonify({'message': 'File uploaded successfully', 'job_id': job.get_id()})
 
+
+@app.route('/start_infer', methods=['POST'])
+def start_infer():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'})
+    file = request.files['file']
+    speaker_name = request.form.get('spk_id', '')
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'})
+    if file:
+        filename = uuid.uuid4().hex + '_' + file.filename
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(filepath)
+        print(filepath)
+        # Adjusted to pass filepath and speaker_name to the main function
+        job = q.enqueue(main, filepath, speaker_name)
+        p = Process(target=start_worker)
+        p.start()     
+        return jsonify({'message': 'File uploaded successfully', 'job_id': job.get_id()})
+
+
 def start_worker():
     # Fetch the current number of workers
     current_worker_count = int(redis_conn.get(WORKER_COUNT_KEY) or 0)

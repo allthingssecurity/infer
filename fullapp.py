@@ -11,7 +11,7 @@ import base64
 from flask import request
 import logging
 from logging.handlers import RotatingFileHandler
-from trainendtoend import main
+from trainendtoend import main,convert_voice
 import os
 import uuid
 from rq import Worker, Queue, Connection
@@ -198,7 +198,40 @@ def infer():
         user_email = session.get('user_email')
         
         return render_template('infer.html', user_email=user_email)
-   
+
+
+
+
+@app.route('/start_infer', methods=['POST'])
+@login_required
+def start_infer():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'})
+    file = request.files['file']
+    speaker_name = request.form.get('spk_id', '')
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'})
+    
+    user_email = session.get('user_email')
+    trained_model_key = f"{user_email}:trained"
+    if not redis_client.exists(trained_model_key):
+        # Model not trained for this speaker
+        return jsonify({'error': 'Model is not yet trained for the specified speaker'})
+
+    if file:
+        filename = uuid.uuid4().hex + '_' + file.filename
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(filepath)
+        print(filepath)
+        # Adjusted to pass filepath and speaker_name to the main function
+        job = q.enqueue(convert_voice, filepath, speaker_name)
+        p = Process(target=start_worker)
+        p.start()     
+        return jsonify({'message': 'File uploaded successfully', 'job_id': job.get_id()})
+
+
+
+
 
 
 @app.route('/process_audio', methods=['POST'])
