@@ -11,6 +11,7 @@ import logging
 from upload import download_from_do
 import redis
 from redis import Redis
+from logging.handlers import RotatingFileHandler
 
 runpod.api_key =os.getenv("RUNPOD_KEY")
 logging.basicConfig(level=logging.INFO)
@@ -227,9 +228,12 @@ def main(file_name,model_name,user_email):
         #logger.info("This is an info message from the background task. file_path is valid: {}".format(file_path is not None))
         file_path=download_from_do(file_name)
         upload_files(ACCESS_ID,SECRET_KEY,url, user_email,bucket_name, file_path)
+        app.logger.info('uploaded to DO Space')
         add_model_to_user(user_email,model_name)
         update_model_count(user_email,redis_client)
+        app.logger.info('updated redis')
         ##push model to infer app dir
+        app.logger.info('before pushing to infer')
         push_model_to_infer(user_email)
         app.logger.info('Training completed. Model pushed to bucket and pulled by Infer')
         
