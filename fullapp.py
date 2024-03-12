@@ -188,6 +188,16 @@ def train():
         
         return render_template('train.html')
 
+
+@app.route('/infer')
+@login_required
+def infer():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        user_email = session.get('user_email')
+        
+        return render_template('infer.html', user_email=user_email)
    
 
 

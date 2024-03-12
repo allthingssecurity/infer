@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Audio Conversion</title>
+    <!-- Include jQuery for simplicity -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+
+<h2>Upload Audio for Conversion</h2>
+
+<form id="uploadForm"  enctype="multipart/form-data">
+    
+  <label for="spk_id">Speaker:</label>
+<input type="text" id="spk_id" name="spk_id" value="{{ user_email }}" disabled>
+
+
+
+    <br><br>
+
+    <label for="file">Audio File:</label>
+    <input type="file" id="file" name="file" required>
+    <br><br>
+	 <input type="hidden" name="voice_transform" value="0">
+
+    <input type="submit" value="Convert Voice">
+</form>
+
+<!-- Status Display -->
+<h3>Processing Status:</h3>
+<div id="statusDisplay">Waiting for submission...</div>
+
+<!-- Processed Audio Playback -->
+<h3>Processed Audio:</h3>
+<audio id="processedAudio" controls>
+    <source src="" type="audio/wav">
+    Your browser does not support the audio element.
+</audio>
+
+<script>
+$(document).ready(function() {
+    // Load weights into the dropdown
+    loadWeights();
+
+    $('#uploadForm').submit(function(e) {
+        e.preventDefault();
+        var formData = new FormData(this);
+
+        $.ajax({
+            url: '/convert_voice',
+            type: 'POST',
+            data: formData,
+            timeout: 180000, // 3 minutes
+            success: function(data) {
+                if (data.audio_id) {
+                    // Start polling for status
+                    updateTaskStatus(data.audio_id);
+                    $('#processedAudio source').attr('src', '/get_processed_audio/' + data.audio_id);
+                    $('#processedAudio')[0].load();
+                } else if (data.error) {
+                    alert(data.error);
+                }
+            },
+            cache: false,
+            contentType: false,
+            processData: false,
+            error: function(xhr) {
+                // Handle errors
+                alert("Error: " + xhr.responseText);
+            }
+        });
+    });
+
+    function updateTaskStatus(audioId) {
+        $.ajax({
+            url: `/status/${audioId}`,
+            type: 'GET',
+            success: function(data) {
+                $('#statusDisplay').text(`${data.status} - ${data.percentage}% complete`);
+                if (data.status !== "Completed" && data.status !== "Failed") {
+                    setTimeout(() => updateTaskStatus(audioId), 1000); // Poll every second
+                } else {
+                    if (data.status === "Completed") {
+                        $('#processedAudio')[0].play();
+                    }
+                }
+            },
+            error: function(xhr) {
+                $('#statusDisplay').text("Failed to get status.");
+            }
+        });
+    }
+
+    // Function to load weights into the dropdown
+    function loadWeights() {
+        $.ajax({
+            url: '/list-weights',
+            type: 'GET',
+            success: function(files) {
+                const dropdown = $('#weightsDropdown');
+                files.forEach(function(file) {
+                    dropdown.append($('<option></option>').attr('value', file).text(file));
+                });
+            },
+            error: function(xhr) {
+                alert("Error loading weights: " + xhr.responseText);
+            }
+        });
+    }
+});
+</script>
+
+</body>
+</html>
