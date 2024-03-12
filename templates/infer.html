@@ -48,7 +48,7 @@ $(document).ready(function() {
         var formData = new FormData(this);
 
         $.ajax({
-            url: '/convert_voice',
+            url: '/start_infer',
             type: 'POST',
             data: formData,
             timeout: 180000, // 3 minutes

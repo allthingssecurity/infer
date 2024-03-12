@@ -100,6 +100,16 @@ def start_infer():
         return jsonify({'message': 'File uploaded successfully', 'job_id': job.get_id()})
 
 
+@app.route('/get_processed_audio/<audio_id>')
+def get_processed_audio(audio_id):
+    # Retrieve the path from temporary storage or session
+    if audio_id in processed_audio_storage:
+        file_path = processed_audio_storage[audio_id]
+        return send_file(file_path, as_attachment=True)
+    return jsonify({"error": "File not found."}), 404
+
+
+
 def start_worker():
     # Fetch the current number of workers
     current_worker_count = int(redis_conn.get(WORKER_COUNT_KEY) or 0)

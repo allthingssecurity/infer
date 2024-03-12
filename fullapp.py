@@ -211,7 +211,7 @@ def start_infer():
     speaker_name = request.form.get('spk_id', '')
     if file.filename == '':
         return jsonify({'error': 'No selected file'})
-    
+    app.logger.info("starting to infer")
     user_email = session.get('user_email')
     trained_model_key = f"{user_email}:trained"
     if not redis_client.exists(trained_model_key):
@@ -224,6 +224,7 @@ def start_infer():
         file.save(filepath)
         print(filepath)
         # Adjusted to pass filepath and speaker_name to the main function
+        app.logger.info("enqueed the job ")
         job = q.enqueue(convert_voice, filepath, speaker_name)
         p = Process(target=start_worker)
         p.start()     

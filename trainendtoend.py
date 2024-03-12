@@ -8,11 +8,13 @@ import boto3
 import os
 from botocore.exceptions import ClientError
 import logging
-from upload import download_from_do
+from upload import download_from_do,upload_to_do
 import redis
 from redis import Redis
 from logging.handlers import RotatingFileHandler
 from flask import Flask, session, redirect, url_for, request,render_template,flash,jsonify
+from rq import get_current_job
+
 
 runpod.api_key =os.getenv("RUNPOD_KEY")
 logging.basicConfig(level=logging.INFO)
@@ -243,7 +245,7 @@ def convert_voice(file_paths,spk_id):
         except requests.exceptions.RequestException as e:
             print("Failed to convert audio")
             # Assuming check_file_in_space is defined elsewhere to check the file presence in the cloud storage
-            
+            app.logger.info('Infer Failed ')
             return False, str(e)
 
     
@@ -251,15 +253,45 @@ def convert_voice(file_paths,spk_id):
     
 
     if response.status_code == 200:
-        print("converted successfully.")
-        app.logger.info('Infer of song done successfully')
+        
+        #app.logger.info('Infer of song done successfully')
+        app.logger.info(f'got response from infer: {response.json()}')
         print(response.json())  # Assuming the server responds with JSON
         audio_id = response.json().get('audio_id')
+        job = get_current_job()
+        job_id = job.id if job else 'default_id'  # Fallback ID in case this runs outside a job context
+        app.logger.info(f'got job id: {job_id}')
+        
+        save_path = f"{job_id}.mp3"
+        upload_to_do(save_path)
+        app.logger.info('uploade converted file to DO space')
+        #download_and_save_mp3(audio_id,save_path)
         return audio_id
     else:
         print(f"Failed to upload files. Status: {response.status_code}")
         #print(response.text)
         return None
+
+
+def download_and_save_mp3(audio_id, save_path):
+    """
+    Downloads an MP3 file using the given 'audio_id' and saves it locally.
+
+    :param base_url: The base URL for the GET request.
+    :param audio_id: The unique identifier for the audio file to download.
+    :param save_path: The local path where the MP3 file will be saved.
+    """
+    url = f'https://{pod_id}--5000.proxy.runpod.net/get_processed_audio/{audio_id}'
+    
+    response = requests.get(url, stream=True)
+    if response.status_code == 200:
+        with open(save_path, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=128):
+                f.write(chunk)
+        print(f"MP3 file downloaded and saved to {save_path}")
+    else:
+        print(f"Failed to download MP3 file. Status code: {response.status_code}")
+
 
 
 
