@@ -256,7 +256,7 @@ def process_audio():
             func=main, 
             args=(filename, model_name,user_email),  # Positional arguments for my_function
             
-            timeout=1000  # Job-specific parameters like timeout
+            timeout=1500  # Job-specific parameters like timeout
 )
         #job = q.enqueue(main, filename, model_name)
         p = Process(target=start_worker)
