@@ -225,7 +225,7 @@ def start_infer():
         print(filepath)
         # Adjusted to pass filepath and speaker_name to the main function
         app.logger.info("enqueed the job ")
-        job = q.enqueue(convert_voice, filepath, speaker_name)
+        job = q.enqueue(convert_voice, filepath, user_email)
         p = Process(target=start_worker)
         p.start()     
         return jsonify({'message': 'File uploaded successfully', 'job_id': job.get_id()})
