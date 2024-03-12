@@ -226,7 +226,7 @@ def convert_voice(file_path,spk_id):
     #url = f'https://{pod_id}--5000.proxy.runpod.net/convert_voice'
     
     base_url = os.environ.get('INFER_URL')
-    url = f"{base_url}/convert_voice/"
+    url = f"{base_url}/convert_voice"
     
     
     
