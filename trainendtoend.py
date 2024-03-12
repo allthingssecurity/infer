@@ -33,6 +33,7 @@ redis_host = os.getenv('REDIS_HOST', 'default_host')
 redis_port = int(os.getenv('REDIS_PORT', 25061))  # Default Redis port
 redis_username = os.getenv('REDIS_USERNAME', 'default')
 redis_password = os.getenv('REDIS_PASSWORD', '')
+infer_url= os.getenv('INFER_URL', '')
 #redis_conn = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
 
 
@@ -221,10 +222,41 @@ def main(file_name,model_name,user_email):
         upload_files(ACCESS_ID,SECRET_KEY,url, user_email,bucket_name, file_path)
         add_model_to_user(user_email,model_name)
         update_model_count(user_email,redis_client)
+        ##push model to infer app dir
+        push_model_to_infer(user_email)
+        
         # Check for the file in the S3 bucket (DigitalOcean Spaces)
-        #await check_file_in_space('DO0026WEQUG4WF6WQNJ9','UG7kQicGgWmkfVmESWK889RxZG49UqV7vRfYUJDFFUo' , bucket_name, f'{model_name}.pth')
+        
     else:
         print("Failed to create the pod or retrieve the pod ID.")
+
+
+def push_model_to_infer(model_name):
+    # Step 1: Obtain the base URL from the environment variable
+    base_url = os.environ.get('INFER_URL')
+    if not base_url:
+        print("INFER_URL environment variable is not set.")
+        return
+    
+    # Step 2: Append model_name and .pth extension to the base URL
+    model_url = f"{base_url}/{model_name}.pth"
+    
+    # Step 3: Make a GET request to the constructed URL
+    try:
+        response = requests.get(model_url)
+        response.raise_for_status()  # Raises an exception for 4XX or 5XX status codes
+        
+        # Step 4: Print or process the response as needed
+        print("Response Status Code:", response.status_code)
+        print("Response Text:", response.text)
+        
+    except requests.RequestException as e:
+        print(f"Request failed: {e}")
+
+
+
+    
+
 
 if __name__ == "__main__":
     main()
