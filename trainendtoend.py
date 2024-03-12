@@ -12,6 +12,7 @@ from upload import download_from_do
 import redis
 from redis import Redis
 from logging.handlers import RotatingFileHandler
+from flask import Flask, session, redirect, url_for, request,render_template,flash,jsonify
 
 runpod.api_key =os.getenv("RUNPOD_KEY")
 logging.basicConfig(level=logging.INFO)
@@ -26,7 +27,7 @@ logger = logging.getLogger(__name__)
 #pod = runpod.get_pod(pod.id)
 
 
-
+app = Flask(__name__)
 ACCESS_ID=os.getenv("ACCESS_ID")
 SECRET_KEY=os.getenv("SECRET_KEY")
 
