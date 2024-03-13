@@ -238,12 +238,13 @@ def convert_voice(file_path,spk_id,user_email):
     
     base_url = os.environ.get('INFER_URL')
     url = f"{base_url}/convert_voice"
-    
+    job = get_current_job()
     
     
     with open(file_path, 'rb') as file:
         files = {'file': file}
         user_key = user_job_key(user_email,'infer')
+        
         redis_client.hset(user_key, job.id, "started")  # Initial status is "queued"
         # Include any additional data as a dictionary
         data = {'spk_id': spk_id, 'voice_transform': '0'}  # Assuming spk_id is passed here and voice_transform hardcoded to 0
@@ -256,7 +257,7 @@ def convert_voice(file_path,spk_id,user_email):
             app.logger.info('Infer done successfully')
             app.logger.info(f'got response from infer: {response.json()}')
             audio_id = response.json().get('audio_id')
-            job = get_current_job()
+            
             job_id = job.id if job else 'default_id'  # Fallback ID in case this runs outside a job context
             app.logger.info(f'got job id: {job_id}')
             
