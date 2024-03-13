@@ -76,6 +76,19 @@ def has_active_jobs(user_email,type_of_job):
             return True
     return False
 
+@app.route('/get-jobs')
+def get_jobs():
+    if 'email' not in session:
+        return redirect(url_for('login'))  # Assuming a login route exists
+    user_email = session['email']
+    training_jobs_key = user_job_key(user_email, 'train')
+    inference_jobs_key = user_job_key(user_email, 'infer')
+    training_jobs = redis_client.hgetall(training_jobs_key)
+    inference_jobs = redis_client.hgetall(inference_jobs_key)
+    formatted_training_jobs = {key.decode('utf-8'): value.decode('utf-8') for key, value in training_jobs.items()}
+    formatted_inference_jobs = {key.decode('utf-8'): value.decode('utf-8') for key, value in inference_jobs.items()}
+    return render_template('job-tracking.html', training_jobs=formatted_training_jobs, inference_jobs=formatted_inference_jobs)
+
 
 def generate_nonce(length=32):
     return base64.urlsafe_b64encode(os.urandom(length)).rstrip(b'=').decode('ascii')

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Job Tracking</title>
+    <script>
+        async function refreshJobs() {
+            const response = await fetch('/get-jobs');
+            const html = await response.text();
+            document.open();
+            document.write(html);
+            document.close();
+        }
+    </script>
+</head>
+<body>
+    <h2>Job Tracking</h2>
+    <button onclick="refreshJobs()">Refresh Jobs</button>
+
+    <h3>Training Jobs</h3>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Job ID</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for job_id, status in training_jobs.items() %}
+            <tr>
+                <td>{{ job_id }}</td>
+                <td>{{ status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Inference Jobs</h3>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Job ID</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for job_id, status in inference_jobs.items() %}
+            <tr>
+                <td>{{ job_id }}</td>
+                <td>{{ status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
