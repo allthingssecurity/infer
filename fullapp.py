@@ -278,7 +278,7 @@ def start_infer():
         return jsonify({'error': 'No file part'})
     file = request.files['file']
     speaker_name = request.form.get('spk_id', '')
-    
+    app.logger.info(f"enqueed the job for speaker {speaker_name} ")
     if file.filename == '':
         return jsonify({'error': 'No selected file'})
     app.logger.info("starting to infer")
@@ -297,6 +297,12 @@ def start_infer():
         # Adjusted to pass filepath and speaker_name to the main function
         app.logger.info("enqueed the job ")
         job = q.enqueue(convert_voice, filepath, final_speaker_name)
+        if user_email:
+            # Update Redis with the new job ID and its initial status
+            app.logger.info(f"updating redis for job id {job.id} ")
+            user_key = user_job_key(user_email,'infer')
+            redis_client.hset(user_key, job.id, "queued")  # Initial status is "queued"
+            app.logger.info(f"updated redis for job id {job.id} ")
         p = Process(target=start_worker)
         p.start()     
         return jsonify({'message': 'File uploaded successfully for conversion', 'job_id': job.get_id()})
