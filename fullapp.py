@@ -125,7 +125,9 @@ def create_user_account_if_not_exists(user_email, initial_tier="trial"):
     # Check if the user already has a tier set
     if not redis_client.hexists(user_key, "tier"):
         # Account does not exist, so create it with initial values
+        app.logger.info(f'account doesnt exist in redis for user {user_email}')
         redis_client.hset(user_key, mapping={"tier": initial_tier, "models_trained": 0})
+        app.logger.info(f'account created in redis for user {user_email}')
         print(f"Account created for {user_email} with {initial_tier} tier.")
     else:
         # Account already exists, skip creation
@@ -135,6 +137,7 @@ def get_user_tier(user_email):
     """
     Retrieve the current tier of the user.
     """
+    app.logger.info(f'check user existence {user_email}')
     return redis_client.hget(f"user:{user_email}", "tier").decode("utf-8")
 
 def update_user_tier(user_email, new_tier):
@@ -167,7 +170,9 @@ def index():
             'picture': session.get('user_picture', '')   # Assuming you've stored the profile picture URL here
         }
         user_email = session.get('user_email')
+        app.logger.info(f'creating account in redis for user {user_email}')
         create_user_account_if_not_exists(user_email)
+        app.logger.info(f'account created in redis for user {user_email}')
         return render_template('index.html', user_info=user_info)
     else:
         return redirect(url_for('login'))
