@@ -284,7 +284,7 @@ def start_infer():
         return jsonify({'message': 'Cannot submit new job. A job is already queued or started'})
     
     user_tier = get_user_tier(user_email,'infer')
-    current_count = int(redis_client.hget(f"user:{user_email}:'infer'", "models_trained"))
+    current_count = int(redis_client.hget(f"user:{user_email}:'infer'", "songs_converted"))
     tier_limits = {"trial": 2, "premium": 4}
     if current_count < tier_limits[user_tier]:
 
