@@ -5,20 +5,7 @@
     <title>Upload or Record Audio Files</title>
     <script>
         // Function to check the status of the job
-        function checkJobStatus(jobId) {
-            fetch('/status/' + jobId)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("statusText").innerText = "Job Status: " + data.status;
-                    if (data.status.toLowerCase() === "finished") {
-                        document.getElementById("convertSongLink").hidden = false;
-                        document.getElementById("convertSongLink").href = "/convert_song/" + jobId; // Modify this URL as needed
-                    } else {
-                        setTimeout(() => checkJobStatus(jobId), 2000); // Check every 2 seconds
-                    }
-                })
-                .catch(error => console.error("Error checking job status: ", error));
-        }
+        
 
         // When the DOM is fully loaded
         document.addEventListener("DOMContentLoaded", function() {
@@ -97,6 +84,25 @@
     </script>
 </head>
 <body>
+<header>
+        <div class="navbar">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" class="logo">
+            <nav>
+                <ul>
+                    <li><a href="/train">Model Training</a></li>
+                    <li><a href="/song_conversion">Song Conversion</a></li>
+                    <li><a href="/samples">Samples</a></li>
+                </ul>
+            </nav>
+            <div class="user-info">
+                <img src="{{ session['user_image'] if session['user_image'] else url_for('static', filename='default-user-icon.png') }}" alt="User Icon" class="user-icon">
+
+                <span>Welcome, {{ session['username'] }}</span>
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
+        </div>
+    </header>
+
     <h2>Upload Audio Files for Processing</h2>
     <form id="uploadForm" action="{{ url_for('process_audio') }}" method="post" enctype="multipart/form-data">
         <label for="files">Choose audio files:</label>
@@ -118,7 +124,8 @@
 
     <hr>
 
-    <div id="jobStatus">Job Status: <span id="statusText">Waiting for job to start...</span></div>
-    <a id="convertSongLink" href="#" hidden>Convert Song</a>
+    <div>
+        <a href="job-tracking.html">Go to Job Tracking Page</a>
+    </div>
 </body>
 </html>
