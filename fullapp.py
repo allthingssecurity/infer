@@ -65,6 +65,15 @@ q = Queue(connection=redis_client)
 # Initialize Redis
 
 
+def login_required(f):
+    @wraps(f)  # Preserve the function name and docstring
+    def decorated_function(*args, **kwargs):
+        if not session.get('logged_in'):
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 def has_active_jobs(user_email,type_of_job):
     """
     Check if the user has any jobs that are either queued or started.
@@ -109,13 +118,6 @@ def authorize():
 
 
 # Middleware or decorator to check if user is logged in
-def login_required(f):
-    @wraps(f)  # Preserve the function name and docstring
-    def decorated_function(*args, **kwargs):
-        if not session.get('logged_in'):
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function
 
 
 @app.route('/get-jobs')
@@ -276,10 +278,12 @@ def start_infer():
         return jsonify({'error': 'No file part'})
     file = request.files['file']
     speaker_name = request.form.get('spk_id', '')
+    
     if file.filename == '':
         return jsonify({'error': 'No selected file'})
     app.logger.info("starting to infer")
     user_email = session.get('user_email')
+    final_speaker_name=f'{user_email}_{speaker_name}'
     trained_model_key = f"{user_email}:trained"
     if not redis_client.exists(trained_model_key):
         # Model not trained for this speaker
