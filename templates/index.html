@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mai Bhi Singer</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <header>
         <div class="navbar">
-            <img src="logo.png" alt="Application Logo" class="logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" class="logo">
             <nav>
                 <ul>
                     <li><a href="/train">Model Training</a></li>
@@ -18,9 +18,8 @@
                 </ul>
             </nav>
             <div class="user-info">
-                <!-- Updated to use user_info passed to template -->
-                <img src="{{ user_info['image'] }}" alt="User Icon" class="user-icon">
-                <span>Welcome, {{ user_info['name'] }}</span>
+                <img src="{{ session['user_image'] }}" alt="User Icon" class="user-icon">
+                <span>Welcome, {{ session['username'] }}</span>
                 <a href="/logout" class="logout-btn">Logout</a>
             </div>
         </div>
