@@ -53,8 +53,8 @@ pool = ConnectionPool(
     port=redis_port,
     username=redis_username,
     password=redis_password,
-    ssl=False
-#    ssl_cert_reqs=None  # Adjust as necessary for SSL configurations
+    ssl=True,
+    ssl_cert_reqs=None  # Adjust as necessary for SSL configurations
 )
 
 #redis_client = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
