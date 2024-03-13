@@ -60,9 +60,23 @@ handler.setFormatter(formatter)
 app.logger.addHandler(handler)
 app.logger.setLevel(logging.INFO)
 
+def user_job_key(user_email,type_of_job):
+    """Generate a Redis key based on user email."""
+    return f"user_jobs_{type_of_job}:{user_email}"
 
+
+def update_job_status(job_id, status, user_email,type_of_job):
+    """Update the status of a user's job."""
+    user_key = user_job_key(user_email,type_of_job)
+    redis_client.hset(user_key, job_id, status)
+
+def cleanup_job(job_id, user_email,type_of_job):
+    """Remove a job from the user's map after completion."""
+    user_key = user_job_key(user_email,type_of_job)
+    redis_client.hdel(user_key, job_id)
 
 def update_model_count(user_email,redis_client):
+    
     user_data = redis_client.hgetall(f"user:{user_email}")
     if not user_data:
         return 'User not found'
@@ -76,17 +90,14 @@ def update_model_count(user_email,redis_client):
     model_training_limit = 3 if user_status == "premium" else 1
     
     models_trained = int(redis_client.hget(f"user:{user_email}", "models_trained") or 0)
+    job = get_current_job()
+    job_id = job.id
     
-    if models_trained < model_training_limit:
-        # If the user hasn't exceeded their limit, train another model
-        
-        redis_client.hincrby(f"user:{user_email}", "models_trained", 1)
-        app.logger.info("update of model train done in queue")
-        return 'update done'
-    else:
-        # If the user has exceeded their limit
-        return 'error: Upgrade to premium for more model trainings or wait for the limit to reset'
-
+    
+    redis_client.hincrby(f"user:{user_email}", "models_trained", 1)
+    app.logger.info("update of model train done in queue")
+    
+    
 
 # Create a pod
 def create_pod_and_get_id(name, image_name, gpu_type_id, ports, container_disk_in_gb, env_vars):
@@ -290,7 +301,7 @@ def download_and_save_mp3(url,audio_id, save_path):
 
 def main(file_name,model_name,user_email):
     
-    
+    update_job_status(job.id, "started", user_email,'train')
     
     bucket_name = "sing"  # Your DigitalOcean Space name
     
@@ -320,7 +331,7 @@ def main(file_name,model_name,user_email):
         app.logger.info('before pushing to infer')
         push_model_to_infer(final_model_name)
         app.logger.info('Training completed. Model pushed to bucket and pulled by Infer')
-        
+        update_job_status(job.id, "finished", user_email,'train')
         # Check for the file in the S3 bucket (DigitalOcean Spaces)
         
     else:

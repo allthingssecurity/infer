@@ -65,6 +65,17 @@ q = Queue(connection=redis_client)
 # Initialize Redis
 
 
+def has_active_jobs(user_email,type_of_job):
+    """
+    Check if the user has any jobs that are either queued or started.
+    """
+    user_key = user_job_key(user_email,type_of_job)
+    jobs = redis_client.hgetall(user_key)
+    for status in jobs.values():
+        if status.decode('utf-8') in ['queued', 'started']:
+            return True
+    return False
+
 
 def generate_nonce(length=32):
     return base64.urlsafe_b64encode(os.urandom(length)).rstrip(b'=').decode('ascii')
@@ -106,6 +117,32 @@ def login_required(f):
     return decorated_function
 
 
+def create_user_account_if_not_exists(user_email, initial_tier="trial"):
+    """
+    Create a new user account with the given tier, only if it doesn't already exist.
+    """
+    user_key = f"user:{user_email}"
+    # Check if the user already has a tier set
+    if not redis_client.hexists(user_key, "tier"):
+        # Account does not exist, so create it with initial values
+        redis_client.hset(user_key, mapping={"tier": initial_tier, "models_trained": 0})
+        print(f"Account created for {user_email} with {initial_tier} tier.")
+    else:
+        # Account already exists, skip creation
+        print(f"Account for {user_email} already exists. Skipping creation.")
+
+def get_user_tier(user_email):
+    """
+    Retrieve the current tier of the user.
+    """
+    return redis_client.hget(f"user:{user_email}", "tier").decode("utf-8")
+
+def update_user_tier(user_email, new_tier):
+    """
+    Update the user's tier to a new value (e.g., upgrading to premium).
+    """
+    redis_client.hset(f"user:{user_email}", "tier", new_tier)
+
 @app.route('/login')
 def login():
     # Generate a nonce and save it in the session
@@ -129,6 +166,8 @@ def index():
             'name': session.get('user_name', 'Unknown'),  # Assuming you've stored the user's name here
             'picture': session.get('user_picture', '')   # Assuming you've stored the profile picture URL here
         }
+        user_email = session.get('user_email')
+        create_user_account_if_not_exists(user_email)
         return render_template('index.html', user_info=user_info)
     else:
         return redirect(url_for('login'))
@@ -234,37 +273,59 @@ def start_infer():
 
 
 
-
+def user_job_key(user_email,type_of_job):
+    """Generate a Redis key based on user email."""
+    return f"user_jobs_{type_of_job}:{user_email}"
 
 
 @app.route('/process_audio', methods=['POST'])
 def process_audio():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'})
-    file = request.files['file']
-    model_name = request.form.get('model_name', '')
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'})
-    if file:
-        filename = uuid.uuid4().hex + '_' + file.filename
-        filepath = os.path.join(UPLOAD_FOLDER, filename)
-        file.save(filepath)
-        
-        print(filepath)
-        response = upload_to_do(filepath)
-        user_email = session.get('user_email')
-        # Adjusted to pass filepath and speaker_name to the main function
-        job = q.enqueue_call(
-            func=main, 
-            args=(filename, model_name,user_email),  # Positional arguments for my_function
-            
-            timeout=1500  # Job-specific parameters like timeout
-)
-        #job = q.enqueue(main, filename, model_name)
-        p = Process(target=start_worker)
-        p.start()     
-        return jsonify({'message': 'Model Training Job Started with ', 'job_id': job.get_id()})
+    user_email = session.get('user_email')
+    
+    if has_active_jobs(user_email,'train'):
+        return "Cannot submit new job. A job is already queued or started."
+    
+    user_tier = get_user_tier(user_email)
+    current_count = int(redis_client.hget(f"user:{user_email}", "models_trained"))
+    tier_limits = {"trial": 1, "premium": 2}
+    if current_count < tier_limits[user_tier]:
+    
+    
+    
+    
 
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file part'})
+        file = request.files['file']
+        model_name = request.form.get('model_name', '')
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'})
+        if file:
+            filename = uuid.uuid4().hex + '_' + file.filename
+            filepath = os.path.join(UPLOAD_FOLDER, filename)
+            file.save(filepath)
+            
+            print(filepath)
+            response = upload_to_do(filepath)
+            user_email = session.get('user_email')
+            # Adjusted to pass filepath and speaker_name to the main function
+            job = q.enqueue_call(
+                func=main, 
+                args=(filename, model_name,user_email),  # Positional arguments for my_function
+                
+                timeout=1500  # Job-specific parameters like timeout
+        )
+
+            if user_email:
+            # Update Redis with the new job ID and its initial status
+                user_key = user_job_key(user_email,'train')
+                redis_client.hset(user_key, job.id, "queued")  # Initial status is "queued"
+            #job = q.enqueue(main, filename, model_name)
+            p = Process(target=start_worker)
+            p.start()     
+            return jsonify({'message': 'Model Training Job Started with ', 'job_id': job.get_id()})
+    else:
+        return jsonify({'message': 'You have reached max limits '})
 def start_worker():
     # Fetch the current number of workers
     current_worker_count = int(redis_client.get(WORKER_COUNT_KEY) or 0)
