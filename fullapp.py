@@ -1,4 +1,4 @@
-from flask import Flask, session, redirect, url_for, request,render_template,flash,jsonify
+from flask import Flask, session, redirect, url_for, request,render_template,flash,jsonify,send_file
 from authlib.integrations.flask_client import OAuth
 import redis
 from redis import Redis
@@ -16,7 +16,7 @@ import os
 import uuid
 from rq import Worker, Queue, Connection
 from redis import Redis
-from upload import upload_to_do
+from upload import upload_to_do,download_from_do
 
 from multiprocessing import Process
 
@@ -307,6 +307,21 @@ def start_infer():
         p.start()     
         return jsonify({'message': 'File uploaded successfully for conversion', 'job_id': job.get_id()})
 
+
+@app.route('/download/<job_id>')
+@login_required
+def download(job_id):
+    # Here, you would determine the file_key from the job_id
+    # For this example, let's assume they are the same
+    file_key = job_id
+    
+    # Call the download function
+    local_file_path = download_from_do(file_key)
+    
+    if local_file_path:
+        return send_file(local_file_path, as_attachment=True)
+    else:
+        return "Download failed", 404
 
 
 def user_job_key(user_email,type_of_job):

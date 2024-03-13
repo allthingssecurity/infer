@@ -243,7 +243,8 @@ def convert_voice(file_path,spk_id):
     
     with open(file_path, 'rb') as file:
         files = {'file': file}
-        
+        user_key = user_job_key(user_email,'infer')
+        redis_client.hset(user_key, job.id, "started")  # Initial status is "queued"
         # Include any additional data as a dictionary
         data = {'spk_id': spk_id, 'voice_transform': '0'}  # Assuming spk_id is passed here and voice_transform hardcoded to 0
 
@@ -267,7 +268,7 @@ def convert_voice(file_path,spk_id):
             if user_email:
             # Update Redis with the new job ID and its initial status
                 user_key = user_job_key(user_email,'infer')
-                redis_client.hset(user_key, job.id, "queued")  # Initial status is "queued"
+                redis_client.hset(user_key, job.id, "finished")  # Initial status is "queued"
 
             return True, "infer went succesfully"
         except requests.exceptions.RequestException as e:
