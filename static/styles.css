@@ -35,20 +35,21 @@ body, html {
 .user-info {
     display: flex;
     align-items: center;
+    margin-left: 20px; /* Add space between nav items and user info */
 }
 
 .user-icon {
-    height: 30px;
+    width: 40px; /* Adjust as needed */
+    height: 40px; /* Adjust as needed */
+    border-radius: 50%; /* Makes the image circular */
     margin-right: 10px;
 }
 
 .logout-btn {
-    background-color: #f44336;
-    color: white;
     padding: 5px 10px;
-    text-decoration: none;
-    border-radius: 5px;
+    margin-left: 10px; /* Add some space between the welcome message and the button */
 }
+
 
 .welcome-section {
     text-align: center;

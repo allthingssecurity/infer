@@ -18,7 +18,8 @@
                 </ul>
             </nav>
             <div class="user-info">
-                <img src="{{ session['user_image'] }}" alt="User Icon" class="user-icon">
+                <img src="{{ session['user_image'] if session['user_image'] else url_for('static', filename='default-user-icon.png') }}" alt="User Icon" class="user-icon">
+
                 <span>Welcome, {{ session['username'] }}</span>
                 <a href="/logout" class="logout-btn">Logout</a>
             </div>
