@@ -278,6 +278,7 @@ def infer():
 @app.route('/start_infer', methods=['POST'])
 @login_required
 def start_infer():
+    user_email = session.get('user_email')
     if has_active_jobs(user_email,'infer'):
         app.logger.info(f"job already running for this user {user_email} ")
         return jsonify({'message': 'Cannot submit new job. A job is already queued or started'})
@@ -296,7 +297,7 @@ def start_infer():
         if file.filename == '':
             return jsonify({'error': 'No selected file'})
         app.logger.info("starting to infer")
-        user_email = session.get('user_email')
+        
         final_speaker_name=f'{user_email}_{speaker_name}'
         trained_model_key = f"{user_email}:trained"
         if not redis_client.exists(trained_model_key):
