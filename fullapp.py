@@ -15,7 +15,7 @@ from trainendtoend import main,convert_voice
 import os
 import uuid
 from rq import Worker, Queue, Connection
-from redis import Redis
+from redis import Redis,ConnectionPool
 from upload import upload_to_do,download_from_do
 
 from multiprocessing import Process
@@ -48,10 +48,17 @@ redis_password = os.getenv('REDIS_PASSWORD', '')
 #redis_conn = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
 
 
+pool = ConnectionPool(
+    host=redis_host,
+    port=redis_port,
+    username=redis_username,
+    password=redis_password,
+    ssl=redis_ssl,
+    ssl_cert_reqs=None  # Adjust as necessary for SSL configurations
+)
 
-
-redis_client = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
-
+#redis_client = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
+redis_client = Redis(connection_pool=pool)
 app.config['SESSION_TYPE'] = 'redis'
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True
@@ -107,6 +114,7 @@ def authorize():
     if 'email' in user_info:
         session['user_email'] = user_info['email']
         session['logged_in'] = True
+        create_user_account_if_not_exists(user_info['email'])
         # Perform any additional processing or actions as needed
         return render_template('index.html')
     else:
@@ -138,30 +146,42 @@ def create_user_account_if_not_exists(user_email, initial_tier="trial"):
     """
     Create a new user account with the given tier, only if it doesn't already exist.
     """
-    user_key = f"user:{user_email}"
+    user_key_train = f"user:{user_email}:train"
+    user_key_infer = f"user:{user_email}:infer"
     # Check if the user already has a tier set
-    if not redis_client.hexists(user_key, "tier"):
+    if not redis_client.hexists(user_key_train, "tier"):
         # Account does not exist, so create it with initial values
         app.logger.info(f'account doesnt exist in redis for user {user_email}')
-        redis_client.hset(user_key, mapping={"tier": initial_tier, "models_trained": 0})
+        redis_client.hset(user_key_train, mapping={"tier": initial_tier, "models_trained": 0})
+        app.logger.info(f'account created in redis for user {user_email}')
+        print(f"Account created for {user_email} with {initial_tier} tier.")
+    else:
+        # Account already exists, skip creation
+        print(f"Training Account for {user_email} already exists. Skipping creation.")
+    
+    
+    if not redis_client.hexists(user_key_infer, "tier"):
+        # Account does not exist, so create it with initial values
+        app.logger.info(f'account doesnt exist in redis for user {user_email}')
+        redis_client.hset(user_key_infer, mapping={"tier": initial_tier, "songs_converted": 0})
         app.logger.info(f'account created in redis for user {user_email}')
         print(f"Account created for {user_email} with {initial_tier} tier.")
     else:
         # Account already exists, skip creation
         print(f"Account for {user_email} already exists. Skipping creation.")
 
-def get_user_tier(user_email):
+def get_user_tier(user_email,task_type):
     """
     Retrieve the current tier of the user.
     """
     app.logger.info(f'check user existence {user_email}')
-    return redis_client.hget(f"user:{user_email}", "tier").decode("utf-8")
+    return redis_client.hget(f"user:{user_email}:{task_type}", "tier").decode("utf-8")
 
-def update_user_tier(user_email, new_tier):
+def update_user_tier(user_email, task_type,new_tier):
     """
     Update the user's tier to a new value (e.g., upgrading to premium).
     """
-    redis_client.hset(f"user:{user_email}", "tier", new_tier)
+    redis_client.hset(f"user:{user_email}:{task_type}", "tier", new_tier)
 
 @app.route('/login')
 def login():
@@ -218,15 +238,6 @@ def models():
     return render_template('models.html', models=models)
     pass
 
-@app.route('/deploy_model')
-@login_required
-def deploy_model(model_name):
-    # Check user's model count from Redis and render accordingly
-    user_email = session.get('user_email')  # Assuming current_user has an email attribute
-    models = redis_client.lrange(user_email, 0, -1) # Assuming set usage; adapt if using lists
-    models = [model.decode('utf-8') for model in models]
-    return render_template('models.html', models=models)
-    pass
 
 
 
@@ -274,38 +285,51 @@ def infer():
 @app.route('/start_infer', methods=['POST'])
 @login_required
 def start_infer():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'})
-    file = request.files['file']
-    speaker_name = request.form.get('spk_id', '')
-    app.logger.info(f"enqueed the job for speaker {speaker_name} ")
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'})
-    app.logger.info("starting to infer")
-    user_email = session.get('user_email')
-    final_speaker_name=f'{user_email}_{speaker_name}'
-    trained_model_key = f"{user_email}:trained"
-    if not redis_client.exists(trained_model_key):
-        # Model not trained for this speaker
-        return jsonify({'error': 'Model is not yet trained for the specified speaker'})
+    if has_active_jobs(user_email,'infer'):
+        app.logger.info(f"job already running for this user {user_email} ")
+        return jsonify({'message': 'Cannot submit new job. A job is already queued or started'})
+    
+    user_tier = get_user_tier(user_email,'infer')
+    current_count = int(redis_client.hget(f"user:{user_email}:'infer'", "models_trained"))
+    tier_limits = {"trial": 2, "premium": 4}
+    if current_count < tier_limits[user_tier]:
 
-    if file:
-        filename = uuid.uuid4().hex + '_' + file.filename
-        filepath = os.path.join(UPLOAD_FOLDER, filename)
-        file.save(filepath)
-        print(filepath)
-        # Adjusted to pass filepath and speaker_name to the main function
-        app.logger.info("enqueed the job ")
-        job = q.enqueue(convert_voice, filepath, final_speaker_name,user_email)
-        if user_email:
-            # Update Redis with the new job ID and its initial status
-            app.logger.info(f"updating redis for job id {job.id} ")
-            user_key = user_job_key(user_email,'infer')
-            redis_client.hset(user_key, job.id, "queued")  # Initial status is "queued"
-            app.logger.info(f"updated redis for job id {job.id} ")
-        p = Process(target=start_worker)
-        p.start()     
-        return jsonify({'message': 'File uploaded successfully for conversion', 'job_id': job.get_id()})
+
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file part'})
+        file = request.files['file']
+        speaker_name = request.form.get('spk_id', '')
+        app.logger.info(f"enqueed the job for speaker {speaker_name} ")
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'})
+        app.logger.info("starting to infer")
+        user_email = session.get('user_email')
+        final_speaker_name=f'{user_email}_{speaker_name}'
+        trained_model_key = f"{user_email}:trained"
+        if not redis_client.exists(trained_model_key):
+            # Model not trained for this speaker
+            return jsonify({'error': 'Model is not yet trained for the specified speaker'})
+
+        if file:
+            filename = uuid.uuid4().hex + '_' + file.filename
+            filepath = os.path.join(UPLOAD_FOLDER, filename)
+            file.save(filepath)
+            print(filepath)
+            # Adjusted to pass filepath and speaker_name to the main function
+            app.logger.info("enqueed the job ")
+            job = q.enqueue(convert_voice, filepath, final_speaker_name,user_email)
+            if user_email:
+                # Update Redis with the new job ID and its initial status
+                app.logger.info(f"updating redis for job id {job.id} ")
+                user_key = user_job_key(user_email,'infer')
+                redis_client.hset(user_key, job.id, "queued")  # Initial status is "queued"
+                app.logger.info(f"updated redis for job id {job.id} ")
+            p = Process(target=start_worker)
+            p.start()     
+            return jsonify({'message': 'File uploaded successfully for conversion', 'job_id': job.get_id()})
+    else:
+        app.logger.info(f"max song conversion exceeded for the user {user_email}. Switch to premium ")
+        return jsonify({'message': 'You have reached max limits for song conversion. Switch to premium '})
 
 
 @app.route('/download/<job_id>')
@@ -337,8 +361,8 @@ def process_audio():
         app.logger.info(f"job already running for this user {user_email} ")
         return jsonify({'message': 'Cannot submit new job. A job is already queued or started'})
     
-    user_tier = get_user_tier(user_email)
-    current_count = int(redis_client.hget(f"user:{user_email}", "models_trained"))
+    user_tier = get_user_tier(user_email,'train')
+    current_count = int(redis_client.hget(f"user:{user_email}:'train'", "models_trained"))
     tier_limits = {"trial": 2, "premium": 4}
     if current_count < tier_limits[user_tier]:
     
