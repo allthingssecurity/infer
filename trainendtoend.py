@@ -264,6 +264,10 @@ def convert_voice(file_path,spk_id):
             app.logger.info(f'downloaded the converted file to save path {save_path}')
             response=upload_to_do(save_path)
             app.logger.info('uploade converted file to DO space')
+            if user_email:
+            # Update Redis with the new job ID and its initial status
+                user_key = user_job_key(user_email,'infer')
+                redis_client.hset(user_key, job.id, "queued")  # Initial status is "queued"
 
             return True, "infer went succesfully"
         except requests.exceptions.RequestException as e:
