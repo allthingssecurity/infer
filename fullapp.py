@@ -296,7 +296,7 @@ def start_infer():
         print(filepath)
         # Adjusted to pass filepath and speaker_name to the main function
         app.logger.info("enqueed the job ")
-        job = q.enqueue(convert_voice, filepath, final_speaker_name)
+        job = q.enqueue(convert_voice, filepath, final_speaker_name,user_email)
         if user_email:
             # Update Redis with the new job ID and its initial status
             app.logger.info(f"updating redis for job id {job.id} ")

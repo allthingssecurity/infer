@@ -226,7 +226,7 @@ def add_model_to_user(user_email, model_name):
     redis_client.set(training_done_key, "true")
 
 
-def convert_voice(file_path,spk_id):
+def convert_voice(file_path,spk_id,user_email):
     """
     Synchronously uploads multiple files.
 
