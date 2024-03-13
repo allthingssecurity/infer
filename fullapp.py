@@ -313,7 +313,7 @@ def start_infer():
 def download(job_id):
     # Here, you would determine the file_key from the job_id
     # For this example, let's assume they are the same
-    file_key = job_id
+    file_key = f'{job_id}.mp3'
     
     # Call the download function
     local_file_path = download_from_do(file_key)
