@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>File Upload and Job Tracking</title>
+    <title>File Upload</title>
     <script>
-        // Function to submit the form data and start job tracking
-        async function uploadFileAndTrackJob() {
+        // Function to submit the form data
+        async function uploadFile() {
             const formData = new FormData(document.getElementById('upload-form'));
             const response = await fetch('/upload', {
                 method: 'POST',
@@ -13,31 +13,33 @@
             });
             const data = await response.json();
             if (data.job_id) {
-                trackJobStatus(data.job_id);
+                alert('File upload started. Track the job status on the Job Tracking page.');
             } else {
                 alert('Failed to start the job.');
             }
         }
-
-        // Function to track the job status
-        function trackJobStatus(jobId) {
-            const statusElement = document.getElementById('job-status');
-            statusElement.innerHTML = 'Processing...';
-
-            const intervalId = setInterval(async () => {
-                const response = await fetch(`/status/${jobId}`);
-                const data = await response.json();
-                if (data.status) {
-                    statusElement.innerHTML = `Job Status: ${data.status}`;
-                    if (data.status === 'finished' || data.status === 'failed') {
-                        clearInterval(intervalId);
-                    }
-                }
-            }, 2000); // Poll every 2 seconds
-        }
     </script>
 </head>
 <body>
+
+   <header>
+        <div class="navbar">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" class="logo">
+            <nav>
+                <ul>
+                    <li><a href="/train">Model Training</a></li>
+                    <li><a href="/song_conversion">Song Conversion</a></li>
+                    <li><a href="/samples">Samples</a></li>
+                </ul>
+            </nav>
+            <div class="user-info">
+                <img src="{{ session['user_image'] if session['user_image'] else url_for('static', filename='default-user-icon.png') }}" alt="User Icon" class="user-icon">
+
+                <span>Welcome, {{ session['username'] }}</span>
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
+        </div>
+    </header>
     <h2>Upload File and Select Speaker</h2>
     <form id="upload-form" enctype="multipart/form-data">
         <label for="file">File:</label>
@@ -48,8 +50,10 @@
             <option value="trips">Trips</option>
             <option value="modi">Modi</option>
         </select><br><br>
-        <button type="button" onclick="uploadFileAndTrackJob()">Upload and Track Job</button>
+        <button type="button" onclick="uploadFile()">Upload File</button>
     </form>
-    <div id="job-status"></div>
+    <div>
+        <a href="job-tracking.html">Go to Job Tracking Page</a>
+    </div>
 </body>
 </html>
