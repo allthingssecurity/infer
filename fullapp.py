@@ -288,11 +288,12 @@ def process_audio():
     user_email = session.get('user_email')
     
     if has_active_jobs(user_email,'train'):
-        return "Cannot submit new job. A job is already queued or started."
+        app.logger.info(f"job already running for this user {user_email} ")
+        return jsonify({'message': 'Cannot submit new job. A job is already queued or started'})
     
     user_tier = get_user_tier(user_email)
     current_count = int(redis_client.hget(f"user:{user_email}", "models_trained"))
-    tier_limits = {"trial": 1, "premium": 2}
+    tier_limits = {"trial": 2, "premium": 4}
     if current_count < tier_limits[user_tier]:
     
     
@@ -330,6 +331,7 @@ def process_audio():
             p.start()     
             return jsonify({'message': 'Model Training Job Started with ', 'job_id': job.get_id()})
     else:
+        app.logger.info(f"max train jobs exceeded for the user {user_email} ")
         return jsonify({'message': 'You have reached max limits '})
 def start_worker():
     # Fetch the current number of workers
