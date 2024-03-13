@@ -193,12 +193,18 @@ def index():
         return redirect(url_for('login'))
 
 @app.route('/song_conversion')
+@login_required
 def song_conversion():
-    if 'logged_in' in session and session['logged_in']:
-        return render_template('convert.html')
+    
+    user_email = session.get('user_email')
+    if user_email:
+        models = redis_client.lrange(user_email, 0, -1)  # Get list of models
+        models = [model.decode('utf-8') for model in models]
     else:
-        return redirect(url_for('login'))
-
+        models = []
+    return render_template('convert.html', models=models)
+        
+    
 
 @app.route('/models')
 @login_required
@@ -289,7 +295,7 @@ def start_infer():
         job = q.enqueue(convert_voice, filepath, user_email)
         p = Process(target=start_worker)
         p.start()     
-        return jsonify({'message': 'File uploaded successfully', 'job_id': job.get_id()})
+        return jsonify({'message': 'File uploaded successfully for conversion', 'job_id': job.get_id()})
 
 
 
@@ -375,9 +381,7 @@ def start_worker():
 @app.route('/song_conversion_submit')
 @login_required
 def song_conversion_submit():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
-
+    
     user_email = session.get('user_email')
     user_data = redis_client.hgetall(f"user:{user_email}")
     user_status_raw = user_data.get(b"status", b"trial")  # Redis returns bytes
