@@ -15,7 +15,7 @@ from trainendtoend import main,convert_voice
 import os
 import uuid
 from rq import Worker, Queue, Connection
-from redis import Redis,ConnectionPool
+from redis import Redis
 from upload import upload_to_do,download_from_do
 
 from multiprocessing import Process
@@ -47,18 +47,11 @@ redis_username = os.getenv('REDIS_USERNAME', 'default')
 redis_password = os.getenv('REDIS_PASSWORD', '')
 #redis_conn = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
 
-redis_ssl = True 
-pool = ConnectionPool(
-    host=redis_host,
-    port=redis_port,
-    username=redis_username,
-    password=redis_password,
-    ssl=True,
-    ssl_cert_reqs=None  # Adjust as necessary for SSL configurations
-)
 
-#redis_client = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
-redis_client = Redis(connection_pool=pool)
+
+
+redis_client = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
+
 app.config['SESSION_TYPE'] = 'redis'
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True
