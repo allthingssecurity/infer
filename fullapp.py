@@ -77,10 +77,10 @@ def has_active_jobs(user_email,type_of_job):
     return False
 
 @app.route('/get-jobs')
+@login_required
 def get_jobs():
-    if 'email' not in session:
-        return redirect(url_for('login'))  # Assuming a login route exists
-    user_email = session['email']
+    
+    user_email = session['user_email']
     training_jobs_key = user_job_key(user_email, 'train')
     inference_jobs_key = user_job_key(user_email, 'infer')
     training_jobs = redis_client.hgetall(training_jobs_key)
