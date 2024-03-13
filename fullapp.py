@@ -124,11 +124,13 @@ def login():
     
 @app.route('/')
 def index():
-    print ("helllllllllllllllllllo")
     if 'logged_in' in session and session['logged_in']:
-        return render_template('index.html')
+        user_info = {
+            'name': session.get('user_name', 'Unknown'),  # Assuming you've stored the user's name here
+            'picture': session.get('user_picture', '')   # Assuming you've stored the profile picture URL here
+        }
+        return render_template('index.html', user_info=user_info)
     else:
-        print ("redirecting to ",url_for('login'))
         return redirect(url_for('login'))
 
 @app.route('/song_conversion')

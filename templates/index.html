@@ -1,15 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Homepage</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mai Bhi Singer</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Welcome to the Application</h1>
-    <ul>
-        <li><a href="/train">Model Training</a></li>
-        <li><a href="/song_conversion">Song Conversion</a></li>
-        <li><a href="/samples">Samples</a></li>
-        <li><a href="/logout">Logout</a></li>
-    </ul>
+    <header>
+        <div class="navbar">
+            <img src="logo.png" alt="Application Logo" class="logo">
+            <nav>
+                <ul>
+                    <li><a href="/train">Model Training</a></li>
+                    <li><a href="/song_conversion">Song Conversion</a></li>
+                    <li><a href="/samples">Samples</a></li>
+                </ul>
+            </nav>
+            <div class="user-info">
+                <!-- Updated to use user_info passed to template -->
+                <img src="{{ user_info['image'] }}" alt="User Icon" class="user-icon">
+                <span>Welcome, {{ user_info['name'] }}</span>
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="welcome-section">
+            <h1>Welcome to Mai Bhi Singer</h1>
+            <p>Explore our features and enjoy the stay.</p>
+        </section>
+    </main>
 </body>
 </html>
