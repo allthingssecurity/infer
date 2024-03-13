@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Job Tracking</title>
+	<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script>
         async function refreshJobs() {
             const response = await fetch('/get-jobs');
@@ -14,6 +15,24 @@
     </script>
 </head>
 <body>
+<header>
+        <div class="navbar">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" class="logo">
+            <nav>
+                <ul>
+                    <li><a href="/train">Model Training</a></li>
+                    <li><a href="/song_conversion">Song Conversion</a></li>
+                    <li><a href="/samples">Samples</a></li>
+                </ul>
+            </nav>
+            <div class="user-info">
+                <img src="{{ session['user_image'] if session['user_image'] else url_for('static', filename='default-user-icon.png') }}" alt="User Icon" class="user-icon">
+
+                <span>Welcome, {{ session['username'] }}</span>
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
+        </div>
+    </header>
     <h2>Job Tracking</h2>
     <button onclick="refreshJobs()">Refresh Jobs</button>
 
