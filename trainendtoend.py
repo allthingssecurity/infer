@@ -226,7 +226,7 @@ def add_model_to_user(user_email, model_name):
     redis_client.set(training_done_key, "true")
 
 
-def convert_voice(file_path, spk_id, user_email):
+def convert_voice(file_path1, spk_id, user_email):
     """
     Synchronously uploads a file and handles voice conversion.
 
@@ -243,19 +243,22 @@ def convert_voice(file_path, spk_id, user_email):
     job_id = job.id if job else 'default_id'  # Fallback ID in case this runs outside a job context
     
     
-    directory, filename = os.path.split(file_path)
+    directory, filename = os.path.split(file_path1)
+    
 
 # Generate the new file path with job_id as the filename, preserving the original extension
     
     new_filename = f"{job_id}{os.path.splitext(filename)[1]}"  # Preserves original file extension
+    app.logger.error(f'new file name=: {new_filename}')
+    
     file_path = os.path.join(directory, new_filename)
     
     
 
     try:
         with open(file_path, 'rb') as file:
-            files = {'file': (job_id, file, 'audio/mpeg')} 
-            #files = {'file': file}
+            #files = {'file': (job_id, file, 'audio/mpeg')} 
+            files = {'file': file}
             #redis_client.hset(user_key, job_id, "started")  # Initial status is "queued"
             update_job_status(job.id, "started", user_email,'infer')
 
