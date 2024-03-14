@@ -383,7 +383,7 @@ def process_audio():
                 func=main, 
                 args=(filename, model_name,user_email),  # Positional arguments for my_function
                 
-                timeout=1500  # Job-specific parameters like timeout
+                timeout=2500  # Job-specific parameters like timeout
         )
 
             if user_email:
