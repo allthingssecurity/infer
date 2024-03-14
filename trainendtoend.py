@@ -250,9 +250,10 @@ def convert_voice(file_path1, spk_id, user_email):
     
     new_filename = f"{job_id}{os.path.splitext(filename)[1]}"  # Preserves original file extension
     app.logger.error(f'new file name=: {new_filename}')
-    
+    app.logger.error(f'directory=: {directory}')
     file_path = os.path.join(directory, new_filename)
-    
+    os.rename(file_path1, file_path)
+    app.logger.error(f'new file path=: {file_path}')
     
 
     try:
