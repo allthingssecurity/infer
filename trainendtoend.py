@@ -264,7 +264,7 @@ def convert_voice(file_path, spk_id, user_email):
             # Assuming check_file_in_space is defined elsewhere to check the file presence in the cloud storage
             file_key = f'{job_id}.mp3'
             
-            if(check_file_in_space(access_id, secret_key, bucket_name, file_key))
+            if(check_file_in_space(access_id, secret_key, bucket_name, file_key)):
                 update_job_status(job.id, "finished", user_email,'infer')
             
             #file_path = download_from_do(file_key)
