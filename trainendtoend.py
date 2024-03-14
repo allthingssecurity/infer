@@ -254,23 +254,22 @@ def convert_voice(file_path, spk_id, user_email):
             app.logger.info(f'Infer url: {url}')
             
             # Send a POST request to the server
+        try:
             response = requests.post(url, files=files, data=data, timeout=600)
             response.raise_for_status()  # This will raise an exception for HTTP error codes
+            return True, "File uploaded successfully."
+        except requests.exceptions.RequestException as e:
+            print("Starting file check")
+            # Assuming check_file_in_space is defined elsewhere to check the file presence in the cloud storage
+            file_key = f'{job_id}.mp3'
+            if(check_file_in_space(access_id, secret_key, bucket_name, file_key)):
+                update_job_status(job.id, "finished", user_email,'infer')
+            else:
+        # Optionally, handle the case where the file does not exist within the timeout period
+        # For example, updating the job status to "failed" or "timeout"
+                update_job_status(job_id, "failed", user_email, 'infer')
+                print(f"File {file_key} not found within timeout. Updated job {job_id} to 'timeout' for user {user_email}.")            
             
-            app.logger.info('Infer done successfully')
-            app.logger.info(f'Got response from infer: {response.json()}')
-            
-            audio_id = response.json().get('audio_id')
-            save_path = f"{job_id}.mp3"
-            download_and_save_mp3(base_url, audio_id, save_path)
-            app.logger.info(f'Downloaded the converted file to save path {save_path}')
-            
-            upload_to_do(save_path)
-            app.logger.info('Uploaded converted file to DO space')
-            
-            # Update Redis on success
-            update_job_status(job.id, "finished", user_email,'infer')
-            return True, "Infer went successfully"
     except Exception as e:
         # Update Redis on failure
         update_job_status(job.id, "failed", user_email,'infer')
