@@ -268,7 +268,7 @@ def convert_voice(file_path1, spk_id, user_email):
             response.raise_for_status()  # Ensure HTTP errors are caught
 
         # Handle successful upload outside the with block
-        update_job_status(job.id, "started", user_email, 'infer')
+        update_job_status(job.id, "finished", user_email, 'infer')
         return True, "File uploaded successfully."
 
     except requests.exceptions.RequestException as e:
