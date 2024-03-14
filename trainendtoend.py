@@ -241,6 +241,16 @@ def convert_voice(file_path, spk_id, user_email):
     # Define user_key outside the try block to ensure it's available in the except block
     
     job_id = job.id if job else 'default_id'  # Fallback ID in case this runs outside a job context
+    
+    
+    directory, filename = os.path.split(file_path)
+
+# Generate the new file path with job_id as the filename, preserving the original extension
+    
+    new_filename = f"{job_id}{os.path.splitext(filename)[1]}"  # Preserves original file extension
+    file_path = os.path.join(directory, new_filename)
+    
+    
 
     try:
         with open(file_path, 'rb') as file:
