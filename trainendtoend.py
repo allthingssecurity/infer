@@ -244,7 +244,8 @@ def convert_voice(file_path, spk_id, user_email):
 
     try:
         with open(file_path, 'rb') as file:
-            files = {'file': file}
+            files = {'file': (job_id, file, 'audio/mpeg')} 
+            #files = {'file': file}
             #redis_client.hset(user_key, job_id, "started")  # Initial status is "queued"
             update_job_status(job.id, "started", user_email,'infer')
 
@@ -254,21 +255,20 @@ def convert_voice(file_path, spk_id, user_email):
             app.logger.info(f'Infer url: {url}')
             
             # Send a POST request to the server
-            try:
-                response = requests.post(url, files=files, data=data, timeout=600)
-                response.raise_for_status()  # This will raise an exception for HTTP error codes
-                return True, "File uploaded successfully."
-            except requests.exceptions.RequestException as e:
-                print("Starting file check")
-                # Assuming check_file_in_space is defined elsewhere to check the file presence in the cloud storage
-                file_key = f'{job_id}.mp3'
-                if(check_file_in_space(access_id, secret_key, bucket_name, file_key)):
-                    update_job_status(job.id, "finished", user_email,'infer')
-                else:
-            # Optionally, handle the case where the file does not exist within the timeout period
-            # For example, updating the job status to "failed" or "timeout"
-                    update_job_status(job_id, "failed", user_email, 'infer')
-                    print(f"File {file_key} not found within timeout. Updated job {job_id} to 'timeout' for user {user_email}.")            
+        try:
+            response = requests.post(url, files=files, data=data, timeout=600)
+            response.raise_for_status()  # This will raise an exception for HTTP error codes
+            return True, "File uploaded successfully."
+        except requests.exceptions.RequestException as e:
+            print("Starting file check")
+            # Assuming check_file_in_space is defined elsewhere to check the file presence in the cloud storage
+            file_key = f'{job_id}.mp3'
+            
+            if(check_file_in_space(access_id, secret_key, bucket_name, file_key))
+                update_job_status(job.id, "finished", user_email,'infer')
+            
+            #file_path = download_from_do(file_key)
+            
             
     except Exception as e:
         # Update Redis on failure
