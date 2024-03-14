@@ -256,41 +256,33 @@ def convert_voice(file_path1, spk_id, user_email):
     app.logger.error(f'new file path=: {file_path}')
     
 
-    try:
-        with open(file_path, 'rb') as file:
-            #files = {'file': (job_id, file, 'audio/mpeg')} 
-            files = {'file': file}
-            #redis_client.hset(user_key, job_id, "started")  # Initial status is "queued"
-            update_job_status(job.id, "started", user_email,'infer')
+   try:
+    # Open the file and prepare for the POST request
+    with open(file_path, 'rb') as file:
+        files = {'file': file}
+        data = {'spk_id': spk_id, 'voice_transform': '0'}
+        app.logger.info(f'Infer url: {url}')
 
-            data = {'spk_id': spk_id, 'voice_transform': '0'}
+        # Send the POST request within the with block to ensure file is open
+        response = requests.post(url, files=files, data=data, timeout=600)
+        response.raise_for_status()  # Ensure HTTP errors are caught
 
-            # Log the attempt to start the conversion
-            app.logger.info(f'Infer url: {url}')
-            
-            # Send a POST request to the server
-        try:
-            response = requests.post(url, files=files, data=data, timeout=600)
-            response.raise_for_status()  # This will raise an exception for HTTP error codes
-            return True, "File uploaded successfully."
-        except requests.exceptions.RequestException as e:
-            print("Starting file check")
-            # Assuming check_file_in_space is defined elsewhere to check the file presence in the cloud storage
-            file_key = f'{job_id}.mp3'
-            
-            if(check_file_in_space(access_id, secret_key, bucket_name, file_key)):
-                update_job_status(job.id, "finished", user_email,'infer')
-            
-            #file_path = download_from_do(file_key)
-            
-            
-    except Exception as e:
-        # Update Redis on failure
-        update_job_status(job.id, "failed", user_email,'infer')
-        app.logger.error(f'Conversion failed: {e}')
-        # Re-raise the exception or handle it as needed
+    # Handle successful upload outside the with block
+    update_job_status(job.id, "started", user_email, 'infer')
+    return True, "File uploaded successfully."
+
+    except requests.exceptions.RequestException as e:
+        # Handle specific request exceptions
+        app.logger.error(f'Upload failed: {e}')
+        update_job_status(job.id, "failed", user_email, 'infer')
         return False, str(e)
-    
+
+    except Exception as e:
+        # Handle other exceptions
+        app.logger.error(f'Conversion failed: {e}')
+        update_job_status(job.id, "failed", user_email, 'infer')
+        return False, str(e)
+ 
     
    
 
