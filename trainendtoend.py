@@ -256,20 +256,20 @@ def convert_voice(file_path1, spk_id, user_email):
     app.logger.error(f'new file path=: {file_path}')
     
 
-   try:
+    try:
     # Open the file and prepare for the POST request
-    with open(file_path, 'rb') as file:
-        files = {'file': file}
-        data = {'spk_id': spk_id, 'voice_transform': '0'}
-        app.logger.info(f'Infer url: {url}')
+        with open(file_path, 'rb') as file:
+            files = {'file': file}
+            data = {'spk_id': spk_id, 'voice_transform': '0'}
+            app.logger.info(f'Infer url: {url}')
 
-        # Send the POST request within the with block to ensure file is open
-        response = requests.post(url, files=files, data=data, timeout=600)
-        response.raise_for_status()  # Ensure HTTP errors are caught
+            # Send the POST request within the with block to ensure file is open
+            response = requests.post(url, files=files, data=data, timeout=600)
+            response.raise_for_status()  # Ensure HTTP errors are caught
 
-    # Handle successful upload outside the with block
-    update_job_status(job.id, "started", user_email, 'infer')
-    return True, "File uploaded successfully."
+        # Handle successful upload outside the with block
+        update_job_status(job.id, "started", user_email, 'infer')
+        return True, "File uploaded successfully."
 
     except requests.exceptions.RequestException as e:
         # Handle specific request exceptions
