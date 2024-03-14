@@ -226,58 +226,57 @@ def add_model_to_user(user_email, model_name):
     redis_client.set(training_done_key, "true")
 
 
-def convert_voice(file_path,spk_id,user_email):
+def convert_voice(file_path, spk_id, user_email):
     """
-    Synchronously uploads multiple files.
+    Synchronously uploads a file and handles voice conversion.
 
-    :param access_id: Access ID for authentication.
-    :param secret_key: Secret key for authentication.
-    :param file_paths: A list of file paths of the audio files to upload.
+    :param file_path: The file path of the audio file to upload.
+    :param spk_id: Speaker ID for voice transformation.
+    :param user_email: User's email for job tracking.
     """
-    #url = f'https://{pod_id}--5000.proxy.runpod.net/convert_voice'
-    
     base_url = os.environ.get('INFER_URL')
     url = f"{base_url}/convert_voice"
     job = get_current_job()
-    
-    
-    with open(file_path, 'rb') as file:
-        files = {'file': file}
-        user_key = user_job_key(user_email,'infer')
-        
-        redis_client.hset(user_key, job.id, "started")  # Initial status is "queued"
-        # Include any additional data as a dictionary
-        data = {'spk_id': spk_id, 'voice_transform': '0'}  # Assuming spk_id is passed here and voice_transform hardcoded to 0
 
-        # Send a POST request to the server
-        try:
-            app.logger.info(f'Infer url : {url}')
+    # Define user_key outside the try block to ensure it's available in the except block
+    
+    job_id = job.id if job else 'default_id'  # Fallback ID in case this runs outside a job context
+
+    try:
+        with open(file_path, 'rb') as file:
+            files = {'file': file}
+            #redis_client.hset(user_key, job_id, "started")  # Initial status is "queued"
+            update_job_status(job.id, "started", user_email,'infer')
+
+            data = {'spk_id': spk_id, 'voice_transform': '0'}
+
+            # Log the attempt to start the conversion
+            app.logger.info(f'Infer url: {url}')
+            
+            # Send a POST request to the server
             response = requests.post(url, files=files, data=data, timeout=600)
             response.raise_for_status()  # This will raise an exception for HTTP error codes
+            
             app.logger.info('Infer done successfully')
-            app.logger.info(f'got response from infer: {response.json()}')
+            app.logger.info(f'Got response from infer: {response.json()}')
+            
             audio_id = response.json().get('audio_id')
-            
-            job_id = job.id if job else 'default_id'  # Fallback ID in case this runs outside a job context
-            app.logger.info(f'got job id: {job_id}')
-            
             save_path = f"{job_id}.mp3"
-            download_and_save_mp3(base_url,audio_id,save_path)
-            app.logger.info(f'downloaded the converted file to save path {save_path}')
-            response=upload_to_do(save_path)
-            app.logger.info('uploade converted file to DO space')
-            if user_email:
-            # Update Redis with the new job ID and its initial status
-                user_key = user_job_key(user_email,'infer')
-                redis_client.hset(user_key, job.id, "finished")  # Initial status is "queued"
-
-            return True, "infer went succesfully"
-        except requests.exceptions.RequestException as e:
-            print("Failed to convert audio")
-            # Assuming check_file_in_space is defined elsewhere to check the file presence in the cloud storage
-            app.logger.info('Infer Failed ')
-            return False, str(e)
-
+            download_and_save_mp3(base_url, audio_id, save_path)
+            app.logger.info(f'Downloaded the converted file to save path {save_path}')
+            
+            upload_to_do(save_path)
+            app.logger.info('Uploaded converted file to DO space')
+            
+            # Update Redis on success
+            update_job_status(job.id, "finished", user_email,'infer')
+            return True, "Infer went successfully"
+    except Exception as e:
+        # Update Redis on failure
+        update_job_status(job.id, "failed", user_email,'infer')
+        app.logger.error(f'Conversion failed: {e}')
+        # Re-raise the exception or handle it as needed
+        return False, str(e)
     
     
    
@@ -305,7 +304,7 @@ def download_and_save_mp3(url,audio_id, save_path):
 
 
 
-def main(file_name,model_name,user_email):
+def main_prev(file_name,model_name,user_email):
     
     job = get_current_job()
     job_id = job.id
@@ -344,6 +343,35 @@ def main(file_name,model_name,user_email):
         
     else:
         print("Failed to create the pod or retrieve the pod ID.")
+
+
+
+def main(file_name, model_name, user_email):
+    job = get_current_job()
+    update_job_status(job.id, "started", user_email, 'train')
+
+    try:
+        bucket_name = "sing"
+        pod_id = create_pod_and_get_id("train", "smjain/train:v7", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
+        app.logger.info('After creating pod for training')
+
+        if not pod_id:
+            raise Exception("Failed to create the pod or retrieve the pod ID.")
+
+        check_pod_is_ready(pod_id)
+        file_path = download_from_do(file_name)
+        final_model_name = f"{user_email}_{model_name}"
+        url = f'https://{pod_id}--5000.proxy.runpod.net/process_audio'
+        upload_files(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, file_path)
+        add_model_to_user(user_email, model_name)
+        update_model_count(user_email, redis_client)
+        push_model_to_infer(final_model_name)
+        update_job_status(job.id, "finished", user_email, 'train')
+    except Exception as e:
+        app.logger.error(f'Error during model training: {e}')
+        update_job_status(job.id, "failed", user_email, 'train')
+        print(f"Operation failed: {e}")
+
 
 
 def push_model_to_infer(model_name):
