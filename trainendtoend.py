@@ -97,7 +97,7 @@ def update_model_count(user_email,redis_client):
     redis_client.hincrby(f"user:{user_email}", "models_trained", 1)
     app.logger.info("update of model train done in queue")
     
-def terminate_pod(pod_id)
+def terminate_pod(pod_id) :
     try:
         runpod.terminate_pod(pod_id)
         app.logger.info("deleted pod with id: {pod_id}")
