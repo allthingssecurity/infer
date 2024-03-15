@@ -74,7 +74,7 @@ def login_required(f):
     return decorated_function
 
 
-def has_active_jobs(user_email,type_of_job):
+def has_active_s(user_email,type_of_job):
     """
     Check if the user has any jobs that are either queued or started.
     """
@@ -305,7 +305,7 @@ def start_infer():
             return jsonify({'error': 'Model is not yet trained for the specified speaker'})
 
         if file:
-            filename = uuid.uuid4().hex + '_' + file.filename
+            #filename = uuid.uuid4().hex + '_' + file.filename
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             file.save(filepath)
             print(filepath)
