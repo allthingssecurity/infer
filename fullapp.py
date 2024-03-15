@@ -305,7 +305,7 @@ def start_infer():
             return jsonify({'error': 'Model is not yet trained for the specified speaker'})
 
         if file:
-            #filename = uuid.uuid4().hex + '_' + file.filename
+            filename = file.filename
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             file.save(filepath)
             print(filepath)
