@@ -101,7 +101,7 @@ def terminate_pod(pod_id) :
     try:
         runpod.terminate_pod(pod_id)
         app.logger.info("deleted pod with id: {pod_id}")
-    except
+    except Exception as e:
         app.logger.info("unable to delete pod with id:{pod_id}")
 
 # Create a pod
