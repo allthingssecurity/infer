@@ -261,6 +261,8 @@ def convert_voice(file_path1, spk_id, user_email):
 
     try:
         file_path = os.path.join(directory, new_filename)
+        app.logger.error(f'old filepath =: {file_path1}')
+        app.logger.error(f'new filepath =: {file_path}')
         os.rename(file_path1, file_path)
         app.logger.error(f'new file path=: {file_path}')
     # Open the file and prepare for the POST request

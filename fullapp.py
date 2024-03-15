@@ -421,7 +421,7 @@ def start_infer():
             new_filename = f"{uuid.uuid4()}{file_extension}"  # Generates a new filename with original extension
             filepath = os.path.join(UPLOAD_FOLDER, secure_filename(new_filename))
             file.save(filepath)
-            print(filepath)
+            app.logger.error(f'file saved with filepath =: {file_path}')
             # Adjusted to pass filepath and speaker_name to the main function
             app.logger.info("enqueed the job ")
             job = q.enqueue(convert_voice, filepath, final_speaker_name,user_email)
