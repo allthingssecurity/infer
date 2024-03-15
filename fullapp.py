@@ -159,20 +159,23 @@ def create_user_account_if_not_exists(user_email, initial_tier="trial"):
     """
     Create a new user account with the given tier, only if it doesn't already exist.
     """
-    model_credits=2
-    song_credits=5
-    if get_user_credits(user_email, "model") == 0:
+    user_exists_key = f"user:{user_email}:exists"  # Key to check if user account already exists
+    user_exists = redis_client.get(user_exists_key)
+    
+    if not user_exists:
+        # User does not exist, so initialize their account
+        model_credits = 2
+        song_credits = 5
         update_user_credits(user_email, "model", model_credits)
-        print(f"Initialized {model_credits} model creation credits for {user_email}.")
-    else:
-        print(f"User {user_email} already has model creation credits.")
-
-    # Initialize song conversion credits
-    if get_user_credits(user_email, "song") == 0:
         update_user_credits(user_email, "song", song_credits)
-        print(f"Initialized {song_credits} song conversion credits for {user_email}.")
+        
+        # Set the user exists key in Redis
+        redis_client.set(user_exists_key, 1)
+        
+        print(f"Account and credits initialized for {user_email}.")
     else:
-        print(f"User {user_email} already has song conversion credits.")
+        # User already exists, no need to re-initialize
+        print(f"User {user_email} already exists, skipping initialization.")
         
         
 def get_user_tier(user_email,task_type):
