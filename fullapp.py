@@ -234,7 +234,7 @@ def song_conversion():
         models = [model.decode('utf-8') for model in models]
     else:
         models = []
-    return render_template('convert.html', models=models)
+    return render_template('convert.html', models=models,model_credits=model_credits,song_credits=song_credits))
         
     
 
@@ -276,7 +276,7 @@ def train():
     else:
         
         
-        return render_template('train.html')
+        return render_template('train.html',model_credits=model_credits,song_credits=song_credits))
 
 
 @app.route('/infer')
