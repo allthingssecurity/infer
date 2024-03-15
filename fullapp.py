@@ -278,11 +278,11 @@ def start_infer():
     if has_active_jobs(user_email,'infer'):
         app.logger.info(f"job already running for this user {user_email} ")
         return jsonify({'message': 'Cannot submit new job. A job is already queued or started'})
-    
-    user_tier = get_user_tier(user_email,'infer')
-    current_count = int(redis_client.hget(f"user:{user_email}:infer", "songs_converted"))
-    tier_limits = {"trial": 2, "premium": 4}
-    if current_count < tier_limits[user_tier]:
+    credit_count=get_user_credits(user_email,'song')
+    #user_tier = get_user_tier(user_email,'infer')
+    #current_count = int(redis_client.hget(f"user:{user_email}:infer", "songs_converted"))
+    #tier_limits = {"trial": 2, "premium": 4}
+    if (credit_count > 0):
 
 
         if 'file' not in request.files:
@@ -320,8 +320,8 @@ def start_infer():
             p.start()     
             return jsonify({'message': 'File uploaded successfully for conversion', 'job_id': job.get_id()})
     else:
-        app.logger.info(f"max song conversion exceeded for the user {user_email}. Switch to premium ")
-        return jsonify({'message': 'You have reached max limits for song conversion. Switch to premium '})
+        app.logger.info(f"max song conversion exceeded for the user {user_email}. Buy credits")
+        return jsonify({'message': 'You have reached max limits for song conversion. Buy credits '})
 
 
 @app.route('/download/<job_id>')
@@ -353,10 +353,8 @@ def process_audio():
         app.logger.info(f"job already running for this user {user_email} ")
         return jsonify({'message': 'Cannot submit new job. A job is already queued or started'})
     
-    user_tier = get_user_tier(user_email,'train')
-    current_count = int(redis_client.hget(f"user:{user_email}:train", "models_trained"))
-    tier_limits = {"trial": 2, "premium": 4}
-    if current_count < tier_limits[user_tier]:
+    credit_count=get_user_credits(user_email,'song')
+    if (credit_count >0):
     
     
     
