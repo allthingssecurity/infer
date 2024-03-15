@@ -14,7 +14,7 @@ from redis import Redis
 from logging.handlers import RotatingFileHandler
 from flask import Flask, session, redirect, url_for, request,render_template,flash,jsonify
 from rq import get_current_job
-
+from credit import get_user_credits,update_user_credits,use_credit
 
 runpod.api_key =os.getenv("RUNPOD_KEY")
 logging.basicConfig(level=logging.INFO)
@@ -272,6 +272,7 @@ def convert_voice(file_path1, spk_id, user_email):
 
         # Handle successful upload outside the with block
         update_job_status(job.id, "finished", user_email, 'infer')
+        use_credit(user_email,'song')
         return True, "File uploaded successfully."
 
     except requests.exceptions.RequestException as e:
@@ -347,6 +348,7 @@ def main_prev(file_name,model_name,user_email):
         push_model_to_infer(final_model_name)
         app.logger.info('Training completed. Model pushed to bucket and pulled by Infer')
         update_job_status(job.id, "finished", user_email,'train')
+        use_credit(user_email,'model')
         # Check for the file in the S3 bucket (DigitalOcean Spaces)
         
     else:

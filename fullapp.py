@@ -19,6 +19,7 @@ from redis import Redis
 from upload import upload_to_do,download_from_do
 from werkzeug.utils import secure_filename
 from multiprocessing import Process
+from credit import get_user_credits,update_user_credits,use_credit
 
 
 app = Flask(__name__)
@@ -118,7 +119,6 @@ def authorize():
 
 
 
-# Middleware or decorator to check if user is logged in
 
 
 @app.route('/get-jobs')
@@ -135,34 +135,30 @@ def get_jobs():
     return render_template('job-tracking.html', training_jobs=formatted_training_jobs, inference_jobs=formatted_inference_jobs)
 
 
+
+
+
+
 def create_user_account_if_not_exists(user_email, initial_tier="trial"):
     """
     Create a new user account with the given tier, only if it doesn't already exist.
     """
-    user_key_train = f"user:{user_email}:train"
-    user_key_infer = f"user:{user_email}:infer"
-    # Check if the user already has a tier set
-    if not redis_client.hexists(user_key_train, "tier"):
-        # Account does not exist, so create it with initial values
-        app.logger.info(f'account doesnt exist in redis for user {user_email}')
-        redis_client.hset(user_key_train, mapping={"tier": initial_tier, "models_trained": 0})
-        app.logger.info(f'account created in redis for user {user_email}')
-        print(f"Account created for {user_email} with {initial_tier} tier.")
+    model_credits=2
+    song_credits=5
+    if get_user_credits(user_email, "model") == 0:
+        update_user_credits(user_email, "model", model_credits)
+        print(f"Initialized {model_credits} model creation credits for {user_email}.")
     else:
-        # Account already exists, skip creation
-        print(f"Training Account for {user_email} already exists. Skipping creation.")
-    
-    
-    if not redis_client.hexists(user_key_infer, "tier"):
-        # Account does not exist, so create it with initial values
-        app.logger.info(f'account doesnt exist in redis for user {user_email}')
-        redis_client.hset(user_key_infer, mapping={"tier": initial_tier, "songs_converted": 0})
-        app.logger.info(f'account created in redis for user {user_email}')
-        print(f"Account created for {user_email} with {initial_tier} tier.")
-    else:
-        # Account already exists, skip creation
-        print(f"Account for {user_email} already exists. Skipping creation.")
+        print(f"User {user_email} already has model creation credits.")
 
+    # Initialize song conversion credits
+    if get_user_credits(user_email, "song") == 0:
+        update_user_credits(user_email, "song", song_credits)
+        print(f"Initialized {song_credits} song conversion credits for {user_email}.")
+    else:
+        print(f"User {user_email} already has song conversion credits.")
+        
+        
 def get_user_tier(user_email,task_type):
     """
     Retrieve the current tier of the user.
