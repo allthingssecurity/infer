@@ -276,6 +276,7 @@ def dummy_model_training():
 @app.route('/train')
 @login_required
 def train():
+    user_email = session.get('user_email')  # Assuming current_user has an email attribute
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     else:
