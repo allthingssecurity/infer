@@ -1,4 +1,5 @@
 import redis
+from redis import Redis
 import os
 redis_host = os.getenv('REDIS_HOST', 'default_host')
 redis_port = int(os.getenv('REDIS_PORT', 25061))  # Default Redis port
