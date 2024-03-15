@@ -13,7 +13,29 @@
 
     <main>
         <p>You're almost there! To access all features, please join the waitlist.</p>
-        <button onclick="window.location.href='/add_to_waitlist'">Join Waitlist</button>
+        <button id="joinWaitlistBtn">Join Waitlist</button>
     </main>
+
+    <script>
+        document.getElementById('joinWaitlistBtn').addEventListener('click', function() {
+            fetch('/add_to_waitlist', {
+                method: 'POST',
+                credentials: 'include', // Necessary for sessions to work
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}' // If you're using CSRF protection, add this
+                },
+                body: JSON.stringify({}) // Empty body for the POST request
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message); // Show response message
+                // Optionally redirect the user or update the UI
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
 </body>
 </html>
