@@ -232,9 +232,14 @@ def song_conversion():
     if user_email:
         models = redis_client.lrange(user_email, 0, -1)  # Get list of models
         models = [model.decode('utf-8') for model in models]
+        model_credits=get_user_credits(user_email,'model')
+        song_credits=get_user_credits(user_email,'song')
+        return render_template('convert.html', models=models,model_credits=model_credits,song_credits=song_credits))
     else:
         models = []
-    return render_template('convert.html', models=models,model_credits=model_credits,song_credits=song_credits))
+        model_credits=get_user_credits(user_email,'model')
+        song_credits=get_user_credits(user_email,'song')
+        return render_template('convert.html', models=models,model_credits=model_credits,song_credits=song_credits))
         
     
 
@@ -274,7 +279,8 @@ def train():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     else:
-        
+        model_credits=get_user_credits(user_email,'model')
+        song_credits=get_user_credits(user_email,'song')
         
         return render_template('train.html',model_credits=model_credits,song_credits=song_credits))
 
