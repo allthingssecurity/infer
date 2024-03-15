@@ -135,6 +135,22 @@ def get_jobs():
     return render_template('job-tracking.html', training_jobs=formatted_training_jobs, inference_jobs=formatted_inference_jobs)
 
 
+@app.route('/recharge_credits', methods=['POST'])
+def recharge_credits():
+    data = request.get_json()
+    user_email = data.get('user_email')
+    activity = data.get('activity')
+    credits_to_add = int(data.get('credits', 0))
+    
+    if not user_email or not activity or credits_to_add <= 0:
+        return jsonify({'error': 'Invalid request'}), 400
+
+    current_credits = get_user_credits(user_email, activity)
+    new_credits = current_credits + credits_to_add
+    update_user_credits(user_email, activity, new_credits)
+
+    return jsonify({'message': f'Successfully added {credits_to_add} {activity} credits to {user_email}.',
+                    'total_credits': new_credits}), 200
 
 
 
@@ -199,7 +215,9 @@ def index():
         app.logger.info(f'creating account in redis for user {user_email}')
         create_user_account_if_not_exists(user_email)
         app.logger.info(f'account created in redis for user {user_email}')
-        return render_template('index.html', user_info=user_info)
+        model_credits=get_user_credits(user_email,'model')
+        song_credits=get_user_credits(user_email,'song')
+        return render_template('index.html', user_info=user_info,model_credits=model_credits,song_credits=song_credits)
     else:
         return redirect(url_for('login'))
 

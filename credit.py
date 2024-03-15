@@ -43,3 +43,4 @@ def use_credit(user_email, activity):
     else:
         print(f"Insufficient {activity} credits for {user_email}.")
         return False
+

@@ -19,8 +19,12 @@
             </nav>
             <div class="user-info">
                 <img src="{{ session['user_image'] if session['user_image'] else url_for('static', filename='default-user-icon.png') }}" alt="User Icon" class="user-icon">
-
                 <span>Welcome, {{ session['username'] }}</span>
+                <!-- Displaying Credits Information -->
+                <div class="credits-info">
+                    <span>Model Credits: {{ model_credits }}</span>
+                    <span>Song Credits: {{ song_credits }}</span>
+                </div>
                 <a href="/logout" class="logout-btn">Logout</a>
             </div>
         </div>
