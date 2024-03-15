@@ -208,12 +208,15 @@ def upload_files(access_id, secret_key, url, model_name, bucket_name, file_path)
             response = requests.post(url, files=files, data=data, timeout=600)
             response.raise_for_status()  # This will raise an exception for HTTP error codes
             return True, "File uploaded successfully."
-        except requests.exceptions.RequestException as e:
-            print("Starting file check")
-            # Assuming check_file_in_space is defined elsewhere to check the file presence in the cloud storage
+        except requests.exceptions.Timeout as e:
+            # This block will only execute for timeouts, indicating server-side processing time exceeded
+            print("Timeout occurred, checking file presence in cloud storage...")
             file_key = f'{model_name}.pth'
             check_file_in_space(access_id, secret_key, bucket_name, file_key)
-            return False, str(e)
+            return False, "Request timed out. Checking if file was processed..."
+        except requests.exceptions.RequestException as e:
+            # This block catches other request-related exceptions
+            return False, f"Request failed: {str(e)}"
 
 # Ensure all file objects are properly closed after upload
 def close_files(files):
@@ -313,46 +316,6 @@ def download_and_save_mp3(url,audio_id, save_path):
 
 
 
-def main_prev(file_name,model_name,user_email):
-    
-    job = get_current_job()
-    job_id = job.id
-    update_job_status(job.id, "started", user_email,'train')
-    
-    bucket_name = "sing"  # Your DigitalOcean Space name
-    
-    # Run synchronous pod creation and status check in the event loop
-    #loop = asyncio.get_running_loop()
-    pod_id = create_pod_and_get_id("train", "smjain/train:v7", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
-    app.logger.info('After creating pod for training')
-    if pod_id:
-        
-        check_pod_is_ready(pod_id)
-        app.logger.info('checked pod is ready')
-        url = f'https://{pod_id}--5000.proxy.runpod.net/process_audio'
-        #upload_files(url)
-        
-        # Proceed with asynchronous file upload
-        #print("file uploaded to ",file_path)
-        #logger.info("This is an info message from the background task. file_path is valid: {}".format(file_path is not None))
-        file_path=download_from_do(file_name)
-        app.logger.info('downloaded audio from space')
-        final_model_name = f"{user_email}_{model_name}"
-        upload_files(ACCESS_ID,SECRET_KEY,url, final_model_name,bucket_name, file_path)
-        app.logger.info('uploaded to DO Space')
-        add_model_to_user(user_email,model_name)
-        update_model_count(user_email,redis_client)
-        app.logger.info('updated redis')
-        ##push model to infer app dir
-        app.logger.info('before pushing to infer')
-        push_model_to_infer(final_model_name)
-        app.logger.info('Training completed. Model pushed to bucket and pulled by Infer')
-        update_job_status(job.id, "finished", user_email,'train')
-        use_credit(user_email,'model')
-        # Check for the file in the S3 bucket (DigitalOcean Spaces)
-        
-    else:
-        print("Failed to create the pod or retrieve the pod ID.")
 
 
 
@@ -369,14 +332,34 @@ def main(file_name, model_name, user_email):
             raise Exception("Failed to create the pod or retrieve the pod ID.")
 
         check_pod_is_ready(pod_id)
+        app.logger.info('checked that pod is ready now')
         file_path = download_from_do(file_name)
+        app.logger.info('downloaded file from do')
         final_model_name = f"{user_email}_{model_name}"
+        
         url = f'https://{pod_id}--5000.proxy.runpod.net/process_audio'
-        upload_files(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, file_path)
-        add_model_to_user(user_email, model_name)
-        update_model_count(user_email, redis_client)
-        push_model_to_infer(final_model_name)
-        update_job_status(job.id, "finished", user_email, 'train')
+        app.logger.info('before call to upload files for training done')
+        success, message = upload_files(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, file_path)
+        if success:
+            
+            app.logger.error(f'Job {job_id} success during file upload: {message}')
+            app.logger.info('call to upload files for training done')
+            add_model_to_user(user_email, model_name)
+            app.logger.info('added model to user')
+            use_credit(user_email,'model')
+            app.logger.info('credit consumed')
+            #update_model_count(user_email, redis_client)
+            update_job_status(job.id, "finished", user_email, 'train')
+            app.logger.info('updated model state to finished')
+            use_credit(user_email,'model')
+            app.logger.info('credit consumed')
+            push_model_to_infer(final_model_name)
+            app.logger.info('pushed model to infer engine')
+        # Proceed with additional job steps as needed
+        else:
+            update_job_status(job.id, "failed", user_email, 'train')
+        
+        
     except Exception as e:
         app.logger.error(f'Error during model training: {e}')
         update_job_status(job.id, "failed", user_email, 'train')
