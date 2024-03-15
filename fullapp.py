@@ -74,7 +74,7 @@ def login_required(f):
     return decorated_function
 
 
-def has_active_s(user_email,type_of_job):
+def has_active_jobs(user_email,type_of_job):
     """
     Check if the user has any jobs that are either queued or started.
     """
