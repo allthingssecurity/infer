@@ -97,7 +97,12 @@ def update_model_count(user_email,redis_client):
     redis_client.hincrby(f"user:{user_email}", "models_trained", 1)
     app.logger.info("update of model train done in queue")
     
-    
+def terminate_pod(pod_id)
+    try:
+        runpod.terminate_pod(pod_id)
+        app.logger.info("deleted pod with id: {pod_id}")
+    except
+        app.logger.info("unable to delete pod with id:{pod_id}")
 
 # Create a pod
 def create_pod_and_get_id(name, image_name, gpu_type_id, ports, container_disk_in_gb, env_vars):
@@ -263,6 +268,7 @@ def convert_voice(file_path1, spk_id, user_email):
         file_path = os.path.join(directory, new_filename)
         app.logger.error(f'old filepath =: {file_path1}')
         app.logger.error(f'new filepath =: {file_path}')
+        
         os.rename(file_path1, file_path)
         app.logger.error(f'new file path=: {file_path}')
     # Open the file and prepare for the POST request
@@ -346,6 +352,7 @@ def main(file_name, model_name, user_email):
             
             app.logger.error(f'Job {job_id} success during file upload: {message}')
             app.logger.info('call to upload files for training done')
+            terminate_pod(pod_id)
             add_model_to_user(user_email, model_name)
             app.logger.info('added model to user')
             use_credit(user_email,'model')

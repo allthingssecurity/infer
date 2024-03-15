@@ -540,56 +540,10 @@ def start_worker():
 
 
 
-@app.route('/song_conversion_submit')
-@login_required
-def song_conversion_submit():
-    
-    user_email = session.get('user_email')
-    user_data = redis_client.hgetall(f"user:{user_email}")
-    user_status_raw = user_data.get(b"status", b"trial")  # Redis returns bytes
-
-    # Check for bytes type and decode if necessary
-    user_status = user_status_raw.decode("utf-8") if isinstance(user_status_raw, bytes) else user_status_raw
-
-    # Determine the model limit based on user status
-    song_limit = 4 if user_status == "premium" else 2
-    
-    songs_converted = int(redis_client.hget(f"user:{user_email}", "songs_converted") or 0)
-    recharge_balance = int(redis_client.hget(f"user:{user_email}", "recharge_balance") or 0)
-    
-    
-    if user_status == 'premium':
-        if recharge_balance > 0:
-            # For premium users with enough recharge balance
-            result = dummy_song_converted()
-            redis_client.hincrby(f"user:{user_email}", "recharge_balance", -1)
-        elif song_conversions < 2:
-            # Allow up to 2 free conversions for premium users without balance
-            result = dummy_song_converted()
-            redis_client.hincrby(f"user:{user_email}", "songs_converted", 1)
-        else:
-            return jsonify({'error': 'No more free conversions available'}), 403
-    elif song_conversions < song_limit:
-        # Allow free users up to 2 conversions
-        result = dummy_song_converted()
-        redis_client.hincrby(f"user:{user_email}", "songs_converted", 1)
-    else:
-        return jsonify({'error': 'Upgrade to premium for more conversions'}), 403
     
     
     
     
-    
-    
-    # If under limit, proceed with model training
-    
-    
-    # Update Redis to reflect the new model count
-    
-
-    print(f"Song converted for {user_email}: {songs_converted}")  # Debugging line
-    
-    return f"Song converted successful. {result}"
 
 @app.route('/process_payment', methods=['POST'])
 def process_payment():
