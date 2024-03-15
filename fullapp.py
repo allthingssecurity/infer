@@ -234,12 +234,12 @@ def song_conversion():
         models = [model.decode('utf-8') for model in models]
         model_credits=get_user_credits(user_email,'model')
         song_credits=get_user_credits(user_email,'song')
-        return render_template('convert.html', models=models,model_credits=model_credits,song_credits=song_credits))
+        return render_template('convert.html', models=models,model_credits=model_credits,song_credits=song_credits)
     else:
         models = []
         model_credits=get_user_credits(user_email,'model')
         song_credits=get_user_credits(user_email,'song')
-        return render_template('convert.html', models=models,model_credits=model_credits,song_credits=song_credits))
+        return render_template('convert.html', models=models,model_credits=model_credits,song_credits=song_credits)
         
     
 
@@ -282,7 +282,7 @@ def train():
         model_credits=get_user_credits(user_email,'model')
         song_credits=get_user_credits(user_email,'song')
         
-        return render_template('train.html',model_credits=model_credits,song_credits=song_credits))
+        return render_template('train.html',model_credits=model_credits,song_credits=song_credits)
 
 
 @app.route('/infer')
