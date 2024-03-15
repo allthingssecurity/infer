@@ -268,7 +268,9 @@ def index():
                 # User not in waitlist, prompt to join
                 return render_template('join_waitlist.html', user_info=session)
     # User is authorized, show full page
-    model_credits, song_credits = get_user_credits(user_email)  # Adjust this function to your implementation
+    model_credits=get_user_credits(user_email,'model')
+    song_credits=get_user_credits(user_email,'song')
+      # Adjust this function to your implementation
     return render_template('index.html', user_info=session, model_credits=model_credits, song_credits=song_credits)
 
 
