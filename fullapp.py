@@ -66,6 +66,15 @@ q = Queue(connection=redis_client)
 # Initialize Redis
 FEATURE_FLAG_WAITLIST = True 
 
+def login_required(f):
+    @wraps(f)  # Preserve the function name and docstring
+    def decorated_function(*args, **kwargs):
+        if not session.get('logged_in'):
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 def is_feature_waitlist_enabled():
     # Placeholder for actual feature flag check
     return FEATURE_FLAG_WAITLIST
@@ -109,13 +118,6 @@ def authorize_users():
 
 
 
-def login_required(f):
-    @wraps(f)  # Preserve the function name and docstring
-    def decorated_function(*args, **kwargs):
-        if not session.get('logged_in'):
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function
 
 
 def has_active_jobs(user_email,type_of_job):
