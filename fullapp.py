@@ -347,11 +347,11 @@ def train():
         return redirect(url_for('login'))
     else:
         if is_feature_waitlist_enabled():
-        if not is_user_authorized(user_email):
-            if is_user_in_waitlist(user_email):
-                return jsonify({'error': 'You are on the waitlist but not yet authorized. Please wait for authorization.'}), 403
-            else:
-                return jsonify({'error': 'You must join the waitlist to access this feature.'}), 403
+            if not is_user_authorized(user_email):
+                if is_user_in_waitlist(user_email):
+                    return jsonify({'error': 'You are on the waitlist but not yet authorized. Please wait for authorization.'}), 403
+                else:
+                    return jsonify({'error': 'You must join the waitlist to access this feature.'}), 403
         model_credits=get_user_credits(user_email,'model')
         song_credits=get_user_credits(user_email,'song')
         
@@ -366,11 +366,11 @@ def infer():
     else:
         user_email = session.get('user_email')
         if is_feature_waitlist_enabled():
-        if not is_user_authorized(user_email):
-            if is_user_in_waitlist(user_email):
-                return jsonify({'error': 'You are on the waitlist but not yet authorized. Please wait for authorization.'}), 403
-            else:
-                return jsonify({'error': 'You must join the waitlist to access this feature.'}), 403
+            if not is_user_authorized(user_email):
+                if is_user_in_waitlist(user_email):
+                    return jsonify({'error': 'You are on the waitlist but not yet authorized. Please wait for authorization.'}), 403
+                else:
+                    return jsonify({'error': 'You must join the waitlist to access this feature.'}), 403
         
         return render_template('infer.html', user_email=user_email)
 
