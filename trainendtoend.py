@@ -217,7 +217,14 @@ def upload_files(access_id, secret_key, url, model_name, bucket_name, file_path)
             # This block will only execute for timeouts, indicating server-side processing time exceeded
             print("Timeout occurred, checking file presence in cloud storage...")
             file_key = f'{model_name}.pth'
-            return check_file_in_space(access_id, secret_key, bucket_name, file_key) ,"finished cheking file"
+            file_exists = check_file_in_space(access_id, secret_key, bucket_name, file_key)
+                if file_exists:
+                    app.logger.error('file found in space')
+                    return True, "Request timed out, but file was processed successfully."
+                else:
+                    app.logger.error('file not found in space')
+                    return False, "Request timed out and file was not found in cloud storage."
+            #check_file_in_space(access_id, secret_key, bucket_name, file_key) 
             #return False, "Request timed out. Checking if file was processed..."
         except requests.exceptions.RequestException as e:
             # This block catches other request-related exceptions
