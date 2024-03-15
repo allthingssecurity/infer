@@ -17,7 +17,7 @@ import uuid
 from rq import Worker, Queue, Connection
 from redis import Redis
 from upload import upload_to_do,download_from_do
-
+from werkzeug.utils import secure_filename
 from multiprocessing import Process
 
 
@@ -305,8 +305,10 @@ def start_infer():
             return jsonify({'error': 'Model is not yet trained for the specified speaker'})
 
         if file:
-            filename = file.filename
-            filepath = os.path.join(UPLOAD_FOLDER, filename)
+            filename = file.filename  # Original filename
+            file_extension = os.path.splitext(filename)[1]  # Extracts file extension including the dot (.)
+            new_filename = f"{uuid.uuid4()}{file_extension}"  # Generates a new filename with original extension
+            filepath = os.path.join(UPLOAD_FOLDER, secure_filename(new_filename))
             file.save(filepath)
             print(filepath)
             # Adjusted to pass filepath and speaker_name to the main function
