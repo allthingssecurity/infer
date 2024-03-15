@@ -64,6 +64,49 @@ Session(app)
 
 q = Queue(connection=redis_client)
 # Initialize Redis
+FEATURE_FLAG_WAITLIST = True 
+
+def is_feature_waitlist_enabled():
+    # Placeholder for actual feature flag check
+    return FEATURE_FLAG_WAITLIST
+
+def is_user_authorized(user_email):
+    return redis_client.sismember("authorized_users", user_email)
+
+def is_user_in_waitlist(user_email):
+    return redis_client.sismember("waitlist_users", user_email)
+
+@app.route('/add_to_waitlist', methods=['POST'])
+@login_required
+def add_to_waitlist():
+    if not is_feature_waitlist_enabled():
+        return jsonify({'error': 'Waitlist feature is not enabled'}), 403
+
+    user_email = session.get('user_email')
+    if not user_email:
+        return jsonify({'error': 'User not signed in'}), 401
+    
+    if is_user_in_waitlist(user_email):
+        return jsonify({'message': 'Already in waitlist'}), 200
+
+    redis_client.sadd("waitlist_users", user_email)
+    return jsonify({'message': 'Added to waitlist. We will get back to you. Till that time you can check samples'}), 200
+
+
+@app.route('/authorize_users', methods=['POST'])
+def authorize_users():
+    # This endpoint could be protected to be accessible only by admins
+    users_to_authorize = request.json.get('users')
+    if not users_to_authorize:
+        return jsonify({'error': 'No users provided'}), 400
+    
+    for user_email in users_to_authorize:
+        if is_user_in_waitlist(user_email):
+            redis_client.srem("waitlist_users", user_email)
+            redis_client.sadd("authorized_users", user_email)
+    
+    return jsonify({'message': f'Authorized {len(users_to_authorize)} users'}), 200
+
 
 
 def login_required(f):
@@ -206,9 +249,30 @@ def login():
     return google.authorize_redirect("https://www.maibhisinger.com/login/callback", nonce=nonce)
 
 
-    
+
 @app.route('/')
 def index():
+    user_email = session.get('user_email')
+    if not user_email:
+        # User not logged in; redirect to login or directly ask to join waitlist
+        return redirect(url_for('login'))  # Assuming you have a login route
+
+    if is_feature_waitlist_enabled():
+        if not is_user_authorized(user_email):
+            if is_user_in_waitlist(user_email):
+                # User is in waitlist, can only see samples
+                return render_template('waitlist_only_samples.html', user_info=session)
+            else:
+                # User not in waitlist, prompt to join
+                return render_template('join_waitlist.html', user_info=session)
+    # User is authorized, show full page
+    model_credits, song_credits = get_user_credits(user_email)  # Adjust this function to your implementation
+    return render_template('index.html', user_info=session, model_credits=model_credits, song_credits=song_credits)
+
+
+#old code will be removed  
+@app.route('/')
+def index1():
     if 'logged_in' in session and session['logged_in']:
         user_info = {
             'name': session.get('user_name', 'Unknown'),  # Assuming you've stored the user's name here
@@ -303,6 +367,15 @@ def infer():
 @login_required
 def start_infer():
     user_email = session.get('user_email')
+    
+    if is_feature_waitlist_enabled():
+        if not is_user_authorized(user_email):
+            if is_user_in_waitlist(user_email):
+                return jsonify({'error': 'You are on the waitlist but not yet authorized. Please wait for authorization.'}), 403
+            else:
+                return jsonify({'error': 'You must join the waitlist to access this feature.'}), 403
+
+    
     if has_active_jobs(user_email,'infer'):
         app.logger.info(f"job already running for this user {user_email} ")
         return jsonify({'message': 'Cannot submit new job. A job is already queued or started'})
@@ -376,7 +449,13 @@ def user_job_key(user_email,type_of_job):
 @app.route('/process_audio', methods=['POST'])
 def process_audio():
     user_email = session.get('user_email')
-    
+    if is_feature_waitlist_enabled():
+        if not is_user_authorized(user_email):
+            if is_user_in_waitlist(user_email):
+                return jsonify({'error': 'You are on the waitlist but not yet authorized. Please wait for authorization.'}), 403
+            else:
+                return jsonify({'error': 'You must join the waitlist to access this feature.'}), 403
+
     if has_active_jobs(user_email,'train'):
         app.logger.info(f"job already running for this user {user_email} ")
         return jsonify({'message': 'Cannot submit new job. A job is already queued or started'})
