@@ -376,6 +376,8 @@ def main(file_name, model_name, user_email):
         else:
             app.logger.info('got false return from upload_files so setting job status fail')
             update_job_status(job.id, "failed", user_email, 'train')
+            if pod_id:
+                terminate_pod(pod_id)
         
         
     except Exception as e:
