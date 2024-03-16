@@ -5,53 +5,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Join Waitlist - Mai Bhi Singer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-
     <style>
-        /* Additional styles for layout */
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+        }
         .flex-container {
             display: flex;
-            justify-content: space-between; /* Space between the child elements */
-            align-items: center; /* Align items vertically */
+            justify-content: space-between;
+            align-items: center;
         }
-
-        .flex-container > div {
-            flex-basis: 48%; /* Each child will take up roughly half the container's width */
+        .video-wrapper, .waitlist-wrapper {
+            flex: 1;
         }
-
-        .video-wrapper video {
-            width: 100%; /* Make video responsive */
-            height: auto;
+        .video-wrapper {
+            padding-right: 20px;
         }
-
-        /* You might need to adjust these styles depending on your existing CSS */
+        .main-title {
+            text-align: center;
+            margin: 20px 0;
+        }
+        video {
+            width: 100%; /* Adjusts video size to fit its container */
+            max-width: 600px; /* Optionally limits video size for larger screens */
+        }
+        .join-btn {
+            display: block;
+            width: 200px;
+            padding: 10px;
+            margin: 20px auto;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header class="header">
-            <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" class="logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" style="width: 100%;">
             <h1 class="main-title">Mai Bhi Singer</h1>
         </header>
 
         <main class="main-content">
             <div class="flex-container">
-                <!-- Content Wrapper for text and button -->
-                <div class="content-wrapper">
-                    <p class="intro-text">You're almost there! To access all features, please join the waitlist.</p>
-                    <button id="joinWaitlistBtn" class="join-btn">Join Waitlist</button>
-                </div>
-
-                <!-- Video Wrapper -->
                 <div class="video-wrapper">
                     <video controls autoplay loop muted>
                         <source src="{{ url_for('static', filename='maibhisinger.mp4') }}" type="video/mp4">
                         Your browser does not support the video tag.
                     </video>
                 </div>
-            </div>
-
-            <div class="gif-wrapper">
-                <img src="{{ url_for('static', filename='animated.gif') }}" alt="Exciting Features">
+                <div class="waitlist-wrapper">
+                    <p class="intro-text">You're almost there! To access all features, please join the waitlist.</p>
+                    <button id="joinWaitlistBtn" class="join-btn">Join Waitlist</button>
+                </div>
             </div>
         </main>
     </div>
