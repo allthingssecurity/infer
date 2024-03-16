@@ -358,7 +358,7 @@ def main(file_name, model_name, user_email):
         success, message = upload_files(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, file_path)
         if success:
             
-            app.logger.info(f'Job {job_id} success during file upload: {message}')
+            app.logger.info(f'Job {job.id} success during file upload: {message}')
             app.logger.info('call to upload files for training done')
             terminate_pod(pod_id)
             add_model_to_user(user_email, model_name)
