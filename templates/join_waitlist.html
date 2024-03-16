@@ -49,11 +49,15 @@
             width: 100%;
             max-height: 70vh;
         }
+        .audio-label {
+            margin-top: 20px;
+            font-size: 18px; /* Adjust label font size as needed */
+        }
         .audio-sample {
-            margin-bottom: 10px;
+            margin: 10px 0;
         }
         .disclaimer {
-            font-size: 12px;
+            font-size: 16px; /* Increased font size */
             text-align: center;
             margin-bottom: 20px;
         }
@@ -86,47 +90,27 @@
                 </video>
             </div>
             <div class="content-wrapper">
-                <!-- Audio Samples -->
-                <!-- Audio Samples -->
-<p class="disclaimer">These audio samples are for representation purposes only.</p>
-<audio controls class="audio-sample">
-    <source src="{{ url_for('static', filename='audio1.mp3') }}" type="audio/mpeg">
-    Your browser does not support the audio element.
-</audio>
-<audio controls class="audio-sample">
-    <source src="{{ url_for('static', filename='audio2.mp3') }}" type="audio/mpeg">
-    Your browser does not support the audio element.
-</audio>
-<audio controls class="audio-sample">
-    <source src="{{ url_for('static', filename='audio3.mp3') }}" type="audio/mpeg">
-    Your browser does not support the audio element.
-</audio>
-
-               
+                <p class="disclaimer">These audio samples are for representation purposes only.</p>
+                <span class="audio-label">Kishore Kumar</span>
+                <audio controls class="audio-sample">
+                    <source src="{{ url_for('static', filename='audio1.mp3') }}" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+                <span class="audio-label">Rahul Gandhi</span>
+                <audio controls class="audio-sample">
+                    <source src="{{ url_for('static', filename='audio2.mp3') }}" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+                <span class="audio-label">Narendra Modi</span>
+                <audio controls class="audio-sample">
+                    <source src="{{ url_for('static', filename='audio3.mp3') }}" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+                <!-- If there's a fourth audio, add its label and element here -->
                 <p class="intro-text">You're almost there! To access all features, please join the waitlist.</p>
                 <button id="joinWaitlistBtn" class="join-btn">Join Waitlist</button>
             </div>
         </main>
     </div>
-
-    <script>
-        document.getElementById('joinWaitlistBtn').addEventListener('click', function() {
-            fetch('/add_to_waitlist', {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({})
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-        });
-    </script>
 </body>
 </html>
