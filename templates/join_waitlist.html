@@ -7,15 +7,26 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-      <div class="container">
+    <div class="container">
         <header class="header">
             <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" class="logo">
             <h1 class="main-title">Mai Bhi Singer</h1>
         </header>
 
         <main class="main-content">
-            <p class="intro-text">You're almost there! To access all features, please join the waitlist.</p>
-            <button id="joinWaitlistBtn" class="join-btn">Join Waitlist</button>
+            <div class="content-wrapper">
+                <p class="intro-text">You're almost there! To access all features, please join the waitlist.</p>
+                <button id="joinWaitlistBtn" class="join-btn">Join Waitlist</button>
+                <div class="video-wrapper">
+                    <video controls>
+                        <source src="{{ url_for('static', filename='maibhisinger.mp4') }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            </div>
+            <div class="gif-wrapper">
+                <img src="{{ url_for('static', filename='animated.gif') }}" alt="Exciting Features">
+            </div>
         </main>
     </div>
 
@@ -23,17 +34,15 @@
         document.getElementById('joinWaitlistBtn').addEventListener('click', function() {
             fetch('/add_to_waitlist', {
                 method: 'POST',
-                credentials: 'include', // Necessary for sessions to work
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
-                   
                 },
-                body: JSON.stringify({}) // Empty body for the POST request
+                body: JSON.stringify({})
             })
             .then(response => response.json())
             .then(data => {
-                alert(data.message); // Show response message
-                // Optionally redirect the user or update the UI
+                alert(data.message);
             })
             .catch((error) => {
                 console.error('Error:', error);
