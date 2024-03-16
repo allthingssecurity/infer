@@ -5,6 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Join Waitlist - Mai Bhi Singer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <style>
+        /* Additional styles for layout */
+        .flex-container {
+            display: flex;
+            justify-content: space-between; /* Space between the child elements */
+            align-items: center; /* Align items vertically */
+        }
+
+        .flex-container > div {
+            flex-basis: 48%; /* Each child will take up roughly half the container's width */
+        }
+
+        .video-wrapper video {
+            width: 100%; /* Make video responsive */
+            height: auto;
+        }
+
+        /* You might need to adjust these styles depending on your existing CSS */
+    </style>
 </head>
 <body>
     <div class="container">
@@ -14,16 +34,22 @@
         </header>
 
         <main class="main-content">
-            <div class="content-wrapper">
-                <p class="intro-text">You're almost there! To access all features, please join the waitlist.</p>
-                <button id="joinWaitlistBtn" class="join-btn">Join Waitlist</button>
+            <div class="flex-container">
+                <!-- Content Wrapper for text and button -->
+                <div class="content-wrapper">
+                    <p class="intro-text">You're almost there! To access all features, please join the waitlist.</p>
+                    <button id="joinWaitlistBtn" class="join-btn">Join Waitlist</button>
+                </div>
+
+                <!-- Video Wrapper -->
                 <div class="video-wrapper">
-                    <video controls>
+                    <video controls autoplay loop muted>
                         <source src="{{ url_for('static', filename='maibhisinger.mp4') }}" type="video/mp4">
                         Your browser does not support the video tag.
                     </video>
                 </div>
             </div>
+
             <div class="gif-wrapper">
                 <img src="{{ url_for('static', filename='animated.gif') }}" alt="Exciting Features">
             </div>
