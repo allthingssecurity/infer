@@ -161,6 +161,7 @@ def check_file_in_space(access_id, secret_key, bucket_name, file_key, check_inte
     :param check_interval: How often to check for the file (in seconds).
     :param timeout: How long to keep checking before giving up (in seconds).
     """
+    app.logger.info('entered funtion check file in space')
     session = boto3.session.Session()
     client = session.client('s3',
                             region_name='nyc3',
@@ -172,12 +173,14 @@ def check_file_in_space(access_id, secret_key, bucket_name, file_key, check_inte
 
     while time.time() - start_time < timeout:
         try:
+            app.logger.info('checking presence of file in space')
             client.head_object(Bucket=bucket_name, Key=file_key)
             print(f"File {file_key} found in Space {bucket_name}.")
             return True
         except ClientError as e:
             error_code = int(e.response['Error']['Code'])
             if error_code == 404:
+                
                 print(f"File {file_key} not found in Space {bucket_name}. Checking again in {check_interval // 60} minutes.")
             else:
                 print(f"Error checking file: {e}")
@@ -215,18 +218,20 @@ def upload_files(access_id, secret_key, url, model_name, bucket_name, file_path)
             return True, "File uploaded successfully."
         except requests.exceptions.Timeout as e:
             # This block will only execute for timeouts, indicating server-side processing time exceeded
+            app.logger.info('timeout occured')
             print("Timeout occurred, checking file presence in cloud storage...")
             file_key = f'{model_name}.pth'
             file_exists = check_file_in_space(access_id, secret_key, bucket_name, file_key)
             if file_exists:
-                app.logger.error('file found in space')
+                app.logger.info('file found in space')
                 return True, "Request timed out, but file was processed successfully."
             else:
-                app.logger.error('file not found in space')
+                app.logger.info('file not found in space')
                 return False, "Request timed out and file was not found in cloud storage."
             #check_file_in_space(access_id, secret_key, bucket_name, file_key) 
             #return False, "Request timed out. Checking if file was processed..."
         except requests.exceptions.RequestException as e:
+            app.logger.info('other exception occured and status will be set to false :{str(e)}')
             # This block catches other request-related exceptions
             return False, f"Request failed: {str(e)}"
 
@@ -295,7 +300,7 @@ def convert_voice(file_path1, spk_id, user_email):
 
     except requests.exceptions.RequestException as e:
         # Handle specific request exceptions
-        app.logger.error(f'Upload failed: {e}')
+        app.logger.info(f'Upload failed: {e}')
         update_job_status(job.id, "failed", user_email, 'infer')
         return False, str(e)
 
@@ -357,7 +362,7 @@ def main(file_name, model_name, user_email):
         success, message = upload_files(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, file_path)
         if success:
             
-            app.logger.error(f'Job {job_id} success during file upload: {message}')
+            app.logger.info(f'Job {job_id} success during file upload: {message}')
             app.logger.info('call to upload files for training done')
             terminate_pod(pod_id)
             add_model_to_user(user_email, model_name)
@@ -373,6 +378,7 @@ def main(file_name, model_name, user_email):
             app.logger.info('pushed model to infer engine')
         # Proceed with additional job steps as needed
         else:
+            app.logger.info('got false return from upload_files so setting job status fail')
             update_job_status(job.id, "failed", user_email, 'train')
         
         
