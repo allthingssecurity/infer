@@ -155,12 +155,12 @@ def authorize():
         session['logged_in'] = True
         create_user_account_if_not_exists(user_info['email'])
         # Perform any additional processing or actions as needed
-        return render_template('index.html')
+        return render_template('join_waitlist.html')
     else:
         # Handle the case where the email is not available
         return redirect(url_for('login'))
     # Process user_info or perform actions such as logging in the user
-    return render_template('index.html')
+    return render_template('join_waitlist.html')
 
 
 
