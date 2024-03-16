@@ -216,7 +216,7 @@ def upload_files(access_id, secret_key, url, model_name, bucket_name, file_path)
             response = requests.post(url, files=files, data=data, timeout=600)
             response.raise_for_status()  # This will raise an exception for HTTP error codes
             return True, "File uploaded successfully."
-        except requests.exceptions.Timeout as e:
+        except requests.exceptions.RequestException as e:
             # This block will only execute for timeouts, indicating server-side processing time exceeded
             app.logger.info('timeout occured')
             print("Timeout occurred, checking file presence in cloud storage...")
@@ -230,11 +230,7 @@ def upload_files(access_id, secret_key, url, model_name, bucket_name, file_path)
                 return False, "Request timed out and file was not found in cloud storage."
             #check_file_in_space(access_id, secret_key, bucket_name, file_key) 
             #return False, "Request timed out. Checking if file was processed..."
-        except requests.exceptions.RequestException as e:
-            app.logger.info('other exception occured and status will be set to false :{str(e)}')
-            # This block catches other request-related exceptions
-            return False, f"Request failed: {str(e)}"
-
+        
 # Ensure all file objects are properly closed after upload
 def close_files(files):
     for _, file_obj in files:
