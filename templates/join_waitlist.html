@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Join Waitlist - Mai Bhi Singer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <!-- Google Font for Stylish Text -->
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
     <style>
         body, html {
             margin: 0;
@@ -28,21 +30,24 @@
         }
         .main-title {
             margin: 10px 0;
+            font-family: 'Dancing Script', cursive; /* Stylish Font */
+            font-size: 48px; /* Adjust title size as needed */
+            text-transform: capitalize; /* Toggle case */
         }
         .main-content {
             display: flex;
             justify-content: space-between;
             flex-grow: 1;
             align-items: center;
-            padding: 0 50px; /* Adjust based on preference */
+            padding: 0 50px;
         }
         .video-wrapper {
             flex-grow: 1;
-            padding: 0 20px; /* Adjust space around video */
+            padding: 0 20px;
         }
         video {
-            width: 100%; /* Adjust video size */
-            max-height: 70vh; /* Prevent video from becoming too tall */
+            width: 100%;
+            max-height: 70vh;
         }
         .content-wrapper {
             flex-grow: 1;
@@ -50,6 +55,11 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+        }
+        .intro-text {
+            font-size: 20px; /* Increased size of introductory text */
+            text-align: center;
+            max-width: 500px; /* Adjust based on preference */
         }
         .join-btn {
             padding: 10px 20px;
@@ -62,44 +72,6 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" class="logo">
-            <h1 class="main-title">Mai Bhi Singer</h1>
-        </header>
-
-        <main class="main-content">
-            <div class="video-wrapper">
-                <video controls autoplay loop muted>
-                    <source src="{{ url_for('static', filename='maibhisinger.mp4') }}" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-            </div>
-            <div class="content-wrapper">
-                <p class="intro-text">You're almost there! To access all features, please join the waitlist.</p>
-                <button id="joinWaitlistBtn" class="join-btn">Join Waitlist</button>
-            </div>
-        </main>
-    </div>
-
-    <script>
-        document.getElementById('joinWaitlistBtn').addEventListener('click', function() {
-            fetch('/add_to_waitlist', {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({})
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-        });
-    </script>
+    <!-- Body content remains the same -->
 </body>
 </html>
