@@ -6,48 +6,58 @@
     <title>Join Waitlist - Mai Bhi Singer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
-        body {
+        body, html {
             margin: 0;
             padding: 0;
-            background-color: #000;
-            color: #fff;
+            background-color: black;
+            color: white;
             font-family: Arial, sans-serif;
+            height: 100%;
         }
         .container {
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            justify-content: space-between;
+            height: 100%;
         }
         .header {
             text-align: center;
             padding: 20px;
         }
         .logo {
-            max-width: 100px; /* Adjust the logo size */
-            height: auto;
+            width: 150px; /* Adjust logo size as needed */
         }
         .main-title {
-            margin: 20px 0;
+            margin: 10px 0;
         }
         .main-content {
             display: flex;
-            justify-content: space-around;
-            align-items: center;
+            justify-content: space-between;
             flex-grow: 1;
+            align-items: center;
+            padding: 0 50px; /* Adjust based on preference */
         }
-        .video-wrapper video {
-            width: 45%; /* Adjust video size */
-            height: auto;
-            max-height: 50vh; /* Adjust based on your needs */
+        .video-wrapper {
+            flex-grow: 1;
+            padding: 0 20px; /* Adjust space around video */
+        }
+        video {
+            width: 100%; /* Adjust video size */
+            max-height: 70vh; /* Prevent video from becoming too tall */
+        }
+        .content-wrapper {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         .join-btn {
             padding: 10px 20px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            background-color: #ff0;
+            background-color: #007bff;
+            color: white;
             border: none;
-            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -65,7 +75,7 @@
                     Your browser does not support the video tag.
                 </video>
             </div>
-            <div class="join-wrapper">
+            <div class="content-wrapper">
                 <p class="intro-text">You're almost there! To access all features, please join the waitlist.</p>
                 <button id="joinWaitlistBtn" class="join-btn">Join Waitlist</button>
             </div>
