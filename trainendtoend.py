@@ -39,11 +39,9 @@ redis_username = os.getenv('REDIS_USERNAME', 'default')
 redis_password = os.getenv('REDIS_PASSWORD', '')
 infer_url= os.getenv('INFER_URL', '')
 #redis_conn = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
-
-
-
-
 redis_client = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
+
+WORKER_COUNT_KEY = 'worker_count'
 
 
 env_vars = {
@@ -298,12 +296,14 @@ def convert_voice(file_path1, spk_id, user_email):
         # Handle specific request exceptions
         app.logger.info(f'Upload failed: {e}')
         update_job_status(job.id, "failed", user_email, 'infer')
+        redis_client.decr(WORKER_COUNT_KEY)
         return False, str(e)
 
     except Exception as e:
         # Handle other exceptions
         app.logger.error(f'Conversion failed: {e}')
         update_job_status(job.id, "failed", user_email, 'infer')
+        redis_client.decr(WORKER_COUNT_KEY)
         return False, str(e)
  
     
@@ -376,6 +376,7 @@ def main(file_name, model_name, user_email):
         else:
             app.logger.info('got false return from upload_files so setting job status fail')
             update_job_status(job.id, "failed", user_email, 'train')
+            redis_client.decr(WORKER_COUNT_KEY)
             if pod_id:
                 terminate_pod(pod_id)
         
@@ -384,6 +385,7 @@ def main(file_name, model_name, user_email):
         app.logger.error(f'Error during model training: {e}')
         update_job_status(job.id, "failed", user_email, 'train')
         print(f"Operation failed: {e}")
+        redis_client.decr(WORKER_COUNT_KEY)
 
 
 
