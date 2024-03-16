@@ -2,9 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta viewport="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Join Waitlist - Mai Bhi Singer</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
         body, html {
             margin: 0;
@@ -13,6 +12,7 @@
             color: white;
             font-family: Arial, sans-serif;
             height: 100%;
+            overflow: hidden; /* Prevents scrolling */
         }
         .container {
             display: flex;
@@ -24,42 +24,38 @@
             padding: 20px;
         }
         .logo {
-            width: 150px; /* Adjust logo size as needed */
+            width: 150px; /* Adjust if the logo appears too large */
         }
         .main-title {
-            margin: 10px 0;
-            font-family: Georgia, serif; /* Elegant serif font */
+            font-family: Georgia, serif; /* Stylish and widely supported */
             font-size: 36px; /* Adjust title size as needed */
-            text-transform: capitalize; /* Toggle case */
+            text-transform: capitalize; /* Toggle case for styling */
         }
         .main-content {
             display: flex;
             justify-content: space-between;
             flex-grow: 1;
             align-items: center;
-            padding: 0 50px; /* Adjust based on preference */
+            padding: 20px 50px; /* Adjusts padding around content */
         }
         .video-wrapper {
-            flex-grow: 1;
-            padding: 0 20px; /* Minimize gap between sides */
-            display: flex;
-            justify-content: center; /* Center video */
+            width: 50%; /* Adjust video width to control size */
+            padding-right: 20px; /* Spacing between video and button */
         }
         video {
-            width: 100%; /* Make video larger */
-            max-height: 70vh; /* Prevent video from becoming too tall */
+            width: 100%; /* Adjusts video to fill container width */
+            max-height: 70vh; /* Limits video height */
         }
         .content-wrapper {
-            flex-grow: 1;
+            width: 50%; /* Aligns with video width for balance */
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
         }
         .intro-text {
-            font-size: 24px; /* Increased size of introductory text */
-            text-align: center;
-            max-width: 500px; /* Adjust based on preference */
+            font-size: 24px; /* Enhanced readability */
+            margin-bottom: 20px; /* Spacing above the button */
         }
         .join-btn {
             padding: 10px 20px;
@@ -67,11 +63,49 @@
             color: white;
             border: none;
             cursor: pointer;
-            margin-top: 20px;
+            font-size: 18px; /* Makes button text larger */
         }
     </style>
 </head>
 <body>
-    <!-- Body content remains the same -->
+    <div class="container">
+        <header class="header">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" class="logo">
+            <h1 class="main-title">Mai Bhi Singer</h1>
+        </header>
+
+        <main class="main-content">
+            <div class="video-wrapper">
+                <video controls autoplay loop muted>
+                    <source src="{{ url_for('static', filename='maibhisinger.mp4') }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            <div class="content-wrapper">
+                <p class="intro-text">You're almost there! To access all features, please join the waitlist.</p>
+                <button id="joinWaitlistBtn" class="join-btn">Join Waitlist</button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('joinWaitlistBtn').addEventListener('click', function() {
+            fetch('/add_to_waitlist', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
 </body>
 </html>
