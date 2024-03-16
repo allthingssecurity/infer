@@ -24,38 +24,42 @@
             padding: 20px;
         }
         .logo {
-            width: 150px; /* Adjust if the logo appears too large */
+            width: 150px;
         }
         .main-title {
-            font-family: Georgia, serif; /* Stylish and widely supported */
-            font-size: 36px; /* Adjust title size as needed */
-            text-transform: capitalize; /* Toggle case for styling */
+            font-family: Georgia, serif;
+            font-size: 36px;
+            text-transform: capitalize;
         }
         .main-content {
             display: flex;
             justify-content: space-between;
             flex-grow: 1;
             align-items: center;
-            padding: 20px 50px; /* Adjusts padding around content */
+            padding: 20px 50px;
         }
-        .video-wrapper {
-            width: 50%; /* Adjust video width to control size */
-            padding-right: 20px; /* Spacing between video and button */
-        }
-        video {
-            width: 100%; /* Adjusts video to fill container width */
-            max-height: 70vh; /* Limits video height */
-        }
-        .content-wrapper {
-            width: 50%; /* Aligns with video width for balance */
+        .video-wrapper, .content-wrapper {
+            width: 50%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
         }
+        video {
+            width: 100%;
+            max-height: 70vh;
+        }
+        .audio-sample {
+            margin-bottom: 10px;
+        }
+        .disclaimer {
+            font-size: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
         .intro-text {
-            font-size: 24px; /* Enhanced readability */
-            margin-bottom: 20px; /* Spacing above the button */
+            font-size: 24px;
+            margin-bottom: 20px;
         }
         .join-btn {
             padding: 10px 20px;
@@ -63,7 +67,7 @@
             color: white;
             border: none;
             cursor: pointer;
-            font-size: 18px; /* Makes button text larger */
+            font-size: 18px;
         }
     </style>
 </head>
@@ -82,6 +86,21 @@
                 </video>
             </div>
             <div class="content-wrapper">
+                <!-- Audio Samples -->
+                <p class="disclaimer">These audio samples are for representation purposes only.</p>
+                <audio controls class="audio-sample">
+                    <source src="{{ url_for('static', filename='audio1.mp3') }}" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+                <audio controls class="audio-sample">
+                    <source src="{{ url_for('static', filename='audio2.mp3') }}" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+                <audio controls class="audio-sample">
+                    <source src="{{ url_for('static', filename='audio3.mp3') }}" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+               
                 <p class="intro-text">You're almost there! To access all features, please join the waitlist.</p>
                 <button id="joinWaitlistBtn" class="join-btn">Join Waitlist</button>
             </div>
