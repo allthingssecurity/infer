@@ -4,72 +4,91 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Join Waitlist - Mai Bhi Singer</title>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            background-color: black;
-            color: white;
-            font-family: Arial, sans-serif;
-            height: 100%;
-            overflow: hidden; /* Prevents scrolling */
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-        .header {
-            text-align: center;
-            padding: 20px;
-        }
-        .logo {
-            width: 150px;
-        }
-        .main-title {
-            font-family: Georgia, serif;
-            font-size: 36px;
-            text-transform: capitalize;
-        }
+   <style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        background-color: black;
+        color: white;
+        font-family: Arial, sans-serif;
+        height: 100%;
+        overflow-x: hidden; /* Prevents horizontal scrolling */
+    }
+    .container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    .header {
+        text-align: center;
+        padding: 20px;
+    }
+    .logo {
+        width: 150px; /* Adjust on smaller screens within media query */
+    }
+    .main-title {
+        font-family: Georgia, serif;
+        font-size: 36px;
+        text-transform: capitalize;
+    }
+    .main-content {
+        display: flex;
+        justify-content: space-between;
+        flex-grow: 1;
+        align-items: center;
+        padding: 20px 50px;
+    }
+    .video-wrapper, .content-wrapper {
+        width: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    video {
+        width: 100%;
+        max-height: 70vh;
+    }
+    .audio-sample {
+        margin-bottom: 10px;
+    }
+    .disclaimer {
+        font-size: 12px; /* Adjust on smaller screens within media query */
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .intro-text {
+        font-size: 24px; /* Adjust on smaller screens within media query */
+        margin-bottom: 20px;
+    }
+    .join-btn {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 18px; /* Adjust on smaller screens within media query */
+    }
+
+    /* Responsive styles for devices with screen width up to 768px */
+    @media (max-width: 768px) {
         .main-content {
-            display: flex;
-            justify-content: space-between;
-            flex-grow: 1;
-            align-items: center;
-            padding: 20px 50px;
+            flex-direction: column;
+            padding: 10px;
         }
         .video-wrapper, .content-wrapper {
-            width: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        video {
             width: 100%;
-            max-height: 70vh;
+            padding: 0;
         }
-        .audio-sample {
-            margin-bottom: 10px;
+        .logo {
+            width: 100px; /* Smaller logo for smaller screens */
         }
-        .disclaimer {
-            font-size: 12px;
-            text-align: center;
-            margin-bottom: 20px;
+        .disclaimer, .intro-text, .join-btn {
+            font-size: 16px; /* Slightly larger text for readability */
         }
-        .intro-text {
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-        .join-btn {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 18px;
-        }
-    </style>
+    }
+</style>
+
 </head>
 <body>
     <div class="container">
