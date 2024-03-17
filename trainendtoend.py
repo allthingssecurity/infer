@@ -195,6 +195,7 @@ async def upload_files_async(access_id, secret_key, url, model_name, bucket_name
     """
     Asynchronously uploads a single file to a specified URL.
     """
+    job = get_current_job()
     # Open the file in binary read mode
     with open(file_path, 'rb') as file:
         files = {'file': (file_path, file)}
@@ -203,14 +204,14 @@ async def upload_files_async(access_id, secret_key, url, model_name, bucket_name
         # Asynchronous POST request
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.post(url, data=data, timeout=60) as response:
+                async with session.post(url, data=data, timeout=180) as response:
                     response.raise_for_status()  # This will raise an exception for HTTP error codes
                     return True, "File uploaded successfully."
             except asyncio.TimeoutError:
-                update_job_status(job.id, "failed", user_email, 'train')
+                #update_job_status(job.id, "failed", user_email, 'train')
                 return False, "Request timed out. Checking if file was processed..."
             except Exception as e:
-                update_job_status(job.id, "failed", user_email, 'train')
+                #update_job_status(job.id, "failed", user_email, 'train')
                 return False, str(e)
 
 
