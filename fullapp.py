@@ -427,6 +427,9 @@ def start_infer():
             # Adjusted to pass filepath and speaker_name to the main function
             app.logger.info("enqueed the job ")
             job = q.enqueue(convert_voice, filepath, final_speaker_name,user_email)
+            job.meta['file_name'] = filename
+            job.meta['submission_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            job.save_meta()  # Don't forget to save the metadata
             if user_email:
                 # Update Redis with the new job ID and its initial status
                 app.logger.info(f"updating redis for job id {job.id} ")
@@ -617,7 +620,12 @@ def reset_redis():
 def check_status(job_id):
     from rq.job import Job
     job = Job.fetch(job_id, connection=redis_client)
-    return jsonify({'status': job.get_status(), 'job_id': job_id})
+    
+    file_name = job.meta.get('file_name', 'Unknown')  # Default to 'Unknown' if not set
+    submission_time = job.meta.get('submission_time', 'Unknown')
+    
+    return jsonify({'status': job.get_status(), 'file_name': file_name, 'submission_time': submission_time})
+    
 
 
 @app.route('/logout')

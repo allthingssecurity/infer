@@ -62,19 +62,21 @@
  <table border="1">
     <thead>
         <tr>
-            <th>Job ID</th>
+            <th>File Name</th>
             <th>Status</th>
-            <th>Download</th> <!-- New column for download links -->
+            <th>Submission Time</th>
+            <th>Download</th> <!-- Column for download links -->
         </tr>
     </thead>
     <tbody>
-        {% for job_id, status in inference_jobs.items() %}
+        {% for job in inference_jobs %}
         <tr>
-            <td>{{ job_id }}</td>
-            <td>{{ status }}</td>
+            <td>{{ job.file_name }}</td>
+            <td>{{ job.status }}</td>
+            <td>{{ job.submission_time }}</td>
             <td>
-                {% if status == 'finished' %}
-                <a href="/download/{{ job_id }}">Download</a>
+                {% if job.status == 'finished' %}
+                <a href="/download/{{ job.job_id }}">Download</a>
                 {% endif %}
             </td>
         </tr>

@@ -1,6 +1,8 @@
 body, html {
     margin: 0;
     padding: 0;
+    background-color: black; /* Set background color to black */
+    color: white; /* Ensure text is visible against the dark background */
     font-family: Arial, sans-serif;
 }
 
@@ -35,7 +37,7 @@ body, html {
 .user-info {
     display: flex;
     align-items: center;
-    margin-left: 20px; /* Add space between nav items and user info */
+    margin-left: 20px; /* Adjusts space between nav items and user info */
 }
 
 .user-icon {
@@ -47,9 +49,13 @@ body, html {
 
 .logout-btn {
     padding: 5px 10px;
-    margin-left: 10px; /* Add some space between the welcome message and the button */
+    margin-left: 10px; /* Adds space between the welcome message and the button */
+    background-color: #f44336; /* Adds background color to the logout button for better visibility */
+    color: white; /* Text color for the logout button */
+    text-decoration: none; /* Removes underline from the logout button */
+    border: none; /* Removes border from the logout button */
+    cursor: pointer; /* Changes cursor to pointer on hover */
 }
-
 
 .welcome-section {
     text-align: center;
@@ -60,13 +66,25 @@ body, html {
     margin-bottom: 20px;
 }
 
-/* Responsive Design */
+/* Responsive Design Adjustments */
 @media (max-width: 600px) {
     .navbar {
         flex-direction: column;
+        padding: 20px 10px; /* Increase padding for better spacing on small screens */
+    }
+
+    .navbar nav ul li {
+        display: block; /* Stacks nav items vertically on small screens */
+        margin: 5px 0; /* Adjusts margin for stacked items */
     }
 
     .user-info {
         margin-top: 10px;
+        flex-direction: column; /* Stacks user info vertically */
+        align-items: center; /* Centers the user info */
+    }
+
+    .logout-btn {
+        margin-top: 10px; /* Adds space above the logout button on small screens */
     }
 }
