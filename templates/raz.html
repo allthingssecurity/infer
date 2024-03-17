@@ -7,16 +7,25 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
-    <form id="rechargeForm">
-        <label for="amount">Amount:</label>
-        <input type="number" id="amount" name="amount" required>
-        <button type="submit">Recharge</button>
-    </form>
+   <form id="rechargeForm">
+    <label for="amount">Amount:</label>
+    <input type="number" id="amount" name="amount" required>
+
+    <label for="creditType">Credit Type:</label>
+    <select id="creditType" name="creditType" required>
+        <option value="model">Model</option>
+        <option value="song">Song</option>
+    </select>
+
+    <button type="submit">Recharge</button>
+</form>
+
 
     <script>
         document.getElementById('rechargeForm').addEventListener('submit', function(event) {
             event.preventDefault();
             var amount = document.getElementById('amount').value;
+			var creditType = document.getElementById('creditType').value;
 
             // Call your Flask backend to create an order
             fetch('/create_order', {
@@ -24,7 +33,10 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ amount: amount * 100 }) // Multiply by 100 to convert to the smallest currency unit
+                body: JSON.stringify({ amount: amount * 100, 
+				notes: {
+                creditType: creditType // Include the selected credit type
+            } }) // Multiply by 100 to convert to the smallest currency unit
             })
             .then(function(response) {
                 return response.json();
