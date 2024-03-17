@@ -702,7 +702,7 @@ def update_payment():
     try:
         # Logic to update Redis with payment_details
         app.logger.info("before adding credits ")
-        add_credits(user_email,"infer",5)
+        add_credits(app,user_email,"infer",5)
         app.logger.info("after  adding credits ")
 
         # Mock response for success
@@ -710,6 +710,7 @@ def update_payment():
         return jsonify(response), 200
     except Exception as e:
         print(e)  # Log the error for debugging
+        app.logger.info(f "error: {str(e)} ")
         response = {'status': 'failure', 'error': str(e)}
         return jsonify(response), 500
 
