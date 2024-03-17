@@ -700,7 +700,7 @@ def create_order():
         'payment_capture': 1
        }
         
-    }
+    
     
     response = requests.post('https://api.razorpay.com/v1/orders', auth=(razorpay_key, razorpay_secret), json=data)
     
@@ -710,7 +710,7 @@ def create_order():
         return jsonify(response.text), response.status_code
 
 
-update_payment_song
+
 
 @app.route('/update_payment_song', methods=['POST'])
 @login_required
