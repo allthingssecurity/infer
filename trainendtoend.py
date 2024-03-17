@@ -379,7 +379,7 @@ def main(file_name, model_name, user_email):
         url = f'https://{pod_id}--5000.proxy.runpod.net/process_audio'
         app.logger.info('before call to upload files for training done')
         #success, message = upload_files(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, file_path)
-        success, message = asyncio.run(upload_files(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, file_path))
+        success, message = asyncio.run(upload_files_async(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, file_path))
         if success:
             
             app.logger.info(f'Job {job.id} success during file upload: {message}')
