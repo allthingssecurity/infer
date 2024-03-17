@@ -1,6 +1,9 @@
 import redis
 from redis import Redis
 import os
+import logging
+from logging.handlers import RotatingFileHandler
+
 redis_host = os.getenv('REDIS_HOST', 'default_host')
 redis_port = int(os.getenv('REDIS_PORT', 25061))  # Default Redis port
 redis_username = os.getenv('REDIS_USERNAME', 'default')
@@ -27,16 +30,24 @@ def update_user_credits(user_email, activity, credits):
     redis_client.hset(f"user:{user_email}", f"{activity}_credits", credits)
 
 
-def add_credits(user_email, activity,credits):
+def add_credits(app,user_email, activity,credits):
     """
     Attempts to use a credit for the specified activity, consuming one credit.
     """
-    current_credits = get_user_credits(user_email, activity)
+    try:
+        current_credits = get_user_credits(user_email, activity)
     
     
-    update_user_credits(user_email, activity, current_credits + credits)
+        update_user_credits(user_email, activity, current_credits + credits)
     #print(f"Credit used. Remaining {activity} credits: {credits - 1}")
-    return True
+        
+        
+    except Exception as e:
+        print(e)  # Log the error for debugging
+        app.logger.info(f"error:{str(e)}")
+        #response = {'status': 'failure', 'error': str(e)}
+        #return jsonify(response), 500
+        
     
 
 
