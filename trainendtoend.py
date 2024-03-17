@@ -2,7 +2,7 @@ import runpod
 import requests
 import time
 import json
-#import asyncio
+import asyncio
 import aiohttp
 import boto3
 import os
@@ -148,7 +148,7 @@ def check_pod_is_ready(pod_id):
 
 
 
-def check_file_in_space(access_id, secret_key, bucket_name, file_key, check_interval=60, timeout=18000):
+def check_file_in_space(access_id, secret_key, bucket_name, file_key, check_interval=60, timeout=2400):
     """
     Periodically checks for the existence of a file in a DigitalOcean Space.
 
@@ -189,6 +189,29 @@ def check_file_in_space(access_id, secret_key, bucket_name, file_key, check_inte
     return False
 
 
+
+
+async def upload_files_async(access_id, secret_key, url, model_name, bucket_name, file_path):
+    """
+    Asynchronously uploads a single file to a specified URL.
+    """
+    # Open the file in binary read mode
+    with open(file_path, 'rb') as file:
+        files = {'file': (file_path, file)}
+        data = {'model_name': model_name}
+        
+        # Asynchronous POST request
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(url, data=data, timeout=60) as response:
+                    response.raise_for_status()  # This will raise an exception for HTTP error codes
+                    return True, "File uploaded successfully."
+            except asyncio.TimeoutError:
+                update_job_status(job.id, "failed", user_email, 'train')
+                return False, "Request timed out. Checking if file was processed..."
+            except Exception as e:
+                update_job_status(job.id, "failed", user_email, 'train')
+                return False, str(e)
 
 
 
@@ -355,11 +378,14 @@ def main(file_name, model_name, user_email):
         
         url = f'https://{pod_id}--5000.proxy.runpod.net/process_audio'
         app.logger.info('before call to upload files for training done')
-        success, message = upload_files(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, file_path)
+        #success, message = upload_files(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, file_path)
+        success, message = asyncio.run(upload_files(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, file_path))
         if success:
             
             app.logger.info(f'Job {job.id} success during file upload: {message}')
-            app.logger.info('call to upload files for training done')
+            app.logger.info('call to upload files for training done async')
+            file_key = f'{model_name}.pth'
+            file_exists = check_file_in_space(access_id, secret_key, bucket_name, file_key)
             terminate_pod(pod_id)
             add_model_to_user(user_email, model_name)
             app.logger.info('added model to user')
@@ -368,7 +394,7 @@ def main(file_name, model_name, user_email):
             #update_model_count(user_email, redis_client)
             update_job_status(job.id, "finished", user_email, 'train')
             app.logger.info('updated model state to finished')
-            use_credit(user_email,'model')
+            #use_credit(user_email,'model')
             app.logger.info('credit consumed')
             push_model_to_infer(final_model_name)
             app.logger.info('pushed model to infer engine')
@@ -386,6 +412,8 @@ def main(file_name, model_name, user_email):
         update_job_status(job.id, "failed", user_email, 'train')
         print(f"Operation failed: {e}")
         redis_client.decr(WORKER_COUNT_KEY)
+        if pod_id:
+            terminate_pod(pod_id)
 
 
 
