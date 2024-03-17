@@ -701,7 +701,7 @@ def update_payment():
     # Make sure to handle exceptions and errors
     try:
         # Logic to update Redis with payment_details
-        app.logger.info("before adding credits ")
+        app.logger.info(f"before adding credits for user {user_email}")
         add_credits(app,user_email,"infer",5)
         app.logger.info("after  adding credits ")
 

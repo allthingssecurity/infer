@@ -35,7 +35,7 @@ def add_credits(app,user_email, activity,credits):
     Attempts to use a credit for the specified activity, consuming one credit.
     """
     try:
-        app.logger.info("inside adding credits")
+        app.logger.info(f"inside adding credits of user {user_email}")
         current_credits = get_user_credits(user_email, activity)
         app.logger.info(f"got current credits {current_credits}")
     
