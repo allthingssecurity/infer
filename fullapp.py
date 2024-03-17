@@ -161,6 +161,8 @@ def authorize():
     nonce = session.pop('oauth_nonce', None)
     user_info = google.parse_id_token(token, nonce=nonce)
     user_profile = google.get('userinfo').json()
+    app.logger.info(f"User profile response: {user_profile}")  # Use logging
+    print(user_profile)  # Or just print it for debugging purposes
     print(user_info['email'])
     if 'email' in user_info:
         session['user_email'] = user_info['email']
