@@ -160,10 +160,12 @@ def authorize():
     app.logger.info(f"token={token}")
     nonce = session.pop('oauth_nonce', None)
     user_info = google.parse_id_token(token, nonce=nonce)
+    user_profile = google.get('userinfo').json()
     print(user_info['email'])
     if 'email' in user_info:
         session['user_email'] = user_info['email']
         session['logged_in'] = True
+        session['user_image'] = user_profile.get('picture', None)
         create_user_account_if_not_exists(user_info['email'])
         # Perform any additional processing or actions as needed
         return render_template('join_waitlist.html')
@@ -279,6 +281,7 @@ def index():
                 # User not in waitlist, prompt to join
                 return render_template('join_waitlist.html', user_info=session)
     # User is authorized, show full page
+    user_image = session.get('user_image', None)
     model_credits=get_user_credits(user_email,'model')
     song_credits=get_user_credits(user_email,'song')
       # Adjust this function to your implementation
