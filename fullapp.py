@@ -611,9 +611,9 @@ def process_recharge():
         return "Invalid request", 400
 
 
-@app.route('/recharge')
+@app.route('/rechargeModel')
 @login_required
-def recharge():
+def rechargeModel():
     user_email = session.get('user_email')  # Assuming current_user has an email attribute
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -628,6 +628,26 @@ def recharge():
         song_credits=get_user_credits(user_email,'song')
         
         return render_template('raz.html',model_credits=model_credits,song_credits=song_credits)
+
+
+
+@app.route('/rechargeSong')
+@login_required
+def rechargeSong():
+    user_email = session.get('user_email')  # Assuming current_user has an email attribute
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        if is_feature_waitlist_enabled():
+            if not is_user_authorized(user_email):
+                if is_user_in_waitlist(user_email):
+                    return jsonify({'error': 'You are on the waitlist but not yet authorized. Please wait for authorization.'}), 403
+                else:
+                    return jsonify({'error': 'You must join the waitlist to access this feature.'}), 403
+        model_credits=get_user_credits(user_email,'model')
+        song_credits=get_user_credits(user_email,'song')
+        
+        return render_template('raz_song.html',model_credits=model_credits,song_credits=song_credits)
 
 
 
@@ -672,15 +692,13 @@ def check_status(job_id):
 @app.route('/create_order', methods=['POST'])
 def create_order():
     app.logger.info("create order invoked ")
-    credit_type = request.json.get('creditType')
+    #credit_type = request.json.get('creditType')
     data = {
         'amount': request.json.get('amount', 10000),
         'currency': 'INR',
         'receipt': 'order_rcptid_11',
-        'payment_capture': 1,
-        'notes': {
-            'creditType': credit_type  # Add transaction type to notes
-        }
+        'payment_capture': 1
+       }
         
     }
     
@@ -691,9 +709,12 @@ def create_order():
     else:
         return jsonify(response.text), response.status_code
 
-@app.route('/update_payment', methods=['POST'])
+
+update_payment_song
+
+@app.route('/update_payment_song', methods=['POST'])
 @login_required
-def update_payment():
+def update_payment_song():
     # Extract the payment details from the request
     app.logger.info("update payment invoked  ")
     user_email = session.get('user_email')
@@ -701,13 +722,13 @@ def update_payment():
     if not user_email:
         return "User not logged in.", 403
     payment_details = request.json
-    credit_type = payment_details['notes']['creditType']
+    
     # Your logic to update the payment details in Redis
     # Make sure to handle exceptions and errors
     try:
         # Logic to update Redis with payment_details
-        app.logger.info(f"before adding credits for user {user_email} and credit type={credit_type}")
-        add_credits(app,user_email,credit_type,5)
+        app.logger.info(f"before adding credits for user {user_email}")
+        add_credits(app,user_email,"song",5)
         app.logger.info("after  adding credits ")
 
         # Mock response for success
@@ -719,6 +740,35 @@ def update_payment():
         response = {'status': 'failure', 'error': str(e)}
         return jsonify(response), 500
 
+
+
+@app.route('/update_payment_model', methods=['POST'])
+@login_required
+def update_payment_model():
+    # Extract the payment details from the request
+    app.logger.info("update payment invoked  ")
+    user_email = session.get('user_email')
+
+    if not user_email:
+        return "User not logged in.", 403
+    payment_details = request.json
+    
+    # Your logic to update the payment details in Redis
+    # Make sure to handle exceptions and errors
+    try:
+        # Logic to update Redis with payment_details
+        app.logger.info(f"before adding credits for user {user_email}")
+        add_credits(app,user_email,"model",5)
+        app.logger.info("after  adding credits ")
+
+        # Mock response for success
+        response = {'status': 'success'}
+        return jsonify(response), 200
+    except Exception as e:
+        print(e)  # Log the error for debugging
+        app.logger.info(f"error: {str(e)}")
+        response = {'status': 'failure', 'error': str(e)}
+        return jsonify(response), 500
 
 
 

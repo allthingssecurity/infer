@@ -25,7 +25,7 @@
         document.getElementById('rechargeForm').addEventListener('submit', function(event) {
             event.preventDefault();
             var amount = document.getElementById('amount').value;
-			var creditType = document.getElementById('creditType').value;
+			
 
             // Call your Flask backend to create an order
             fetch('/create_order', {
@@ -52,7 +52,7 @@
                     "order_id": order.id,
                     "handler": function (response){
                         // After payment is successful, make a POST request to your backend to update the payment details
-                        fetch('/update_payment_model', {
+                        fetch('/update_payment_song', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
