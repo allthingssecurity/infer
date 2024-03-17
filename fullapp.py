@@ -672,11 +672,16 @@ def check_status(job_id):
 @app.route('/create_order', methods=['POST'])
 def create_order():
     app.logger.info("create order invoked ")
+    credit_type = request.json.get('creditType')
     data = {
         'amount': request.json.get('amount', 10000),
         'currency': 'INR',
         'receipt': 'order_rcptid_11',
-        'payment_capture': 1
+        'payment_capture': 1,
+        'notes': {
+            'creditType': credit_type  # Add transaction type to notes
+        }
+        
     }
     
     response = requests.post('https://api.razorpay.com/v1/orders', auth=(razorpay_key, razorpay_secret), json=data)
@@ -696,13 +701,13 @@ def update_payment():
     if not user_email:
         return "User not logged in.", 403
     payment_details = request.json
-
+    credit_type = payment_details['notes']['creditType']
     # Your logic to update the payment details in Redis
     # Make sure to handle exceptions and errors
     try:
         # Logic to update Redis with payment_details
-        app.logger.info(f"before adding credits for user {user_email}")
-        add_credits(app,user_email,"song",5)
+        app.logger.info(f"before adding credits for user {user_email} and credit type={credit_type}")
+        add_credits(app,user_email,credit_type,5)
         app.logger.info("after  adding credits ")
 
         # Mock response for success
