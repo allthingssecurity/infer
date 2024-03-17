@@ -701,9 +701,9 @@ def update_payment():
     # Make sure to handle exceptions and errors
     try:
         # Logic to update Redis with payment_details
-        app.logger.info("before updating credits ")
-        update_user_credits(user_email,"infer",5)
-        app.logger.info("after  updating credits ")
+        app.logger.info("before adding credits ")
+        add_credits(user_email,"infer",5)
+        app.logger.info("after  adding credits ")
 
         # Mock response for success
         response = {'status': 'success'}
