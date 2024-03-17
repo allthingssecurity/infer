@@ -702,7 +702,7 @@ def update_payment():
     try:
         # Logic to update Redis with payment_details
         app.logger.info(f"before adding credits for user {user_email}")
-        add_credits(app,user_email,"infer",5)
+        add_credits(app,user_email,"song",5)
         app.logger.info("after  adding credits ")
 
         # Mock response for success
