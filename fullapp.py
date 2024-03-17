@@ -49,6 +49,10 @@ google = oauth.register(
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
+
+razorpay_key = os.getenv('RAZORPAY_KEY', '')
+razorpay_secret = os.getenv('RAZORPAY_SECRET', '')
+
 redis_host = os.getenv('REDIS_HOST', 'default_host')
 redis_port = int(os.getenv('REDIS_PORT', 25061))  # Default Redis port
 redis_username = os.getenv('REDIS_USERNAME', 'default')
@@ -607,6 +611,25 @@ def process_recharge():
         return "Invalid request", 400
 
 
+@app.route('/recharge')
+@login_required
+def recharge():
+    user_email = session.get('user_email')  # Assuming current_user has an email attribute
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        if is_feature_waitlist_enabled():
+            if not is_user_authorized(user_email):
+                if is_user_in_waitlist(user_email):
+                    return jsonify({'error': 'You are on the waitlist but not yet authorized. Please wait for authorization.'}), 403
+                else:
+                    return jsonify({'error': 'You must join the waitlist to access this feature.'}), 403
+        model_credits=get_user_credits(user_email,'model')
+        song_credits=get_user_credits(user_email,'song')
+        
+        return render_template('raz.html',model_credits=model_credits,song_credits=song_credits)
+
+
 
 @app.route('/samples')
 @login_required
@@ -646,6 +669,49 @@ def check_status(job_id):
     # The function returns True if the signature is valid, False otherwise
     #return client.utility.verify_payment_signature(params_dict)
 
+@app.route('/create_order', methods=['POST'])
+def create_order():
+    app.logger.info("create order invoked ")
+    data = {
+        'amount': request.json.get('amount', 10000),
+        'currency': 'INR',
+        'receipt': 'order_rcptid_11',
+        'payment_capture': 1
+    }
+    
+    response = requests.post('https://api.razorpay.com/v1/orders', auth=(razorpay_key, razorpay_secret), json=data)
+    
+    if response.status_code == 200:
+        return jsonify(response.json()), 200
+    else:
+        return jsonify(response.text), response.status_code
+
+@app.route('/update_payment', methods=['POST'])
+@login_required
+def update_payment():
+    # Extract the payment details from the request
+    app.logger.info("update payment invoked  ")
+    user_email = session.get('user_email')
+
+    if not user_email:
+        return "User not logged in.", 403
+    payment_details = request.json
+
+    # Your logic to update the payment details in Redis
+    # Make sure to handle exceptions and errors
+    try:
+        # Logic to update Redis with payment_details
+        update_user_credits(user_email,"infer",5)
+        
+
+        # Mock response for success
+        response = {'status': 'success'}
+        return jsonify(response), 200
+    except Exception as e:
+        print(e)  # Log the error for debugging
+        response = {'status': 'failure', 'error': str(e)}
+        return jsonify(response), 500
+
 
 
 
@@ -663,6 +729,7 @@ def payment_webhook():
         app.logger.info(f"payment id ={payment_id}")
         order_id = payload['payload']['payment']['entity']['order_id']
         app.logger.info(f"order_id ={order_id}")
+        update_user_credits()
         # Verify payment (e.g., using Razorpay signature verification)
         #verified = verify_payment_signature(payment_id, order_id)
         
