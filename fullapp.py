@@ -22,6 +22,9 @@ from multiprocessing import Process
 from credit import get_user_credits,update_user_credits,use_credit
 from datetime import datetime
 
+#import razorpay
+#client = razorpay.Client(auth=("YOUR_API_KEY", "YOUR_API_SECRET"))
+
 # Now you can use datetime in your code
 
 
@@ -632,6 +635,21 @@ def check_status(job_id):
     
 
 
+# Assuming you have the `razorpay_order_id`, `razorpay_payment_id`, and `razorpay_signature` from the request
+#def verify_payment_signature(razorpay_order_id, razorpay_payment_id, razorpay_signature):
+ #   params_dict = {
+  #      'razorpay_order_id': razorpay_order_id,
+   #     'razorpay_payment_id': razorpay_payment_id,
+    #    'razorpay_signature': razorpay_signature
+    #}
+
+    # The function returns True if the signature is valid, False otherwise
+    #return client.utility.verify_payment_signature(params_dict)
+
+
+
+
+
 @app.route('/payment/webhook', methods=['POST'])
 def payment_webhook():
     # Extract the webhook payload
@@ -640,22 +658,22 @@ def payment_webhook():
     app.logger.info(f"payload={payload}")
     event = payload['event']
     app.logger.info(f"event={event}")
-    if event == 'payment.success':
+    if event == 'payment.captured':
         payment_id = payload['payload']['payment']['entity']['id']
         app.logger.info(f"payment id ={payment_id}")
         order_id = payload['payload']['payment']['entity']['order_id']
-
+        app.logger.info(f"order_id ={order_id}")
         # Verify payment (e.g., using Razorpay signature verification)
-        verified = verify_payment_signature(payment_id, order_id)
+        #verified = verify_payment_signature(payment_id, order_id)
         
-        if verified:
-            # Execute your post-payment logic
-            update_order_status(order_id, 'Completed')
-            send_confirmation_email_to_user(order_id)
+        #if verified:
+        #    # Execute your post-payment logic
+        #    update_order_status(order_id, 'Completed')
+        #    send_confirmation_email_to_user(order_id)
             # Other business logic...
-            return jsonify({"status": "success"}), 200
-        else:
-            return jsonify({"status": "verification failed"}), 400
+        return jsonify({"status": "success"}), 200
+    else:
+        return jsonify({"status": "verification failed"}), 400
 
 
 
