@@ -19,7 +19,7 @@ from redis import Redis
 from upload import upload_to_do,download_from_do
 from werkzeug.utils import secure_filename
 from multiprocessing import Process
-from credit import get_user_credits,update_user_credits,use_credit
+from credit import get_user_credits,update_user_credits,use_credit,add_credits
 from datetime import datetime
 import requests
 #import razorpay
