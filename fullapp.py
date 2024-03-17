@@ -632,6 +632,33 @@ def check_status(job_id):
     
 
 
+@app.route('/payment/webhook', methods=['POST'])
+def payment_webhook():
+    # Extract the webhook payload
+    app.logger.info("webhook invoked ")
+    payload = request.get_json()
+    app.logger.info(f"payload={payload}")
+    event = payload['event']
+    app.logger.info(f"event={event}")
+    if event == 'payment.success':
+        payment_id = payload['payload']['payment']['entity']['id']
+        app.logger.info(f"payment id ={payment_id}")
+        order_id = payload['payload']['payment']['entity']['order_id']
+
+        # Verify payment (e.g., using Razorpay signature verification)
+        verified = verify_payment_signature(payment_id, order_id)
+        
+        if verified:
+            # Execute your post-payment logic
+            update_order_status(order_id, 'Completed')
+            send_confirmation_email_to_user(order_id)
+            # Other business logic...
+            return jsonify({"status": "success"}), 200
+        else:
+            return jsonify({"status": "verification failed"}), 400
+
+
+
 @app.route('/logout')
 def logout():
     # Clear the session, effectively logging the user out of your application
