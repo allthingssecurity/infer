@@ -729,7 +729,7 @@ def payment_webhook():
         app.logger.info(f"payment id ={payment_id}")
         order_id = payload['payload']['payment']['entity']['order_id']
         app.logger.info(f"order_id ={order_id}")
-        update_user_credits()
+        #update_user_credits()
         # Verify payment (e.g., using Razorpay signature verification)
         #verified = verify_payment_signature(payment_id, order_id)
         
