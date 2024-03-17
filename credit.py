@@ -27,6 +27,18 @@ def update_user_credits(user_email, activity, credits):
     redis_client.hset(f"user:{user_email}", f"{activity}_credits", credits)
 
 
+def add_credits(user_email, activity,credits):
+    """
+    Attempts to use a credit for the specified activity, consuming one credit.
+    """
+    current_credits = get_user_credits(user_email, activity)
+    
+    
+    update_user_credits(user_email, activity, current_credits + credits)
+    #print(f"Credit used. Remaining {activity} credits: {credits - 1}")
+    return True
+    
+
 
 def use_credit(user_email, activity):
     """
