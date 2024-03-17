@@ -710,7 +710,7 @@ def update_payment():
         return jsonify(response), 200
     except Exception as e:
         print(e)  # Log the error for debugging
-        app.logger.info(f "error: {str(e)} ")
+        app.logger.info(f"error: {str(e)}")
         response = {'status': 'failure', 'error': str(e)}
         return jsonify(response), 500
 
