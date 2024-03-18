@@ -272,8 +272,8 @@ def convert_voice(file_path1, spk_id, user_email):
     :param spk_id: Speaker ID for voice transformation.
     :param user_email: User's email for job tracking.
     """
-    base_url = os.environ.get('INFER_URL')
-    url = f"{base_url}/convert_voice"
+    #base_url = os.environ.get('INFER_URL')
+    #url = f"{base_url}/convert_voice"
     job = get_current_job()
 
     # Define user_key outside the try block to ensure it's available in the except block
@@ -295,6 +295,24 @@ def convert_voice(file_path1, spk_id, user_email):
     
 
     try:
+        
+        bucket_name = "sing"
+        pod_id = create_pod_and_get_id("infer", "smjain/infer:v6", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
+        app.logger.info('After creating pod for training')
+
+        if not pod_id:
+            raise Exception("Failed to create the pod or retrieve the pod ID.")
+
+        check_pod_is_ready(pod_id)
+        app.logger.info('checked that pod is ready now')
+        
+        
+        
+        
+        url = f'https://{pod_id}-5000.proxy.runpod.net/convert_voice'
+        app.logger.info('before call to upload files for training done')
+
+        
         file_path = os.path.join(directory, new_filename)
         app.logger.error(f'old filepath =: {file_path1}')
         app.logger.error(f'new filepath =: {file_path}')
@@ -314,6 +332,9 @@ def convert_voice(file_path1, spk_id, user_email):
         # Handle successful upload outside the with block
         update_job_status(job.id, "finished", user_email, 'infer')
         use_credit(user_email,'song')
+        redis_client.decr(WORKER_COUNT_KEY)
+        if pod_id:
+            terminate_pod(pod_id)
         return True, "File uploaded successfully."
 
     except requests.exceptions.RequestException as e:
@@ -321,6 +342,9 @@ def convert_voice(file_path1, spk_id, user_email):
         app.logger.info(f'Upload failed: {e}')
         update_job_status(job.id, "failed", user_email, 'infer')
         redis_client.decr(WORKER_COUNT_KEY)
+        
+        #if pod_id:
+        #    terminate_pod(pod_id)
         return False, str(e)
 
     except Exception as e:
@@ -328,6 +352,8 @@ def convert_voice(file_path1, spk_id, user_email):
         app.logger.error(f'Conversion failed: {e}')
         update_job_status(job.id, "failed", user_email, 'infer')
         redis_client.decr(WORKER_COUNT_KEY)
+        #if pod_id:
+        #    terminate_pod(pod_id)
         return False, str(e)
  
     
@@ -424,7 +450,7 @@ def infer_song(file_name, user_email):
 
     try:
         bucket_name = "sing"
-        pod_id = create_pod_and_get_id("infer", "smjain/train:v7", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
+        pod_id = create_pod_and_get_id("infer", "smjain/infer:v6", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
         app.logger.info('After creating pod for training')
 
         if not pod_id:
