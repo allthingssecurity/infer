@@ -447,7 +447,14 @@ def start_infer():
             new_filename = f"{uuid.uuid4()}{file_extension}"  # Generates a new filename with original extension
             filepath = os.path.join(UPLOAD_FOLDER, secure_filename(new_filename))
             file.save(filepath)
-            time.sleep(10)
+            
+            if os.path.exists(filepath):
+                app.logger.info("File exists, proceeding with the process.")
+    # Place the code here that should run after confirming the file exists
+            else:
+                app.logger.info("File does not exist, cannot proceed.")
+                return jsonify({'message': 'Issue with file upload'})
+            
             app.logger.error(f'file saved with filepath =: {filepath}')
             # Adjusted to pass filepath and speaker_name to the main function
             app.logger.info("enqueed the job ")

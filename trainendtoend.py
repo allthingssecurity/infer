@@ -286,18 +286,21 @@ def convert_voice(file_path1, spk_id, user_email):
     directory, filename = os.path.split(file_path1)
     
 
+
+
 # Generate the new file path with job_id as the filename, preserving the original extension
     
-    new_filename = f"{job_id}{os.path.splitext(filename)[1]}"  # Preserves original file extension
-    app.logger.error(f'new file name=: {new_filename}')
-    app.logger.error(f'directory=: {directory}')
+    #new_filename = f"{job_id}{os.path.splitext(filename)[1]}"  # Preserves original file extension
+    #app.logger.error(f'new file name=: {new_filename}')
+    #app.logger.error(f'directory=: {directory}')
     #file_path = os.path.join(directory, new_filename)
     #os.rename(file_path1, file_path)
     #app.logger.error(f'new file path=: {file_path}')
     
 
     try:
-        
+        redis_client.set(f"song_job:{job_id}", unique_file_id)
+        app.logger.info('Setting a correlation for job_id to file to avoid doing all file rename jugglary ')
         bucket_name = "sing"
         pod_id = create_pod_and_get_id("infer", "smjain/infer:v6", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
         app.logger.info('After creating pod for training')
@@ -316,15 +319,15 @@ def convert_voice(file_path1, spk_id, user_email):
         app.logger.info('before call to upload files for training done')
 
         
-        file_path = os.path.join(directory, new_filename)
-        app.logger.error(f'old filepath =: {file_path1}')
-        app.logger.error(f'new filepath =: {file_path}')
+        #file_path = os.path.join(directory, new_filename)
+        #app.logger.error(f'old filepath =: {file_path1}')
+        #app.logger.error(f'new filepath =: {file_path}')
         
-        os.rename(file_path1, file_path)
-        app.logger.error(f'new file path=: {file_path}')
-        time.sleep(10)
+        #os.rename(file_path1, file_path)
+        #app.logger.error(f'new file path=: {file_path}')
+        #time.sleep(10)
     # Open the file and prepare for the POST request
-        with open(file_path, 'rb') as file:
+        with open(file_path1, 'rb') as file:
             files = {'file': file}
             data = {'spk_id': spk_id, 'voice_transform': '0'}
             app.logger.info(f'Infer url: {url}')
