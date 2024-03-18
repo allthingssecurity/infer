@@ -15,6 +15,9 @@ from logging.handlers import RotatingFileHandler
 from flask import Flask, session, redirect, url_for, request,render_template,flash,jsonify
 from rq import get_current_job
 from credit import get_user_credits,update_user_credits,use_credit
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
 
 runpod.api_key =os.getenv("RUNPOD_KEY")
 logging.basicConfig(level=logging.INFO)
@@ -57,6 +60,26 @@ handler.setFormatter(formatter)
 
 app.logger.addHandler(handler)
 app.logger.setLevel(logging.INFO)
+
+
+def requests_retry_session(
+    retries=3,
+    backoff_factor=0.3,
+    status_forcelist=(520, 524),
+    session=None,
+):
+    session = session or requests.Session()
+    retry = Retry(
+        total=retries,
+        read=retries,
+        connect=retries,
+        backoff_factor=backoff_factor,
+        status_forcelist=status_forcelist,
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+    return session
 
 def user_job_key(user_email,type_of_job):
     """Generate a Redis key based on user email."""
@@ -332,7 +355,8 @@ def convert_voice(file_path1, spk_id, user_email):
             app.logger.info(f'Infer url: {url}')
 
             # Send the POST request within the with block to ensure file is open
-            response = requests.post(url, files=files, data=data, timeout=600)
+            response = requests_retry_session().post(url, files=files, data=data, timeout=600)
+            #response = requests.post(url, files=files, data=data, timeout=600)
             response.raise_for_status()  # Ensure HTTP errors are caught
 
         # Handle successful upload outside the with block
