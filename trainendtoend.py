@@ -322,6 +322,7 @@ def convert_voice(file_path1, spk_id, user_email):
         
         os.rename(file_path1, file_path)
         app.logger.error(f'new file path=: {file_path}')
+        time.sleep(5)
     # Open the file and prepare for the POST request
         with open(file_path, 'rb') as file:
             files = {'file': file}
