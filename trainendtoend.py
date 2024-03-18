@@ -384,9 +384,9 @@ def train_model(file_name, model_name, user_email):
         if success:
             
             app.logger.info(f'Job {job.id} success during file upload: {message}')
-            app.logger.info('call to upload files for training')
-            file_key = f'{model_name}.pth'
-            file_exists = check_file_in_space(access_id, secret_key, bucket_name, file_key)
+            app.logger.info('file check done')
+            #file_key = f'{model_name}.pth'
+            #file_exists = check_file_in_space(ACCESS_ID, SECRET_KEY, bucket_name, file_key)
             terminate_pod(pod_id)
             add_model_to_user(user_email, model_name)
             app.logger.info('added model to user')
