@@ -299,7 +299,7 @@ def convert_voice(file_path1, spk_id, user_email):
     
 
     try:
-        redis_client.set(f"song_job:{job_id}", unique_file_id)
+        redis_client.set(f"song_job:{job_id}", filename)
         app.logger.info('Setting a correlation for job_id to file to avoid doing all file rename jugglary ')
         bucket_name = "sing"
         pod_id = create_pod_and_get_id("infer", "smjain/infer:v6", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
