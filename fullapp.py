@@ -11,7 +11,7 @@ import base64
 from flask import request
 import logging
 from logging.handlers import RotatingFileHandler
-from trainendtoend import main,convert_voice
+from trainendtoend import train_model,convert_voice
 import os
 import uuid
 from rq import Worker, Queue, Connection
