@@ -137,9 +137,11 @@ def check_pod_is_ready(pod_id):
             pod_info = response_data['data']['pod']
             if pod_info.get('runtime') and pod_info.get('runtime').get('uptimeInSeconds', 0) > 0:
                 print(f"Pod {pod_id} is up and running.")
+                app.logger.info(f"Pod {pod_id} is up and running.")
                 break
             else:
                 print(f"Waiting for pod {pod_id} to be ready...")
+                app.logger.info(f"Waiting for pod {pod_id} to be ready...")
         else:
             print(f"Pod {pod_id} does not exist or information is not available.")
         
@@ -304,6 +306,7 @@ def convert_voice(file_path1, spk_id, user_email):
             raise Exception("Failed to create the pod or retrieve the pod ID.")
 
         check_pod_is_ready(pod_id)
+        
         app.logger.info('checked that pod is ready now')
         
         
