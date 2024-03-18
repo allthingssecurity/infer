@@ -63,8 +63,8 @@ app.logger.setLevel(logging.INFO)
 
 
 def requests_retry_session(
-    retries=3,
-    backoff_factor=0.3,
+    retries=5,
+    backoff_factor=1,
     status_forcelist=(500, 502, 503, 504, 520, 521, 522, 523, 524),
     allowed_methods=('GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD'),
     session=None,
