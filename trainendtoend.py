@@ -299,6 +299,13 @@ def convert_voice(file_path1, spk_id, user_email):
 
     try:
         
+        file_path = os.path.join(directory, new_filename)
+        app.logger.error(f'old filepath =: {file_path1}')
+        app.logger.error(f'new filepath =: {file_path}')
+        
+        os.rename(file_path1, file_path)
+        app.logger.error(f'new file path=: {file_path}')
+        time.sleep(10)
         bucket_name = "sing"
         pod_id = create_pod_and_get_id("infer", "smjain/infer:v6", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
         app.logger.info('After creating pod for training')
@@ -317,13 +324,7 @@ def convert_voice(file_path1, spk_id, user_email):
         app.logger.info('before call to upload files for training done')
 
         
-        file_path = os.path.join(directory, new_filename)
-        app.logger.error(f'old filepath =: {file_path1}')
-        app.logger.error(f'new filepath =: {file_path}')
         
-        os.rename(file_path1, file_path)
-        app.logger.error(f'new file path=: {file_path}')
-        time.sleep(10)
     # Open the file and prepare for the POST request
         with open(file_path, 'rb') as file:
             files = {'file': file}
