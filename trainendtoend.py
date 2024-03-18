@@ -359,7 +359,7 @@ def download_and_save_mp3(url,audio_id, save_path):
 
 
 
-def main(file_name, model_name, user_email):
+def train_model(file_name, model_name, user_email):
     job = get_current_job()
     update_job_status(job.id, "started", user_email, 'train')
 
@@ -444,11 +444,6 @@ def push_model_to_infer(model_name):
 
 
 
-    
-
-
-if __name__ == "__main__":
-    main()
     
     
 

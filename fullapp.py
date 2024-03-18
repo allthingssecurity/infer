@@ -167,6 +167,11 @@ def authorize():
     app.logger.info(f"User profile response: {user_profile}")  # Use logging
     print(user_profile)  # Or just print it for debugging purposes
     print(user_info['email'])
+    
+    
+    
+    
+    
     if 'email' in user_info:
         session['user_email'] = user_info['email']
         session['logged_in'] = True
@@ -425,7 +430,7 @@ def start_infer():
             return jsonify({'error': 'No file part'})
         file = request.files['file']
         speaker_name = request.form.get('spk_id', '')
-        app.logger.info(f"enqueed the job for speaker {speaker_name} ")
+        app.logger.info(f"enqued the job for speaker {speaker_name} ")
         if file.filename == '':
             return jsonify({'error': 'No selected file'})
         app.logger.info("starting to infer")
@@ -494,9 +499,9 @@ def process_audio():
             else:
                 return jsonify({'error': 'You must join the waitlist to access this feature.'}), 403
 
-    if has_active_jobs(user_email,'train'):
-        app.logger.info(f"job already running for this user {user_email} ")
-        return jsonify({'message': 'Cannot submit new job. A job is already queued or started'})
+    #if has_active_jobs(user_email,'train'):
+    #    app.logger.info(f"job already running for this user {user_email} ")
+    #    return jsonify({'message': 'Cannot submit new job. A job is already queued or started'})
     
     credit_count=get_user_credits(user_email,'song')
     if (credit_count >0):
@@ -521,7 +526,7 @@ def process_audio():
             user_email = session.get('user_email')
             # Adjusted to pass filepath and speaker_name to the main function
             job = q.enqueue_call(
-                func=main, 
+                func=train_model, 
                 args=(filename, model_name,user_email),  # Positional arguments for my_function
                 
                 timeout=2500  # Job-specific parameters like timeout
