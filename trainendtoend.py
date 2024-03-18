@@ -322,7 +322,7 @@ def convert_voice(file_path1, spk_id, user_email):
         
         os.rename(file_path1, file_path)
         app.logger.error(f'new file path=: {file_path}')
-        time.sleep(5)
+        time.sleep(10)
     # Open the file and prepare for the POST request
         with open(file_path, 'rb') as file:
             files = {'file': file}
@@ -343,12 +343,30 @@ def convert_voice(file_path1, spk_id, user_email):
 
     except requests.exceptions.RequestException as e:
         # Handle specific request exceptions
+        
+        #app.logger.info('timeout occured')
+        app.logger.info("Timeout occurred, checking file presence in cloud storage...")
+        file_key = f'{job_id}.mp3'
+        app.logger.info(f'file ={file_key}')
+        file_exists = check_file_in_space(ACCESS_ID, SECRET_KEY, bucket_name, file_key)
+        if file_exists:
+            app.logger.info('file found in space')
+            update_job_status(job.id, "finished", user_email, 'infer')
+            use_credit(user_email,'song')
+            redis_client.decr(WORKER_COUNT_KEY)
+            if pod_id:
+                terminate_pod(pod_id)
+                return True, "Request timed out, but file was processed successfully."
+        else:
+            app.logger.info('file not found in space')
+            return False, "Request timed out and file was not found in cloud storage."
+        
         app.logger.info(f'Upload failed: {e}')
         update_job_status(job.id, "failed", user_email, 'infer')
         redis_client.decr(WORKER_COUNT_KEY)
         
-        #if pod_id:
-        #    terminate_pod(pod_id)
+        if pod_id:
+            terminate_pod(pod_id)
         return False, str(e)
 
     except Exception as e:

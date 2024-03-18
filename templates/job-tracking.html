@@ -71,7 +71,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for job in inference_jobs %}
+        {% for job in inference_jobs.items() %}
         <tr>
             <td>{{ job.file_name }}</td>
             <td>{{ job.status }}</td>
