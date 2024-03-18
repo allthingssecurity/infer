@@ -457,8 +457,9 @@ def start_infer():
             
             app.logger.error(f'file saved with filepath =: {filepath}')
             # Adjusted to pass filepath and speaker_name to the main function
-            app.logger.info("enqueed the job ")
+            
             absolute_path = os.path.abspath(filepath)
+            os.chmod(absolute_path, 0o666)
             
             job = q.enqueue_call(
                 func=convert_voice, 
@@ -467,6 +468,7 @@ def start_infer():
                 timeout=2500  # Job-specific parameters like timeout
         )
             
+            app.logger.info("enqueed the job ")
             #job = q.enqueue(convert_voice, absolute_path, final_speaker_name,user_email)
             job.meta['file_name'] = filename
             job.meta['submission_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
