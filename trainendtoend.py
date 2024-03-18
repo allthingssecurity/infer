@@ -371,6 +371,7 @@ def convert_voice(file_path1, spk_id, user_email):
 
     except Exception as e:
         # Handle other exceptions
+        app.logger.info("error occured .now check file presence in space")
         file_key = f'{job_id}.mp3'
         app.logger.info(f'file ={file_key}')
         file_exists = check_file_in_space(ACCESS_ID, SECRET_KEY, bucket_name, file_key)

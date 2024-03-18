@@ -70,20 +70,14 @@
             <th>Download</th> <!-- Column for download links -->
         </tr>
     </thead>
-    <tbody>
-        {% for job in inference_jobs.items() %}
-        <tr>
-            <td>{{ job.file_name }}</td>
-            <td>{{ job.status }}</td>
-            <td>{{ job.submission_time }}</td>
-            <td>
-                {% if job.status == 'finished' %}
-                <a href="/download/{{ job.job_id }}">Download</a>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
+   <tbody>
+            {% for job_id, status in training_jobs.items() %}
+            <tr>
+                <td>{{ job_id }}</td>
+                <td>{{ status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
 </table>
  </body>
 </html>
