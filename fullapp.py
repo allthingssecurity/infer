@@ -214,7 +214,9 @@ def get_jobs():
     inference_jobs = redis_client.hgetall(inference_jobs_key)
     formatted_training_jobs = {key.decode('utf-8'): value.decode('utf-8') for key, value in training_jobs.items()}
     formatted_inference_jobs = {key.decode('utf-8'): value.decode('utf-8') for key, value in inference_jobs.items()}
-    return render_template('job-tracking.html', training_jobs=formatted_training_jobs, inference_jobs=formatted_inference_jobs)
+    model_credits=get_user_credits(user_email,'model')
+    song_credits=get_user_credits(user_email,'song')
+    return render_template('job-tracking.html', training_jobs=formatted_training_jobs, inference_jobs=formatted_inference_jobs,model_credits=model_credits,song_credits=song_credits)
 
 
 @app.route('/recharge_credits', methods=['POST'])
