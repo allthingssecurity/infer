@@ -854,7 +854,11 @@ def logout():
     # Clear the session, effectively logging the user out of your application
     session.clear()
     # Redirect to homepage or login page after logout
-    return redirect(url_for('login'))
+    google_logout_url = 'https://accounts.google.com/Logout?continue=https://appengine.google.com/_ah/logout?continue=' + url_for('login', _external=True)
+
+    # Redirect to Google logout URL
+    return redirect(google_logout_url)
+    #return redirect(url_for('login'))
 
 
 # Add routes for login, logout, login callback as discussed earlier
