@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Job Tracking</title>
-	<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script>
         async function refreshJobs() {
             const response = await fetch('/get-jobs');
@@ -12,53 +12,70 @@
             document.write(html);
             document.close();
         }
+
+        async function adjustPitch(jobId) {
+            const pitchFactor = document.getElementById('pitchSlider').value;
+            const response = await fetch('/adjust-pitch', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({job_id: jobId, pitch_factor: pitchFactor}),
+            });
+            if (response.ok) {
+                console.log("Pitch adjusted successfully");
+                // You might want to do something here, like updating the UI or playing the adjusted audio.
+            } else {
+                console.error('Error adjusting pitch');
+            }
+        }
     </script>
 </head>
 <body>
 <header>
-        <div class="navbar">
-            <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" class="logo">
-            <nav>
-                <ul>
-                    <li><a href="/train">Model Training</a></li>
-                    <li><a href="/song_conversion">Song Conversion</a></li>
-                    <li><a href="/samples">Samples</a></li>
-					<li><a href="/rechargeModel">Recharge Model</a></li>
-					<li><a href="/rechargeSong">Recharge Song</a></li>
-                </ul>
-            </nav>
-             <div class="user-info">
-                <img src="{{ session['user_image'] if session['user_image'] else url_for('static', filename='default-user-icon.png') }}" alt="User Icon" class="user-icon">
-                <span>Welcome, {{ session['username'] }}</span>
-                <!-- Displaying Credits Information -->
-                <div class="credits-info">
-                    <span>Model Credits: {{ model_credits }}</span>
-                    <span>Song Credits: {{ song_credits }}</span>
-                </div>
-                <a href="/logout" class="logout-btn">Logout</a>
+    <div class="navbar">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" class="logo">
+        <nav>
+            <ul>
+                <li><a href="/train">Model Training</a></li>
+                <li><a href="/song_conversion">Song Conversion</a></li>
+                <li><a href="/samples">Samples</a></li>
+                <li><a href="/rechargeModel">Recharge Model</a></li>
+                <li><a href="/rechargeSong">Recharge Song</a></li>
+            </ul>
+        </nav>
+        <div class="user-info">
+            <img src="{{ session['user_image'] if session['user_image'] else url_for('static', filename='default-user-icon.png') }}" alt="User Icon" class="user-icon">
+            <span>Welcome, {{ session['username'] }}</span>
+            <!-- Displaying Credits Information -->
+            <div class="credits-info">
+                <span>Model Credits: {{ model_credits }}</span>
+                <span>Song Credits: {{ song_credits }}</span>
             </div>
+            <a href="/logout" class="logout-btn">Logout</a>
         </div>
-    </header>
-    <h2>Job Tracking</h2>
-    <button onclick="refreshJobs()">Refresh Jobs</button>
+    </div>
+</header>
+<h2>Job Tracking</h2>
+<button onclick="refreshJobs()">Refresh Jobs</button>
 
-    <h3>Training Jobs</h3>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Job ID</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for job_id, status in training_jobs.items() %}
-            <tr>
-                <td>{{ job_id }}</td>
-                <td>{{ status }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<h3>Training Jobs</h3>
+<table border="1">
+    <thead>
+        <tr>
+            <th>Job ID</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for job_id, status in training_jobs.items() %}
+        <tr>
+            <td>{{ job_id }}</td>
+            <td>{{ status }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
 <h3>Inference Jobs</h3>
 <table border="1">
@@ -66,7 +83,7 @@
         <tr>
             <th>Job ID</th>
             <th>Status</th>
-            <th>Download</th> <!-- Add a column for download links -->
+            <th>Download/Adjust Pitch</th> <!-- Update this column heading -->
         </tr>
     </thead>
     <tbody>
@@ -75,8 +92,9 @@
             <td>{{ job_id }}</td>
             <td>{{ status }}</td>
             <td>
-                {% if status == 'finished' %} <!-- Conditionally display download link -->
+                {% if status == 'finished' %}
                     <a href="/download/{{ job_id }}">Download</a>
+                    | <button onclick="adjustPitch('{{ job_id }}')">Adjust Pitch</button> <!-- Add button for pitch adjustment -->
                 {% else %}
                     N/A
                 {% endif %}
@@ -86,5 +104,11 @@
     </tbody>
 </table>
 
- </body>
+<!-- Slider for selecting pitch factor -->
+<div>
+    <label for="pitchSlider">Pitch Adjustment:</label>
+    <input type="range" id="pitchSlider" min="-12" max="12" value="0">
+</div>
+
+</body>
 </html>
