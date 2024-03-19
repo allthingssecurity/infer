@@ -1,9 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+ 
+     <meta charset="UTF-8">
     <title>Upload or Record Audio Files</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ensure proper scaling on mobile devices -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* Add some basic responsive styling */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            padding: 10px;
+        }
+
+        .navbar ul, .credits-info, .logout-btn {
+            text-align: center;
+            padding: 0;
+        }
+
+        .navbar img, .user-info img {
+            max-width: 100px; /* Make logo and user icon smaller on mobile */
+        }
+
+        form input[type="text"], form input[type="file"], form select, form input[type="submit"] {
+            width: 100%; /* Full width for form elements */
+            margin: 10px 0; /* Add some spacing */
+        }
+
+        @media (min-width: 600px) {
+            /* Styles for screens larger than 600px */
+            .navbar ul {
+                text-align: left;
+            }
+        }
+    </style>
+ 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             // Assuming mediaRecorder is declared at a wider scope for access in multiple functions
