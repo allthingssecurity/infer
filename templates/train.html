@@ -6,12 +6,12 @@
     <title>Upload or Record Audio Files</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ensure proper scaling on mobile devices -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-<style>
+ <style>
+    /* Add some basic responsive styling */
     body {
         margin: 0;
         font-family: Arial, sans-serif;
         padding: 10px;
-        background: #fff; /* Or any color that fits your design */
     }
 
     .navbar ul, .credits-info, .logout-btn {
@@ -20,47 +20,19 @@
     }
 
     .navbar img, .user-info img {
-        max-width: 100px; /* Make logo and user icon smaller */
-    }
-
-    /* Styling for form */
-    form {
-        max-width: 500px; /* Adjust the max-width as necessary */
-        margin: auto; /* This will center the form in the page */
-    }
-
-    form label {
-        display: block;
-        margin: 15px 0 5px; /* Add some space above and below the label */
+        max-width: 100px; /* Make logo and user icon smaller on mobile */
     }
 
     form input[type="text"], form input[type="file"], form select, form input[type="submit"] {
-        width: calc(100% - 22px); /* Adjust width to account for padding and borders */
-        padding: 10px; /* Add padding for better touch targets and aesthetics */
-        margin-bottom: 15px; /* Space out elements */
-        display: block;
-    }
-
-    /* Center align the button */
-    form button {
-        display: block;
-        width: auto; /* Auto-width for the button */
-        padding: 10px 20px; /* Button padding */
-        margin: 15px auto 0; /* Top margin and auto side margins for centering */
-        cursor: pointer; /* Change mouse cursor to signify clickable button */
-    }
-
-    /* Link styling */
-    .job-tracking-link {
-        display: block;
-        text-align: center; /* Center the link text */
-        margin-top: 25px; /* Margin at the top */
-        text-decoration: none; /* Optional: Removes underline from link */
-        color: #000; /* Color for the link */
-        font-weight: bold; /* Make the link text bold */
+        width: 100%; /* Full width for form elements */
+        max-width: 400px; /* Limit the maximum width */
+        box-sizing: border-box; /* Include padding and border in the element's total width */
+        margin: 10px auto; /* Add some spacing and center align */
+        display: block; /* Ensure elements are block level for margin auto to work */
     }
 
     @media (min-width: 600px) {
+        /* Styles for screens larger than 600px */
         .navbar ul {
             text-align: left;
         }
