@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mai Bhi Singer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <div class="navbar">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" class="logo">
+            <nav>
+                <ul>
+                    <li><a href="/train">Model Training</a></li>
+                    <li><a href="/song_conversion">Song Conversion</a></li>
+                    <li><a href="/samples">Samples</a></li>
+                    <li><a href="/rechargeModel">Recharge Model</a></li>
+                    <li><a href="/rechargeSong">Recharge Song</a></li>
+                </ul>
+            </nav>
+            <div class="user-info">
+                <img src="{{ session['user_image'] if session['user_image'] else url_for('static', filename='default-user-icon.png') }}" alt="User Icon" class="user-icon">
+                <span>Welcome, {{ session['username'] }}</span>
+                <div class="credits-info">
+                    <span>Model Credits: {{ model_credits }}</span>
+                    <span>Song Credits: {{ song_credits }}</span>
+                </div>
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="welcome-section">
+            <h1>In Progress</h1>
+            <p>The content you are looking for is currently under development. Please check back later.</p>
+        </section>
+    </main>
+</body>
+</html>

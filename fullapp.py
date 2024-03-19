@@ -616,31 +616,31 @@ def process_payment():
         flash("Payment failed. Please check your card details and try again.")
         return redirect(url_for('payment_form'))
 
-@app.route('/process-recharge', methods=['POST'])
-@login_required
-def process_recharge():
-    user_email = session.get('user_email')
+# @app.route('/process-recharge', methods=['POST'])
+# @login_required
+# def process_recharge():
+    # user_email = session.get('user_email')
 
-    if not user_email:
-        return "User not logged in.", 403
+    # if not user_email:
+        # return "User not logged in.", 403
 
-    # Check if the user is a premium user
-    user_status = redis_client.hget(f"user:{user_email}", "status").decode('utf-8')
-    if user_status != 'premium':
-        return jsonify({'error': 'Only premium users can recharge'}), 403
+    #Check if the user is a premium user
+    # user_status = redis_client.hget(f"user:{user_email}", "status").decode('utf-8')
+    # if user_status != 'premium':
+        # return jsonify({'error': 'Only premium users can recharge'}), 403
 
-    amount = request.form.get('amount')
+    # amount = request.form.get('amount')
 
-    if amount:
-        # In a real app, you would process the payment details with a payment gateway
-        # Simulate successful payment by updating the user's recharge balance
-        current_balance = int(redis_client.hget(f"user:{user_email}", "recharge_balance") or 0)
-        new_balance = current_balance + int(amount)
-        redis_client.hset(f"user:{user_email}", "recharge_balance", new_balance)
+    # if amount:
+        #In a real app, you would process the payment details with a payment gateway
+        #Simulate successful payment by updating the user's recharge balance
+        # current_balance = int(redis_client.hget(f"user:{user_email}", "recharge_balance") or 0)
+        # new_balance = current_balance + int(amount)
+        # redis_client.hset(f"user:{user_email}", "recharge_balance", new_balance)
 
-        return jsonify({'message': 'Recharge successful, new balance: ' + str(new_balance) + ' credits.'})
-    else:
-        return "Invalid request", 400
+        # return jsonify({'message': 'Recharge successful, new balance: ' + str(new_balance) + ' credits.'})
+    # else:
+        # return "Invalid request", 400
 
 
 @app.route('/rechargeModel')
@@ -659,7 +659,8 @@ def rechargeModel():
         model_credits=get_user_credits(user_email,'model')
         song_credits=get_user_credits(user_email,'song')
         
-        return render_template('raz.html',model_credits=model_credits,song_credits=song_credits)
+        #return render_template('raz.html',model_credits=model_credits,song_credits=song_credits)
+        return render_template('wip.html',model_credits=model_credits,song_credits=song_credits)
 
 
 
@@ -679,7 +680,8 @@ def rechargeSong():
         model_credits=get_user_credits(user_email,'model')
         song_credits=get_user_credits(user_email,'song')
         
-        return render_template('raz_song.html',model_credits=model_credits,song_credits=song_credits)
+        #return render_template('raz_song.html',model_credits=model_credits,song_credits=song_credits)
+        return render_template('wip.html',model_credits=model_credits,song_credits=song_credits)
 
 
 
