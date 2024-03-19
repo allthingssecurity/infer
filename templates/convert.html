@@ -104,16 +104,17 @@
         </div>
     </header>
     <h2>Upload File and Select Speaker</h2>
-  <form id="uploadForm" action="{{ url_for('process_audio') }}" method="post" enctype="multipart/form-data">
-    <label for="file">Choose audio files:</label>
-    <input type="file" id="file" name="file" accept=".mp3" multiple required><br><br>
-    
-    <label for="model_name">Model Name:</label>
-    <input type="text" id="model_name" name="model_name" required><br><br>
-    
-    <input type="submit" value="Upload">
+    <form id="upload-form" enctype="multipart/form-data">
+    <label for="file">File: (only mp3 format)</label>
+    <input type="file" id="file" name="file" accept=".mp3" required><br><br> <!-- Only allows .mp3 files -->
+    <label for="speaker_name">Speaker:</label>
+    <select id="spk_id" name="spk_id" required>
+        {% for model in models %}
+        <option value="{{ model }}">{{ model }}</option>
+        {% endfor %}
+    </select><br><br>
+    <button type="button" onclick="uploadFile()">Upload File</button>
 </form>
-
 
     <div>
         <a href="/get-jobs">Go to Job Tracking Page</a>

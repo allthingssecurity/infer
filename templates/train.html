@@ -146,9 +146,9 @@
 
     <h2>Upload Audio Files for Processing</h2>
     <form id="uploadForm" action="{{ url_for('process_audio') }}" method="post" enctype="multipart/form-data">
-        <label for="files">Choose audio files:</label>
-        <input type="file" id="file" name="file" multiple><br><br>
+        <label for="files">Choose audio files (only mp3 format):</label>
         
+        <input type="file" id="file" name="file" accept=".mp3" required><br><br> <!-- Only allows .mp3 files -->
         <label for="model_name">Model Name:</label>
         <input type="text" id="model_name" name="model_name" required><br><br>
         
