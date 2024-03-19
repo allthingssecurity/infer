@@ -6,15 +6,23 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            // Assuming mediaRecorder is declared at a wider scope for access in multiple functions
+            let mediaRecorder;
             let audioBlob = null; // To ensure we can check if an audio has been recorded
 
             document.getElementById("uploadForm").addEventListener("submit", function(event) {
                 event.preventDefault(); // Prevent the default form submission
 
-                // Check if the model name field is empty
+                // Check if the model name field is empty and validate against constraints
                 const modelName = document.getElementById("model_name").value.trim();
                 if (!modelName) {
                     alert('Please enter a model name.');
+                    return;
+                }
+
+                // Validate model name for special characters and length
+                if (!/^[a-zA-Z0-9]{1,10}$/.test(modelName)) {
+                    alert('Model name should only contain letters and numbers, up to 10 characters.');
                     return;
                 }
 
@@ -45,7 +53,7 @@
             document.getElementById("startRecording").addEventListener("click", function() {
                 navigator.mediaDevices.getUserMedia({ audio: true })
                     .then(stream => {
-                        const mediaRecorder = new MediaRecorder(stream);
+                        mediaRecorder = new MediaRecorder(stream);
                         const audioChunks = [];
                         mediaRecorder.ondataavailable = event => {
                             audioChunks.push(event.data);
@@ -71,11 +79,6 @@
                 mediaRecorder.stop();
                 document.getElementById("stopRecording").disabled = true;
                 document.getElementById("startRecording").disabled = false;
-            });
-
-            document.getElementById("confirmUpload").addEventListener("click", function() {
-                // This button click handler is now redundant since the form submission is being handled above.
-                // You might want to remove this handler entirely or repurpose it as needed.
             });
         });
     </script>
