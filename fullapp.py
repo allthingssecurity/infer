@@ -160,8 +160,8 @@ def validate_audio_file(file):
     if file.content_length > 10 * 1024 * 1024:  # 10 MB limit
         return jsonify({"error": "File size exceeds 10 MB"}), 400
 
-    app.logger.info(("after file access")
-    app.logger.info(("check if model is there in weights dir or not")
+    app.logger.info("after file access")
+    app.logger.info("check if model is there in weights dir or not")
     filename_without_extension = os.path.splitext(file.filename)[0]
     
    
