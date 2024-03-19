@@ -22,6 +22,8 @@ from multiprocessing import Process
 from credit import get_user_credits,update_user_credits,use_credit,add_credits
 from datetime import datetime
 import requests
+from pydub import AudioSegment
+import io
 #import razorpay
 #client = razorpay.Client(auth=("YOUR_API_KEY", "YOUR_API_SECRET"))
 
@@ -141,6 +143,57 @@ def has_active_jobs(user_email,type_of_job):
         if status.decode('utf-8') in ['queued', 'started']:
             return True
     return False
+
+
+
+
+
+def validate_audio_file(file):
+    """
+    Validates the uploaded audio file based on its size and length.
+    
+    :param file: The uploaded file object.
+    :param spk_id: The speaker ID or model ID associated with the file.
+    :return: A tuple containing a JSON response and status code if validation fails, or (None, None) if validation succeeds.
+    """
+    # Check file size
+    if file.content_length > 10 * 1024 * 1024:  # 10 MB limit
+        return jsonify({"error": "File size exceeds 10 MB"}), 400
+
+    app.logger.info(("after file access")
+    app.logger.info(("check if model is there in weights dir or not")
+    filename_without_extension = os.path.splitext(file.filename)[0]
+    
+   
+
+    # Map content types to audio formats
+    content_type_format_map = {
+        'audio/mpeg': 'mp3',
+        'audio/wav': 'wav',
+        'audio/x-wav': 'wav',
+        'audio/mp4': 'mp4',
+        'audio/x-m4a': 'mp4',
+    }
+
+    # Default to 'mp3' if content type is unknown
+    audio_format = content_type_format_map.get(file.content_type, 'mp3')
+
+    # Convert the uploaded file to an audio segment
+    try:
+        audio = AudioSegment.from_file(io.BytesIO(file.read()), format=audio_format)
+    except Exception as e:
+        return jsonify({"error": f"Failed to process the audio file: {str(e)}"}), 400
+    finally:
+        file.seek(0)  # Reset file pointer after reading
+
+    # Calculate audio length in minutes
+    audio_length_minutes = len(audio) / 60000.0  # pydub returns length in milliseconds
+
+    if audio_length_minutes > 5:  # 5 minutes limit
+        return jsonify({"error": "Audio length exceeds 5 minutes"}), 400
+
+    # If the file passes all checks
+    return None, None
 
 
 
@@ -440,7 +493,12 @@ def start_infer():
     #current_count = int(redis_client.hget(f"user:{user_email}:infer", "songs_converted"))
     #tier_limits = {"trial": 2, "premium": 4}
     if (credit_count > 0):
+        
+        
 
+        # Proceed with your file processing logic here if validation succeeds
+        
+        
 
         if 'file' not in request.files:
             return jsonify({'error': 'No file part'})
@@ -458,6 +516,9 @@ def start_infer():
             return jsonify({'error': 'Model is not yet trained for the specified speaker'})
 
         if file:
+            validation_response, status_code = validate_audio_file(file)
+            if validation_response:
+                return validation_response, status_code
             filename = file.filename  # Original filename
             file_extension = os.path.splitext(filename)[1]  # Extracts file extension including the dot (.)
             new_filename = f"{uuid.uuid4()}{file_extension}"  # Generates a new filename with original extension
@@ -541,7 +602,7 @@ def process_audio():
     credit_count=get_user_credits(user_email,'song')
     if (credit_count >0):
     
-    
+        
     
     
 
@@ -551,7 +612,13 @@ def process_audio():
         model_name = request.form.get('model_name', '')
         if file.filename == '':
             return jsonify({'error': 'No selected file'})
+        
+        
+        
         if file:
+            validation_response, status_code = validate_audio_file(file)
+            if validation_response:
+                return validation_response, status_code
             filename = uuid.uuid4().hex + '_' + file.filename
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             file.save(filepath)
