@@ -7,3 +7,5 @@ requests
 runpod
 authlib
 pydub
+pyrubberband
+librosa
