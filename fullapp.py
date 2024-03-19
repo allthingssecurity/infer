@@ -516,9 +516,9 @@ def start_infer():
             return jsonify({'error': 'Model is not yet trained for the specified speaker'})
 
         if file:
-            validation_response, status_code = validate_audio_file(file)
-            if validation_response:
-                return validation_response, status_code
+            #validation_response, status_code = validate_audio_file(file)
+            #if validation_response:
+            #    return validation_response, status_code
             filename = file.filename  # Original filename
             file_extension = os.path.splitext(filename)[1]  # Extracts file extension including the dot (.)
             new_filename = f"{uuid.uuid4()}{file_extension}"  # Generates a new filename with original extension
@@ -616,9 +616,9 @@ def process_audio():
         
         
         if file:
-            validation_response, status_code = validate_audio_file(file)
-            if validation_response:
-                return validation_response, status_code
+            #validation_response, status_code = validate_audio_file(file)
+            #if validation_response:
+            #    return validation_response, status_code
             filename = uuid.uuid4().hex + '_' + file.filename
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             file.save(filepath)
