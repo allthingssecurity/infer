@@ -180,13 +180,13 @@ def authorize():
         user_email=user_info['email']
         
         if is_feature_waitlist_enabled():
-        if not is_user_authorized(user_email):
-            if is_user_in_waitlist(user_email):
-                # User is in waitlist, can only see samples
-                return render_template('waitlist_only_samples.html', user_info=session)
-            else:
-                # User not in waitlist, prompt to join
-                return render_template('join_waitlist.html', user_info=session)
+            if not is_user_authorized(user_email):
+                if is_user_in_waitlist(user_email):
+                    # User is in waitlist, can only see samples
+                    return render_template('waitlist_only_samples.html', user_info=session)
+                else:
+                    # User not in waitlist, prompt to join
+                    return render_template('join_waitlist.html', user_info=session)
         
         
         
