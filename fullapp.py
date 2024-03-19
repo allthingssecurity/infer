@@ -24,9 +24,9 @@ from datetime import datetime
 import requests
 from pydub import AudioSegment
 import io
-import librosa
-import soundfile as sf
-import pyrubberband as pyrb
+#import librosa
+#import soundfile as sf
+#import pyrubberband as pyrb
 #import razorpay
 #client = razorpay.Client(auth=("YOUR_API_KEY", "YOUR_API_SECRET"))
 
@@ -920,22 +920,22 @@ def payment_webhook():
         return jsonify({"status": "verification failed"}), 400
 
 
-@app.route('/adjust_pitch', methods=['POST'])
-def adjust_pitch():
-    job_id = request.json['job_id']
-    pitch_factor = request.json['pitch_factor']
-    audio_path = os.path.join(DOWNLOADS_DIR, f'{job_id}.mp3')
+# @app.route('/adjust_pitch', methods=['POST'])
+# def adjust_pitch():
+    # job_id = request.json['job_id']
+    # pitch_factor = request.json['pitch_factor']
+    # audio_path = os.path.join(DOWNLOADS_DIR, f'{job_id}.mp3')
     
-    # Check if file exists, otherwise download
-    if not os.path.exists(audio_path):
-        download_song_for_job(job_id, audio_path) # Implement this function
+    #Check if file exists, otherwise download
+    # if not os.path.exists(audio_path):
+        # download_song_for_job(job_id, audio_path) # Implement this function
     
-    # Adjust pitch
-    y, sr = librosa.load(audio_path)
-    y_shifted = pyrb.pitch_shift(y, sr, pitch_factor)
-    output_path = f'adjusted_{job_id}.wav'
-    sf.write(output_path, y_shifted, sr)
-    return send_file(output_path, as_attachment=True)
+    #Adjust pitch
+    # y, sr = librosa.load(audio_path)
+    # y_shifted = pyrb.pitch_shift(y, sr, pitch_factor)
+    # output_path = f'adjusted_{job_id}.wav'
+    # sf.write(output_path, y_shifted, sr)
+    # return send_file(output_path, as_attachment=True)
 
 
 @app.route('/logout')
