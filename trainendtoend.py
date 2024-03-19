@@ -263,12 +263,13 @@ def upload_files(access_id, secret_key, url, model_name, bucket_name, file_path)
 
         # Send a POST request to the server
         try:
-            response = requests.post(url, files=files, data=data, timeout=600)
+            #response = requests.post(url, files=files, data=data, timeout=600)
+            response = requests_retry_session().post(url, files=files, data=data, timeout=600)
             response.raise_for_status()  # This will raise an exception for HTTP error codes
             return True, "File uploaded successfully."
-        except requests.exceptions.RequestException as e:
-            # This block will only execute for timeouts, indicating server-side processing time exceeded
-            app.logger.info('timeout occured')
+            
+        except requests.exceptions.ReadTimeout:
+            app.logger.info('read timeout occured')
             print("Timeout occurred, checking file presence in cloud storage...")
             file_key = f'{model_name}.pth'
             file_exists = check_file_in_space(access_id, secret_key, bucket_name, file_key)
@@ -278,6 +279,10 @@ def upload_files(access_id, secret_key, url, model_name, bucket_name, file_path)
             else:
                 app.logger.info('file not found in space')
                 return False, "Request timed out and file was not found in cloud storage."
+        except requests.exceptions.RequestException as e:
+            # This block will only execute for timeouts, indicating server-side processing time exceeded
+            print(f"Failed to upload after retries. Error: {e}")
+            return False, "Failed to upload file after maximum retries."
             #check_file_in_space(access_id, secret_key, bucket_name, file_key) 
             #return False, "Request timed out. Checking if file was processed..."
         
