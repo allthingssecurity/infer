@@ -177,8 +177,22 @@ def authorize():
         session['logged_in'] = True
         session['user_image'] = user_profile.get('picture', None)
         create_user_account_if_not_exists(user_info['email'])
+        user_email=user_info['email']
+        
+        if is_feature_waitlist_enabled():
+        if not is_user_authorized(user_email):
+            if is_user_in_waitlist(user_email):
+                # User is in waitlist, can only see samples
+                return render_template('waitlist_only_samples.html', user_info=session)
+            else:
+                # User not in waitlist, prompt to join
+                return render_template('join_waitlist.html', user_info=session)
+        
+        
+        
+        
         # Perform any additional processing or actions as needed
-        return render_template('join_waitlist.html')
+        return render_template('index.html')
     else:
         # Handle the case where the email is not available
         return redirect(url_for('login'))
