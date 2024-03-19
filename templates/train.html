@@ -3,34 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <title>Upload or Record Audio Files</title>
-	<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script>
-        // Function to check the status of the job
-        
-
-        // When the DOM is fully loaded
         document.addEventListener("DOMContentLoaded", function() {
-            // Handling form submission
+            let audioBlob = null; // To ensure we can check if an audio has been recorded
+
             document.getElementById("uploadForm").addEventListener("submit", function(event) {
                 event.preventDefault(); // Prevent the default form submission
 
+                // Check if the model name field is empty
+                const modelName = document.getElementById("model_name").value.trim();
+                if (!modelName) {
+                    alert('Please enter a model name.');
+                    return;
+                }
+
+                // Check if a file is selected or an audio has been recorded
+                const fileInput = document.getElementById("file");
+                if (!fileInput.files.length && !audioBlob) {
+                    alert('Please select a file to upload or record an audio.');
+                    return;
+                }
+
                 const formData = new FormData(this);
+                if (audioBlob) {
+                    formData.append('file', audioBlob, 'recorded_audio.mp3');
+                }
                 
-                // Submit the form data using fetch
                 fetch('{{ url_for("process_audio") }}', {
                     method: 'POST',
                     body: formData
                 })
                 .then(response => response.json())
                 .then(data => {
-                    console.log("Job submitted:", data);
-                    if (data.job_id) {
-                        //checkJobStatus(data.job_id); // Start checking the job status
-						alert('File upload started. Track the job status on the Job Tracking page.');
-                    } else {
-                        alert(data.message || 'Failed to start the job.'); // Fallback message if no specific message is provided
-        
-                    }
+                    alert('File upload started. Track the job status on the Job Tracking page.');
                 })
                 .catch(error => console.error("Error submitting the form: ", error));
             });
@@ -39,8 +45,8 @@
             document.getElementById("startRecording").addEventListener("click", function() {
                 navigator.mediaDevices.getUserMedia({ audio: true })
                     .then(stream => {
-                        mediaRecorder = new MediaRecorder(stream);
-                        audioChunks = [];
+                        const mediaRecorder = new MediaRecorder(stream);
+                        const audioChunks = [];
                         mediaRecorder.ondataavailable = event => {
                             audioChunks.push(event.data);
                         };
@@ -48,40 +54,28 @@
 
                         document.getElementById("startRecording").disabled = true;
                         document.getElementById("stopRecording").disabled = false;
+
+                        mediaRecorder.onstop = () => {
+                            audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                            const audioUrl = URL.createObjectURL(audioBlob);
+                            document.getElementById("audioPlayback").src = audioUrl;
+                            document.getElementById("audioPlayback").hidden = false;
+                            document.getElementById("confirmUpload").hidden = false;
+                            // Clear the file input since we're using recorded audio
+                            document.getElementById("file").value = "";
+                        };
                     }).catch(error => console.error("Error accessing the microphone: ", error));
             });
 
             document.getElementById("stopRecording").addEventListener("click", function() {
                 mediaRecorder.stop();
                 document.getElementById("stopRecording").disabled = true;
-
-                mediaRecorder.onstop = () => {
-                    audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
-                    let audioUrl = URL.createObjectURL(audioBlob);
-                    document.getElementById("audioPlayback").src = audioUrl;
-                    document.getElementById("audioPlayback").hidden = false;
-                    document.getElementById("confirmUpload").hidden = false;
-                };
+                document.getElementById("startRecording").disabled = false;
             });
 
             document.getElementById("confirmUpload").addEventListener("click", function() {
-                const formData = new FormData(document.getElementById("uploadForm"));
-                formData.append('file', audioBlob, 'recorded_audio.mp3');
-                fetch('{{ url_for("process_audio") }}', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data);
-                    if (data.job_id) {
-                        checkJobStatus(data.job_id); // Start checking the job status
-                    }
-                })
-                .catch(error => console.error("Error submitting the audio: ", error));
-
-                document.getElementById("audioPlayback").hidden = true;
-                document.getElementById("confirmUpload").hidden = true;
+                // This button click handler is now redundant since the form submission is being handled above.
+                // You might want to remove this handler entirely or repurpose it as needed.
             });
         });
     </script>
