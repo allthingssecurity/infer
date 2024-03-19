@@ -263,7 +263,9 @@ def upload_files(access_id, secret_key, url, model_name, bucket_name, file_path)
 
         # Send a POST request to the server
         try:
-            response = requests.post(url, files=files, data=data, timeout=600)
+            #response = requests.post(url, files=files, data=data, timeout=600)
+            # replacing code with handling of retries
+            response = requests_retry_session().post(url, files=files, data=data, timeout=600)
             response.raise_for_status()  # This will raise an exception for HTTP error codes
             return True, "File uploaded successfully."
         except requests.exceptions.RequestException as e:
