@@ -6,19 +6,39 @@
 	<title>File Upload</title>
 	<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script>
-        // Function to submit the form data
         async function uploadFile() {
+            // Validate if a file has been selected
+            const fileInput = document.getElementById('file');
+            if (!fileInput.files.length) {
+                alert('Please select a file to upload.');
+                return;
+            }
+
+            // Validate if a speaker is selected
+            const speakerSelect = document.getElementById('spk_id');
+            if (!speakerSelect.value) {
+                alert('Please select a speaker.');
+                return;
+            }
+
+            // Prepare the form data
             const formData = new FormData(document.getElementById('upload-form'));
-            const response = await fetch('/start_infer', {
-                method: 'POST',
-                body: formData
-            });
-            const data = await response.json();
-            if (data.job_id) {
-                alert('File upload started. Track the job status on the Job Tracking page.');
-            } else {
-                alert(data.message || 'Failed to start the job.'); // Fallback message if no specific message is provided
-				
+            
+            try {
+                const response = await fetch('/start_infer', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.job_id) {
+                    alert('File upload started. Track the job status on the Job Tracking page.');
+                } else {
+                    alert(data.message || 'Failed to start the job.'); // Fallback message if no specific message is provided
+                }
+            } catch (error) {
+                console.error("Error submitting the form: ", error);
+                alert('An error occurred while uploading the file.');
             }
         }
     </script>
