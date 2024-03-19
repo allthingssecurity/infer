@@ -189,7 +189,7 @@ def validate_audio_file(file):
     # Calculate audio length in minutes
     audio_length_minutes = len(audio) / 60000.0  # pydub returns length in milliseconds
 
-    if audio_length_minutes > 5:  # 5 minutes limit
+    if audio_length_minutes > 6:  # 5 minutes limit
         return jsonify({"error": "Audio length exceeds 5 minutes"}), 400
 
     # If the file passes all checks
