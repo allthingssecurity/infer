@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+</head>
+<body>
+    <h1>Admin Panel</h1>
+
+    <h2>Delete Job</h2>
+    <form action="/admin/delete_job" method="POST">
+        User Key: <input type="text" name="user_key"><br>
+        Job ID: <input type="text" name="job_id"><br>
+        <input type="submit" value="Delete Job">
+    </form>
+
+    <h2>Check Waitlist</h2>
+    <button onclick="checkWaitlist()">Check Waitlist</button>
+    <p id="waitlistUsers"></p>
+
+    <h2>Add Credits</h2>
+    <form action="/admin/add_credits" method="POST">
+        User Email: <input type="text" name="user_email"><br>
+        Activity: <input type="text" name="activity"><br>
+        Credits: <input type="text" name="credits"><br>
+        <input type="submit" value="Add Credits">
+    </form>
+
+    <h2>Delete All Jobs for User</h2>
+    <form action="/admin/delete_all_jobs" method="POST">
+        User Key: <input type="text" name="user_key"><br>
+        <input type="submit" value="Delete All Jobs">
+    </form>
+
+    <h2>Move User from Waitlist to Approved</h2>
+    <form action="/admin/move_to_approved" method="POST">
+        User Email: <input type="text" name="user_email"><br>
+        <input type="submit" value="Move to Approved">
+    </form>
+
+    <script>
+        function checkWaitlist() {
+            fetch('/admin/check_waitlist')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('waitlistUsers').innerHTML = data.waitlisted_users.join(', ');
+                });
+        }
+    </script>
+
+</body>
+</html>

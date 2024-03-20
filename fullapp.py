@@ -24,6 +24,7 @@ from datetime import datetime
 import requests
 from pydub import AudioSegment
 import io
+from admin import admin_blueprint
 #import librosa
 #import soundfile as sf
 #import pyrubberband as pyrb
@@ -35,6 +36,7 @@ import io
 
 
 app = Flask(__name__)
+app.register_blueprint(admin_blueprint)
 app.secret_key = 'your_secret_key'
 UPLOAD_FOLDER = 'uploads'
 MAX_WORKERS = 20  # Adjust based on your requirements
