@@ -776,7 +776,7 @@ def generate_video():
             #source_image_filename = secure_filename(source_image.filename)
             #print(f"source file={source_image_filename}")
             
-            print(f"audio file={audio_path}")
+            app.logger.info(f"audio file={audio_path}")
             #source_image_path = os.path.join(UPLOAD_FOLDER, source_image_filename)
             
             #source_image.save(source_image_path)

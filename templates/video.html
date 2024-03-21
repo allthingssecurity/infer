@@ -35,7 +35,7 @@
                 .then(data => {
                     const select = document.getElementById('jobIdSelect');
                     Object.entries(data.inference_jobs).forEach(([key, value]) => {
-                        let option = new Option(`Job ID: ${key}`, key);
+                        let option = new Option(`${key}`, key);
                         select.appendChild(option);
                     });
                 })
