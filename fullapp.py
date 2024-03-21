@@ -796,7 +796,8 @@ def generate_video():
                 
                 timeout=2500  # Job-specific parameters like timeout
         )
-            
+            p = Process(target=start_worker)
+            p.start()     
             app.logger.info("enqueed the job ")
             
             
