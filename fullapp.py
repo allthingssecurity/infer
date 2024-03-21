@@ -788,6 +788,7 @@ def generate_video():
 
             # Construct the new key
             new_key = f"{filename_without_extension}##{job_id}.mp4"
+            app.logger.info(f"file key={new_key}")
 
             ref_video_file = None
             if ref_video_path and ref_video_path.filename != '':
