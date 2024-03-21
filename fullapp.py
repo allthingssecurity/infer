@@ -759,7 +759,7 @@ def generate_video():
             # Check if the post request has the file parts
             source_image_filename = request.form.get('source_image_filename')
             source_image_path = os.path.join(app.static_folder, source_image_filename)
-            app.logger.info("image path={source_image_path}")
+            app.logger.info(f"image path={source_image_path}")
             #if 'source_image' not in request.files :
             #    return 'Missing files', 400
             #source_image = request.files['source_image']
@@ -777,7 +777,7 @@ def generate_video():
             #print(f"source file={source_image_filename}")
             
             print(f"audio file={audio_path}")
-            source_image_path = os.path.join(UPLOAD_FOLDER, source_image_filename)
+            #source_image_path = os.path.join(UPLOAD_FOLDER, source_image_filename)
             
             #source_image.save(source_image_path)
             
