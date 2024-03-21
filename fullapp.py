@@ -766,12 +766,12 @@ def generate_video():
             job_id = request.form.get('job_id')
             if not job_id:
                 return 'Missing job ID', 400
-            
+            app.logger.info(f"image path={source_image_path}")
             audio_path = download_for_video(job_id)
             ref_video_path = request.files.get('ref_video_path')  # Optional
 
-            if source_image.filename == '' :
-                return 'No selected image file', 400
+            #if source_image.filename == '' :
+             #   return 'No selected image file', 400
 
             #source_image_filename = secure_filename(source_image.filename)
             #print(f"source file={source_image_filename}")
