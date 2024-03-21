@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Generate Video</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            text-align: center;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        select, input, button {
+            margin: 10px 0;
+            padding: 10px;
+        }
+        #refVideoLabel, #refVideoInput {
+            display: block;
+            margin: 10px auto;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Fetch inference jobs to populate dropdown
+            fetch('/get-inference-jobs')
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.getElementById('jobIdSelect');
+                    Object.entries(data.inference_jobs).forEach(([key, value]) => {
+                        let option = new Option(`Job ID: ${key}`, key);
+                        select.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching inference jobs:', error));
+
+            // Form submission to generate video
+            document.getElementById('generateVideoForm').addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent the default form submission
+
+                const formData = new FormData(this);
+                fetch('/generate_video', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Video generation initiated. Please check the job status page for updates.');
+                    // Optionally redirect or update the UI here
+                })
+                .catch(error => console.error('Error submitting the form:', error));
+            });
+        });
+    </script>
+</head>
+<body>
+<header>
+        <div class="navbar">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" class="logo">
+            <nav>
+                 <ul>
+                    <li><a href="/train">Model Training</a></li>
+                    <li><a href="/song_conversion">Song Conversion</a></li>
+                    <li><a href="/samples">Samples</a></li>
+					<li><a href="/rechargeModel">Recharge Model</a></li>
+					<li><a href="/rechargeSong">Recharge Song</a></li>
+					<li><a href="/gen_video">Generate Video</a></li>
+                </ul>
+            </nav>
+             <div class="user-info">
+                <img src="{{ session['user_image'] if session['user_image'] else url_for('static', filename='default-user-icon.png') }}" alt="User Icon" class="user-icon">
+                <span>Welcome, {{ session['username'] }}</span>
+                <!-- Displaying Credits Information -->
+                <div class="credits-info">
+                    <span>Model Credits: {{ model_credits }}</span>
+                    <span>Song Credits: {{ song_credits }}</span>
+                </div>
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
+        </div>
+    </header>
+
+<div class="container">
+    <h2>Generate Video</h2>
+    <form id="generateVideoForm" enctype="multipart/form-data">
+        <label for="jobIdSelect">Select Inference Job:</label>
+        <select id="jobIdSelect" name="job_id" required>
+            <option value="">--Please choose an inference job--</option>
+            <!-- Inference jobs will be populated here -->
+        </select>
+        <br>
+        <div>
+            <label>Predefined Source Image:</label>
+            <img src="{{ url_for('static', filename='predefined_source_image.jpg') }}" alt="Source Image">
+            <!-- Assuming the image is stored in your static files -->
+        </div>
+        <br>
+        <label id="refVideoLabel" for="refVideoInput">Optional Reference Video:</label>
+        <input id="refVideoInput" type="file" name="ref_video_path" accept="video/*">
+        <br>
+        <button type="submit">Generate Video</button>
+    </form>
+    <br>
+    <a href="/get-jobs">Back to Job Tracking Page</a>
+</div>
+</body>
+</html>

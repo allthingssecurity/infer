@@ -258,7 +258,19 @@ def authorize():
     return render_template('join_waitlist.html')
 
 
-
+@app.route('/get-inference-jobs')
+@login_required
+def get_inference_jobs():
+    user_email = session['user_email']
+    inference_jobs_key = user_job_key(user_email, 'infer')
+    inference_jobs = redis_client.hgetall(inference_jobs_key)
+    formatted_inference_jobs = {key.decode('utf-8'): value.decode('utf-8') for key, value in inference_jobs.items()}
+    
+    # For a web page, you would use render_template and pass the jobs to it
+    # return render_template('select-inference-job.html', inference_jobs=formatted_inference_jobs)
+    
+    # For an AJAX call, you might return JSON
+    return jsonify(inference_jobs=formatted_inference_jobs)
 
 
 @app.route('/get-jobs')
@@ -268,13 +280,17 @@ def get_jobs():
     user_email = session['user_email']
     training_jobs_key = user_job_key(user_email, 'train')
     inference_jobs_key = user_job_key(user_email, 'infer')
+    video_jobs_key = user_job_key(user_email, 'video')
     training_jobs = redis_client.hgetall(training_jobs_key)
     inference_jobs = redis_client.hgetall(inference_jobs_key)
+    video_jobs= redis_client.hgetall(video_jobs_key)
     formatted_training_jobs = {key.decode('utf-8'): value.decode('utf-8') for key, value in training_jobs.items()}
     formatted_inference_jobs = {key.decode('utf-8'): value.decode('utf-8') for key, value in inference_jobs.items()}
+    formatted_video_jobs = {key.decode('utf-8'): value.decode('utf-8') for key, value in video_jobs.items()}
     model_credits=get_user_credits(user_email,'model')
     song_credits=get_user_credits(user_email,'song')
-    return render_template('job-tracking.html', training_jobs=formatted_training_jobs, inference_jobs=formatted_inference_jobs,model_credits=model_credits,song_credits=song_credits)
+    
+    return render_template('job-tracking.html', training_jobs=formatted_training_jobs, inference_jobs=formatted_inference_jobs,video_jobs=formatted_video_jobs,model_credits=model_credits,song_credits=song_credits)
 
 
 @app.route('/recharge_credits', methods=['POST'])
@@ -439,6 +455,28 @@ def dummy_model_training():
     time.sleep(5)  # Sleep for 5 seconds to simulate computation
     return "Model trained successfully"
 
+
+@app.route('/gen_video')
+@login_required
+def gen_video():
+    user_email = session.get('user_email')  # Assuming current_user has an email attribute
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        if is_feature_waitlist_enabled():
+            if not is_user_authorized(user_email):
+                if is_user_in_waitlist(user_email):
+                    return jsonify({'error': 'You are on the waitlist but not yet authorized. Please wait for authorization.'}), 403
+                else:
+                    return jsonify({'error': 'You must join the waitlist to access this feature.'}), 403
+        model_credits=get_user_credits(user_email,'model')
+        song_credits=get_user_credits(user_email,'song')
+        
+        return render_template('video.html',model_credits=model_credits,song_credits=song_credits)
+
+
+
+
 @app.route('/train')
 @login_required
 def train():
@@ -456,6 +494,7 @@ def train():
         song_credits=get_user_credits(user_email,'song')
         
         return render_template('train.html',model_credits=model_credits,song_credits=song_credits)
+
 
 
 
@@ -571,6 +610,24 @@ def start_infer():
     else:
         app.logger.info(f"max song conversion exceeded for the user {user_email}. Buy credits")
         return jsonify({'message': 'You have reached max limits for song conversion. Buy credits '})
+
+
+@app.route('/download_video/<job_id>')
+@login_required
+def download_video(job_id):
+    # Here, you would determine the file_key from the job_id
+    # For this example, let's assume they are the same
+    file_key = f'{job_id}.mp4'
+    
+    # Call the download function
+    local_file_path = download_from_do(file_key)
+    
+    if local_file_path:
+        return send_file(local_file_path, as_attachment=True)
+    else:
+        return "Download failed", 404
+
+
 
 
 @app.route('/download/<job_id>')
@@ -702,6 +759,8 @@ def generate_video():
                 return 'Missing files', 400
             source_image = request.files['source_image']
             job_id = request.form.get('job_id')
+            if not job_id:
+                return 'Missing job ID', 400
 
             audio_path = download_for_video(job_id)
             ref_video_path = request.files.get('ref_video_path')  # Optional

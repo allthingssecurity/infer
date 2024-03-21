@@ -86,5 +86,37 @@
     </tbody>
 </table>
 
+
+
+<h3>Video Jobs</h3>
+<table border="1">
+    <thead>
+        <tr>
+            <th>Job ID</th>
+            <th>Status</th>
+            <th>Download</th> <!-- Add a column for download links -->
+        </tr>
+    </thead>
+    <tbody>
+        {% for job_id, status in video_jobs.items() %}
+        <tr>
+            <td>{{ job_id }}</td>
+            <td>{{ status }}</td>
+            <td>
+                {% if status == 'finished' %} <!-- Conditionally display download link -->
+                    <a href="/download_video/{{ job_id }}">Download</a>
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+
+
+
  </body>
 </html>
