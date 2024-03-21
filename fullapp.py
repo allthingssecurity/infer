@@ -803,7 +803,7 @@ def generate_video():
             
             return jsonify(message="Files processed and uploaded successfully and Job Enqueued"), 200
     except Exception as e:
-        print(f"An error occurred: {e}")
+        app.logger.info(f"An error occurred: {e}")
         return jsonify(error=str(e)), 500
 
 
