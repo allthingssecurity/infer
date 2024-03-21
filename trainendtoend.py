@@ -537,7 +537,7 @@ def generate_video_job(source_image_path, audio_file_path,ref_video_path, audio_
         
         
         
-        url = f'https://{pod_id}-5000.proxy.runpod.net/generate_video'
+        url = f'https://{pod_id}-5000.proxy.runpod.net'
         app.logger.info('before call to upload files for training done')
         
         
