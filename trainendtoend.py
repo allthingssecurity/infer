@@ -495,14 +495,17 @@ def generate_video_call(image_file_path, audio_file_path,audio_job_id, url):
         # 'ref_video_path': open(ref_video_file_path, 'rb'),
     }
     bucket_name = "sing"
+    app.logger.info('sleep for 20 secs for pod to be warmed up')
+    time.sleep(20)
+    app.logger.info(f'now go for making a call at {url}')
     try:
         response = requests.post(url, files=files, timeout=600)
         response.raise_for_status()  # This will raise an exception for HTTP error codes
         return True, "File uploaded successfully."
     except requests.exceptions.RequestException as e:
         # This block will only execute for timeouts, indicating server-side processing time exceeded
-        app.logger.info('timeout occured')
-        print("Timeout occurred, checking file presence in cloud storage...")
+        app.logger.info(f'error occured{str(e)}')
+        #print("Timeout occurred, checking file presence in cloud storage...")
         file_key = f'{audio_job_id}.mp4'
         file_exists = check_file_in_space(ACCESS_ID, SECRET_KEY, bucket_name, file_key)
         if file_exists:
