@@ -86,4 +86,51 @@ def download_from_do_with_prefix(prefix):
         print("No files found with the specified prefix.")
         return None
 
-# Initiate session
+
+import os
+from boto3 import session
+
+def download_from_do_with_job_id(job_id):
+    boto_session = session.Session()
+    client = boto_session.client('s3',
+                                 region_name='nyc3',
+                                 endpoint_url='https://nyc3.digitaloceanspaces.com',
+                                 aws_access_key_id=ACCESS_ID,
+                                 aws_secret_access_key=SECRET_KEY)
+    
+    # Ensure the downloads directory exists
+    downloads_dir = 'downloads'
+    if not os.path.exists(downloads_dir):
+        os.makedirs(downloads_dir)
+    
+    # List all objects in the Space (or use a more general prefix if applicable)
+    response = client.list_objects(Bucket='sing')
+    
+    matched_files = []
+    if 'Contents' in response:
+        for content in response['Contents']:
+            file_key = content['Key']
+            # Split the filename to extract the job ID part
+            parts = file_key.split('##')
+            if len(parts) > 1 and job_id in parts[1]:
+                matched_files.append(file_key)
+                
+    if matched_files:
+        # For simplicity, assuming you want to download the first matched file
+        file_key = matched_files[0]
+        full_local_path = os.path.join(downloads_dir, os.path.basename(file_key))
+        
+        # Download the file from your Space
+        client.download_file('sing', file_key, full_local_path)
+        
+        # Verify the download
+        if os.path.exists(full_local_path):
+            print(f"File downloaded successfully to {full_local_path}")
+            return full_local_path
+        else:
+            print("Download failed.")
+            return None
+    else:
+        print("No files found matching the job ID.")
+        return None
+

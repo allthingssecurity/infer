@@ -16,7 +16,7 @@ import os
 import uuid
 from rq import Worker, Queue, Connection
 from redis import Redis
-from upload import upload_to_do,download_from_do
+from upload import upload_to_do,download_from_do,download_from_do_with_job_id
 from werkzeug.utils import secure_filename
 from multiprocessing import Process
 from credit import get_user_credits,update_user_credits,use_credit,add_credits
@@ -617,10 +617,10 @@ def start_infer():
 def download_video(job_id):
     # Here, you would determine the file_key from the job_id
     # For this example, let's assume they are the same
-    file_key = f'{job_id}.mp4'
+    #file_key = f'{job_id}.mp4'
     
     # Call the download function
-    local_file_path = download_from_do(file_key)
+    local_file_path = download_from_do_with_job_id(job_id)
     
     if local_file_path:
         return send_file(local_file_path, as_attachment=True)
