@@ -97,11 +97,18 @@
         </select>
         <br>
         <div>
-            <label>Predefined Source Image:</label>
-            <img src="{{ url_for('static', filename='cartoon.jpg') }}" alt="Source Image">
-			<input type="hidden" name="source_image_filename" value="cartoon.jpg">
-            <!-- Assuming the image is stored in your static files -->
-        </div>
+    <label>Choose a Source Image:</label>
+    <div>
+        <input type="radio" id="cartoonImage" name="source_image_filename" value="cartoon.jpg" required>
+        <label for="cartoonImage"><img src="{{ url_for('static', filename='cartoon.jpg') }}" alt="Cartoon Image"></label>
+    </div>
+    <div>
+        <input type="radio" id="modiImage" name="source_image_filename" value="modi.png">
+        <label for="modiImage"><img src="{{ url_for('static', filename='modi.png') }}" alt="Anime Image"></label>
+    </div>
+    <!-- Add more images as needed -->
+</div>
+		
         <br>
         <label id="refVideoLabel" for="refVideoInput">Optional Reference Video:</label>
         <input id="refVideoInput" type="file" name="ref_video_path" accept="video/*">
