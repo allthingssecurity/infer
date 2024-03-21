@@ -11,7 +11,7 @@ import base64
 from flask import request
 import logging
 from logging.handlers import RotatingFileHandler
-from trainendtoend import train_model,convert_voice
+from trainendtoend import train_model,convert_voice,generate_video_job
 import os
 import uuid
 from rq import Worker, Queue, Connection
@@ -458,6 +458,10 @@ def train():
         return render_template('train.html',model_credits=model_credits,song_credits=song_credits)
 
 
+
+
+
+
 @app.route('/infer')
 @login_required
 def infer():
@@ -585,6 +589,22 @@ def download(job_id):
         return "Download failed", 404
 
 
+
+def download_for_video(job_id):
+    # Here, you would determine the file_key from the job_id
+    # For this example, let's assume they are the same
+    file_key = f'{job_id}.mp3'
+    
+    # Call the download function
+    local_file_path = download_from_do(file_key)
+    
+    if local_file_path:
+        return local_file_path
+    else:
+        return "Download failed", 404
+
+
+
 def user_job_key(user_email,type_of_job):
     """Generate a Redis key based on user email."""
     return f"user_jobs_{type_of_job}:{user_email}"
@@ -670,6 +690,57 @@ def start_worker():
         print("Maximum number of workers reached. Not starting a new worker.")
 
 
+
+
+@app.route('/generate_video', methods=['POST'])
+def generate_video():
+    try:
+        if request.method == 'POST':
+            user_email = session.get('user_email')
+            # Check if the post request has the file parts
+            if 'source_image' not in request.files or 'audio_path' not in request.files:
+                return 'Missing files', 400
+            source_image = request.files['source_image']
+            job_id = request.form.get('job_id')
+
+            audio_path = download_for_video(job_id)
+            ref_video_path = request.files.get('ref_video_path')  # Optional
+
+            if source_image.filename == '' :
+                return 'No selected image file', 400
+
+            source_image_filename = secure_filename(source_image.filename)
+            print(f"source file={source_image_filename}")
+            
+            print(f"audio file={audio_path}")
+            source_image_path = os.path.join(UPLOAD_FOLDER, source_image_filename)
+            
+            source_image.save(source_image_path)
+            
+
+            ref_video_file = None
+            if ref_video_path and ref_video_path.filename != '':
+                ref_video_filename = secure_filename(ref_video_path.filename)
+                ref_video_file = os.path.join(UPLOAD_FOLDER, ref_video_filename)
+                ref_video_path.save(ref_video_file)
+
+            # Process the files
+            
+            job = q.enqueue_call(
+                func=generate_video_job, 
+                args=(source_image_path, audio_path,ref_video_file,job_id,user_email),  # Positional arguments for my_function
+                
+                timeout=2500  # Job-specific parameters like timeout
+        )
+            
+            app.logger.info("enqueed the job ")
+            
+            
+            
+            return jsonify(message="Files processed and uploaded successfully and Job Enqueued"), 200
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return jsonify(error=str(e)), 500
 
 
 

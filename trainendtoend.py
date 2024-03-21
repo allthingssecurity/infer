@@ -487,6 +487,104 @@ def train_model(file_name, model_name, user_email):
             terminate_pod(pod_id)
 
 
+def generate_video_call(image_file_path, audio_file_path,audio_job_id, url):
+    files = {
+        'source_image': open(image_file_path, 'rb'),
+        'audio_path': open(audio_file_path, 'rb'),
+        # Uncomment the line below if you're including a reference video
+        # 'ref_video_path': open(ref_video_file_path, 'rb'),
+    }
+
+    try:
+        response = requests.post(url, files=files, timeout=600)
+        response.raise_for_status()  # This will raise an exception for HTTP error codes
+        return True, "File uploaded successfully."
+    except requests.exceptions.RequestException as e:
+        # This block will only execute for timeouts, indicating server-side processing time exceeded
+        app.logger.info('timeout occured')
+        print("Timeout occurred, checking file presence in cloud storage...")
+        file_key = f'{audio_job_id}.mp4'
+        file_exists = check_file_in_space(access_id, secret_key, bucket_name, file_key)
+        if file_exists:
+            app.logger.info('file found in space')
+            return True, "Request timed out, but file was processed successfully."
+        else:
+            app.logger.info('file not found in space')
+            return False, "Request timed out and file was not found in cloud storage."
+
+
+# Make a POST request to upload the files
+
+
+
+
+
+
+def generate_video_job(source_image_path, audio_file_path,ref_video_path, audio_job_id,user_email):
+    job = get_current_job()
+    update_job_status(job.id, "started", user_email, 'video')
+
+    try:
+        bucket_name = "sing"
+        pod_id = create_pod_and_get_id("video", "smjain/talker:v4", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
+        app.logger.info('After creating pod for training')
+
+        if not pod_id:
+            raise Exception("Failed to create the pod or retrieve the pod ID.")
+
+        check_pod_is_ready(pod_id)
+        app.logger.info('checked that pod is ready now')
+        
+        
+        
+        url = f'https://{pod_id}--5000.proxy.runpod.net/generate_video'
+        app.logger.info('before call to upload files for training done')
+        
+        
+        
+        #def generate_video_call(source_image_path, audio_file_path,audio_job_id, url):
+        
+        
+        success, message = generate_video_call(source_image_path,audio_file_path,audio_job_id,url)
+        #success, message = asyncio.run(upload_files_async(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, file_path))
+        if success:
+            
+            app.logger.info(f'Job {job.id} success during file upload: {message}')
+            app.logger.info('file check done')
+            #file_key = f'{model_name}.pth'
+            #file_exists = check_file_in_space(ACCESS_ID, SECRET_KEY, bucket_name, file_key)
+            terminate_pod(pod_id)
+            #update_model_count(user_email, redis_client)
+            update_job_status(job.id, "finished", user_email, 'video')
+            app.logger.info('updated model state to finished')
+            redis_client.decr(WORKER_COUNT_KEY)
+            #use_credit(user_email,'model')
+            #app.logger.info('credit consumed')
+            #push_model_to_infer(final_model_name)
+            #app.logger.info('pushed model to infer engine')
+        # Proceed with additional job steps as needed
+        else:
+            app.logger.info('got false return from upload_files so setting job status fail')
+            update_job_status(job.id, "failed", user_email, 'video')
+            redis_client.decr(WORKER_COUNT_KEY)
+            if pod_id:
+                terminate_pod(pod_id)
+        
+        
+    except Exception as e:
+        app.logger.error(f'Error during model training: {e}')
+        update_job_status(job.id, "failed", user_email, 'train')
+        print(f"Operation failed: {e}")
+        redis_client.decr(WORKER_COUNT_KEY)
+        if pod_id:
+            terminate_pod(pod_id)
+
+
+
+
+
+
+
 
 def infer_song(file_name, user_email):
     job = get_current_job()
