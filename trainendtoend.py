@@ -498,6 +498,7 @@ def generate_video_call(image_file_path, audio_file_path,audio_job_id, key,url):
     app.logger.info('sleep for 20 secs for pod to be warmed up')
     time.sleep(20)
     app.logger.info(f'now go for making a call at {url}')
+    
     try:
         response = requests_retry_session().post(url, files=files, timeout=600)
         #response = requests.post(url, files=files, timeout=600)
@@ -508,6 +509,7 @@ def generate_video_call(image_file_path, audio_file_path,audio_job_id, key,url):
         app.logger.info(f'error occured{str(e)}')
         #print("Timeout occurred, checking file presence in cloud storage...")
         #file_key = f'{audio_job_id}.mp4'
+        app.logger.info(f'start checking for file  {key}')
         file_exists = check_file_in_space(ACCESS_ID, SECRET_KEY, bucket_name, key)
         if file_exists:
             app.logger.info('file found in space')
@@ -564,7 +566,7 @@ def generate_video_job(source_image_path, audio_file_path,ref_video_path, audio_
         filename_without_extension = key
         new_key = f"{filename_without_extension}##{job_id}.mp4"
         
-        success, message = generate_video_call(source_image_path,audio_file_path_new,audio_job_id,key,url)
+        success, message = generate_video_call(source_image_path,audio_file_path_new,audio_job_id,new_key,url)
         #success, message = asyncio.run(upload_files_async(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, file_path))
         if success:
             
