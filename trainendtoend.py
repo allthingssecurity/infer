@@ -499,7 +499,8 @@ def generate_video_call(image_file_path, audio_file_path,audio_job_id, key,url):
     time.sleep(20)
     app.logger.info(f'now go for making a call at {url}')
     try:
-        response = requests.post(url, files=files, timeout=600)
+        response = requests_retry_session().post(url, files=files, data=data, timeout=600)
+        #response = requests.post(url, files=files, timeout=600)
         response.raise_for_status()  # This will raise an exception for HTTP error codes
         return True, "File uploaded successfully."
     except requests.exceptions.RequestException as e:
