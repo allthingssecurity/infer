@@ -504,7 +504,7 @@ def generate_video_call(image_file_path, audio_file_path,audio_job_id, url):
         app.logger.info('timeout occured')
         print("Timeout occurred, checking file presence in cloud storage...")
         file_key = f'{audio_job_id}.mp4'
-        file_exists = check_file_in_space(access_id, secret_key, bucket_name, file_key)
+        file_exists = check_file_in_space(ACCESS_ID, SECRET_KEY, bucket_name, file_key)
         if file_exists:
             app.logger.info('file found in space')
             return True, "Request timed out, but file was processed successfully."
