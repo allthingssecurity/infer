@@ -800,7 +800,7 @@ def generate_video():
             
             job = q.enqueue_call(
                 func=generate_video_job, 
-                args=(source_image_path, audio_path,ref_video_file,job_id,new_key,user_email),  # Positional arguments for my_function
+                args=(source_image_path, audio_path,ref_video_file,job_id,filename_without_extension,user_email),  # Positional arguments for my_function
                 
                 timeout=2500  # Job-specific parameters like timeout
         )
