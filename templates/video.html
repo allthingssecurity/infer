@@ -89,7 +89,7 @@
 
 <div class="container">
     <h2>Generate Video</h2>
-    <form id="generateVideoForm" enctype="multipart/form-data">
+    <form id="generateVideoForm" method="POST" enctype="multipart/form-data">
         <label for="jobIdSelect">Select Inference Job:</label>
         <select id="jobIdSelect" name="job_id" required>
             <option value="">--Please choose an inference job--</option>
@@ -99,6 +99,7 @@
         <div>
             <label>Predefined Source Image:</label>
             <img src="{{ url_for('static', filename='cartoon.png') }}" alt="Source Image">
+			<input type="hidden" name="source_image_filename" value="cartoon.png">
             <!-- Assuming the image is stored in your static files -->
         </div>
         <br>
