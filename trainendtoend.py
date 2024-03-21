@@ -487,7 +487,7 @@ def train_model(file_name, model_name, user_email):
             terminate_pod(pod_id)
 
 
-def generate_video_call(image_file_path, audio_file_path,audio_job_id, url):
+def generate_video_call(image_file_path, audio_file_path,audio_job_id, key,url):
     files = {
         'source_image': open(image_file_path, 'rb'),
         'audio_path': open(audio_file_path, 'rb'),
@@ -506,8 +506,8 @@ def generate_video_call(image_file_path, audio_file_path,audio_job_id, url):
         # This block will only execute for timeouts, indicating server-side processing time exceeded
         app.logger.info(f'error occured{str(e)}')
         #print("Timeout occurred, checking file presence in cloud storage...")
-        file_key = f'{audio_job_id}.mp4'
-        file_exists = check_file_in_space(ACCESS_ID, SECRET_KEY, bucket_name, file_key)
+        #file_key = f'{audio_job_id}.mp4'
+        file_exists = check_file_in_space(ACCESS_ID, SECRET_KEY, bucket_name, key)
         if file_exists:
             app.logger.info('file found in space')
             return True, "Request timed out, but file was processed successfully."
@@ -523,7 +523,7 @@ def generate_video_call(image_file_path, audio_file_path,audio_job_id, url):
 
 
 
-def generate_video_job(source_image_path, audio_file_path,ref_video_path, audio_job_id,user_email):
+def generate_video_job(source_image_path, audio_file_path,ref_video_path, audio_job_id,key,user_email):
     job = get_current_job()
     update_job_status(job.id, "started", user_email, 'video')
 
@@ -548,7 +548,7 @@ def generate_video_job(source_image_path, audio_file_path,ref_video_path, audio_
         #def generate_video_call(source_image_path, audio_file_path,audio_job_id, url):
         
         
-        success, message = generate_video_call(source_image_path,audio_file_path,audio_job_id,url)
+        success, message = generate_video_call(source_image_path,audio_file_path,audio_job_id,key,url)
         #success, message = asyncio.run(upload_files_async(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, file_path))
         if success:
             

@@ -760,6 +760,10 @@ def generate_video():
             source_image_filename = request.form.get('source_image_filename')
             source_image_path = os.path.join(app.static_folder, source_image_filename)
             app.logger.info(f"image path={source_image_path}")
+            
+            
+            
+
             #if 'source_image' not in request.files :
             #    return 'Missing files', 400
             #source_image = request.files['source_image']
@@ -780,7 +784,10 @@ def generate_video():
             #source_image_path = os.path.join(UPLOAD_FOLDER, source_image_filename)
             
             #source_image.save(source_image_path)
-            
+            filename_without_extension = os.path.splitext(source_image_filename)[0]
+
+            # Construct the new key
+            new_key = f"{filename_without_extension}##{job_id}.mp4"
 
             ref_video_file = None
             if ref_video_path and ref_video_path.filename != '':
@@ -792,7 +799,7 @@ def generate_video():
             
             job = q.enqueue_call(
                 func=generate_video_job, 
-                args=(source_image_path, audio_path,ref_video_file,job_id,user_email),  # Positional arguments for my_function
+                args=(source_image_path, audio_path,ref_video_file,job_id,new_key,user_email),  # Positional arguments for my_function
                 
                 timeout=2500  # Job-specific parameters like timeout
         )
