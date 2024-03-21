@@ -494,7 +494,7 @@ def generate_video_call(image_file_path, audio_file_path,audio_job_id, url):
         # Uncomment the line below if you're including a reference video
         # 'ref_video_path': open(ref_video_file_path, 'rb'),
     }
-
+    bucket_name = "sing"
     try:
         response = requests.post(url, files=files, timeout=600)
         response.raise_for_status()  # This will raise an exception for HTTP error codes
