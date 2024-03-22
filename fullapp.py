@@ -258,6 +258,43 @@ def authorize():
     return render_template('join_waitlist.html')
 
 
+def check_user_access_and_credits(user_email, job_type='infer', credit_type='song'):
+    """
+    Check if the user has access to a feature and if they can submit a new job.
+
+    Parameters:
+    - user_email: The email of the user.
+    - job_type: The type of job to check for active jobs.
+    - credit_type: The type of credits to check for the user.
+
+    Returns:
+    - A tuple containing a JSON response and an HTTP status code.
+    """
+
+    # Check if the feature waitlist is enabled and if the user is authorized or in the waitlist
+    if is_feature_waitlist_enabled():
+        if not is_user_authorized(user_email):
+            if is_user_in_waitlist(user_email):
+                return {'error': 'You are on the waitlist but not yet authorized. Please wait for authorization.'}, 403
+            else:
+                return {'error': 'You must join the waitlist to access this feature.'}, 403
+
+    # Check if the user already has an active job of the specified type
+    if has_active_jobs(user_email, job_type):
+        app.logger.info(f"Job already running for this user {user_email}")
+        return {'message': 'Cannot submit new job. A job is already queued or started'}, 200
+
+    # Check the user's credits for the specified type
+    credit_count = get_user_credits(user_email, credit_type)
+    if credit_count > 0:
+        # If the user has credits, return a positive response to proceed
+        return {'message': 'User is authorized and can submit a new job.'}, 200
+    else:
+        # If the user has no credits, return an error message
+        return {'error': 'Insufficient credits to submit a new job.'}, 403
+
+
+
 @app.route('/get-inference-jobs')
 @login_required
 def get_inference_jobs():
@@ -526,6 +563,7 @@ def infer():
 
 
 
+
 @app.route('/start_infer', methods=['POST'])
 @login_required
 def start_infer():
@@ -758,65 +796,72 @@ def start_worker():
 @app.route('/generate_video', methods=['POST'])
 def generate_video():
     try:
+    
+        
+
         if request.method == 'POST':
             app.logger.info("entered generate video endpoint ")
             user_email = session.get('user_email')
-            app.logger.info("enqueed the job ")
+            
+            response, status_code = check_user_access_and_credits(user_email, 'video', 'video')
+            if status_code == 200:
             # Check if the post request has the file parts
-            source_image_filename = request.form.get('source_image_filename')
-            source_image_path = os.path.join(app.static_folder, source_image_filename)
-            app.logger.info(f"image path={source_image_path}")
-            
-            
-            
-
-            #if 'source_image' not in request.files :
-            #    return 'Missing files', 400
-            #source_image = request.files['source_image']
-            job_id = request.form.get('job_id')
-            if not job_id:
-                return 'Missing job ID', 400
-            app.logger.info(f"image path={source_image_path}")
-            audio_path = download_for_video(job_id)
-            ref_video_path = request.files.get('ref_video_path')  # Optional
-
-            #if source_image.filename == '' :
-             #   return 'No selected image file', 400
-
-            #source_image_filename = secure_filename(source_image.filename)
-            #print(f"source file={source_image_filename}")
-            
-            app.logger.info(f"audio file={audio_path}")
-            #source_image_path = os.path.join(UPLOAD_FOLDER, source_image_filename)
-            
-            #source_image.save(source_image_path)
-            filename_without_extension = os.path.splitext(source_image_filename)[0]
-
-            # Construct the new key
-            new_key = f"{filename_without_extension}##{job_id}.mp4"
-            app.logger.info(f"file key={new_key}")
-
-            ref_video_file = None
-            if ref_video_path and ref_video_path.filename != '':
-                ref_video_filename = secure_filename(ref_video_path.filename)
-                ref_video_file = os.path.join(UPLOAD_FOLDER, ref_video_filename)
-                ref_video_path.save(ref_video_file)
-
-            # Process the files
-            
-            job = q.enqueue_call(
-                func=generate_video_job, 
-                args=(source_image_path, audio_path,ref_video_file,job_id,filename_without_extension,user_email),  # Positional arguments for my_function
+                source_image_filename = request.form.get('source_image_filename')
+                source_image_path = os.path.join(app.static_folder, source_image_filename)
+                app.logger.info(f"image path={source_image_path}")
                 
-                timeout=2500  # Job-specific parameters like timeout
-        )
-            p = Process(target=start_worker)
-            p.start()     
-            app.logger.info("enqueed the job ")
-            
-            
-            
-            return jsonify(message="Files processed and uploaded successfully and Job Enqueued"), 200
+                
+                
+
+                #if 'source_image' not in request.files :
+                #    return 'Missing files', 400
+                #source_image = request.files['source_image']
+                job_id = request.form.get('job_id')
+                if not job_id:
+                    return 'Missing job ID', 400
+                app.logger.info(f"image path={source_image_path}")
+                audio_path = download_for_video(job_id)
+                ref_video_path = request.files.get('ref_video_path')  # Optional
+
+                #if source_image.filename == '' :
+                 #   return 'No selected image file', 400
+
+                #source_image_filename = secure_filename(source_image.filename)
+                #print(f"source file={source_image_filename}")
+                
+                app.logger.info(f"audio file={audio_path}")
+                #source_image_path = os.path.join(UPLOAD_FOLDER, source_image_filename)
+                
+                #source_image.save(source_image_path)
+                filename_without_extension = os.path.splitext(source_image_filename)[0]
+
+                # Construct the new key
+                new_key = f"{filename_without_extension}##{job_id}.mp4"
+                app.logger.info(f"file key={new_key}")
+
+                ref_video_file = None
+                if ref_video_path and ref_video_path.filename != '':
+                    ref_video_filename = secure_filename(ref_video_path.filename)
+                    ref_video_file = os.path.join(UPLOAD_FOLDER, ref_video_filename)
+                    ref_video_path.save(ref_video_file)
+
+                # Process the files
+                
+                job = q.enqueue_call(
+                    func=generate_video_job, 
+                    args=(source_image_path, audio_path,ref_video_file,job_id,filename_without_extension,user_email),  # Positional arguments for my_function
+                    
+                    timeout=2500  # Job-specific parameters like timeout
+            )
+                p = Process(target=start_worker)
+                p.start()     
+                app.logger.info("enqueed the job ")
+                
+                
+                
+                return jsonify(message="Files processed and uploaded successfully and Job Enqueued"), 200
+            else:
+                return jsonify(response), status_code
     except Exception as e:
         app.logger.info(f"An error occurred: {e}")
         return jsonify(error=str(e)), 500
