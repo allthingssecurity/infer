@@ -107,6 +107,33 @@ body, html {
     margin-bottom: 20px;
 }
 
+/* Positioning and styling for the trigger */
+.credits-trigger {
+    cursor: pointer;
+    display: inline-block;
+    margin-left: 10px; /* Space from the welcome message */
+    color: white; /* Match the text color with navbar */
+}
+
+/* Base styling for credits info; hidden by default */
+.credits-info {
+    display: none;
+    position: absolute;
+    background-color: #123456; /* Match the navbar */
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Optional: adds depth */
+    right: 0; /* Aligns the tooltip to the right side */
+}
+
+/* Displaying the tooltip on hover */
+.user-info:hover .credits-info {
+    display: block;
+}
+
+
 /* Responsive Design Adjustments */
 @media (max-width: 600px) {
     .navbar {
