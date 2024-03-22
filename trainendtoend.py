@@ -544,7 +544,7 @@ def generate_video_job(source_image_path, audio_file_path,ref_video_path, audio_
 
     try:
         bucket_name = "sing"
-        pod_id = create_pod_and_get_id("video", "smjain/talker:v4", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
+        pod_id = create_pod_and_get_id("video", "smjain/talker:v5", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
         app.logger.info('After creating pod for training')
 
         if not pod_id:
