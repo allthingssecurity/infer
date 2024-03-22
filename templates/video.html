@@ -55,34 +55,8 @@
                     alert('Video generation initiated. Please check the job status page for updates.');
                     // Optionally redirect or update the UI here
                 })
-				.then(data => {
-    // Display the returned message from the server
-    if (data.message) {
-        alert(data.message); // This will show whatever message the server returned
-    } else {
-        // If for some reason there's no message, handle it gracefully
-        alert('Received an unexpected response from the server.');
-    }
-})
-.catch(error => {
-    // Handle any errors that occurred during fetch
-    console.error('Error:', error);
-    alert('An error occurred. Please try again.');
-});
-   .then(data => {
-    // Display the returned message from the server
-    if (data.message) {
-        alert(data.message); // This will show whatever message the server returned
-    } else {
-        // If for some reason there's no message, handle it gracefully
-        alert('Received an unexpected response from the server.');
-    }
-})
-.catch(error => {
-    // Handle any errors that occurred during fetch
-    console.error('Error:', error);
-    alert('An error occurred. Please try again.');
-});             
+				
+                .catch(error => console.error('Error submitting the form:', error));
             });
         });
     </script>
@@ -91,7 +65,7 @@
 <header>
         <div class="navbar">
             <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" class="logo">
-             <nav>
+               <nav>
         <ul>
             <li class="dropdown">
                 <a href="javascript:void(0)">Generation &#9662;</a>
