@@ -565,7 +565,7 @@ def generate_video_job(source_image_path, audio_file_path,ref_video_path, audio_
         audio_file_path_new=rename_file(audio_file_path,job_id)
         app.logger.info(f"audio file path renamed={audio_file_path_new}")
         filename_without_extension = key
-        new_key = f"{filename_without_extension}##{job_id}.mp4"
+        new_key = f"{job_id}.mp4"
         
         success, message = generate_video_call(source_image_path,audio_file_path_new,audio_job_id,new_key,url)
         #success, message = asyncio.run(upload_files_async(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, file_path))
