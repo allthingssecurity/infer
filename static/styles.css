@@ -107,29 +107,34 @@ body, html {
     margin-bottom: 20px;
 }
 
-/* Positioning and styling for the trigger */
-.credits-trigger {
-    cursor: pointer;
-    display: inline-block;
-    margin-left: 10px; /* Space from the welcome message */
-    color: white; /* Match the text color with navbar */
+/* Existing styles... */
+
+/* Adjusting this to use hover directly on the trigger */
+.credits-trigger:hover + .credits-info, .credits-info:hover {
+    display: block;
 }
 
-/* Base styling for credits info; hidden by default */
+.credits-trigger {
+    cursor: pointer;
+    /* Additional styling as needed */
+}
+
 .credits-info {
-    display: none;
+    display: none; /* Hidden by default */
     position: absolute;
-    background-color: #123456; /* Match the navbar */
+    background-color: #123456; /* Adjust based on your theme */
     color: white;
     padding: 10px;
     border-radius: 5px;
     z-index: 1;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Optional: adds depth */
-    right: 0; /* Aligns the tooltip to the right side */
+    /* Adjust positioning as needed */
+    right: 0;
+    top: 100%; /* Ensure it drops down right below the trigger */
+    /* Additional styling for layout and visibility */
 }
 
-/* Displaying the tooltip on hover */
-.user-info:hover .credits-info {
+/* Ensure dropdown stays open when hovered */
+.credits-info:hover {
     display: block;
 }
 

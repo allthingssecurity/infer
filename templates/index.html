@@ -34,13 +34,15 @@
                 <img src="{{ session['user_image'] if session['user_image'] else url_for('static', filename='default-user-icon.png') }}" alt="User Icon" class="user-icon">
                 <span>Welcome, {{ session['username'] }}</span>
                 <!-- Displaying Credits Information -->
-                    <div class="credits-trigger">Credits &#9662;</div>
-    <!-- Credits Info Tooltip -->
-    <div class="credits-info">
-        <span>Model Credits: {{ model_credits }}</span>
-        <span>Song Credits: {{ song_credits }}</span>
-        <span>Singing Head Credits: {{ video_credits }}</span>
-    </div>
+            <!-- Dropdown Trigger -->
+        <div class="credits-trigger">Credits &#9662;</div>
+        
+        <!-- Dropdown Content -->
+        <div class="credits-info">
+            <span>Model Credits: {{ model_credits }}</span>
+            <span>Song Credits: {{ song_credits }}</span>
+            <span>Singing Head Credits: {{ video_credits }}</span>
+        </div>
                 <a href="/logout" class="logout-btn">Logout</a>
             </div>
         </div>
@@ -67,6 +69,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 dropdownContent.style.display = "block";
             }
         });
+    });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Select the credits trigger
+    var creditsTrigger = document.querySelector('.credits-trigger');
+    
+    // Toggle display of credits info on click
+    creditsTrigger.addEventListener('click', function() {
+        var creditsInfo = document.querySelector('.credits-info');
+        if (creditsInfo.style.display === 'block') {
+            creditsInfo.style.display = 'none';
+        } else {
+            creditsInfo.style.display = 'block';
+        }
     });
 });
 </script>
