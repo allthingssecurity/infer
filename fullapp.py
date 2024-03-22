@@ -993,8 +993,9 @@ def check_status(job_id):
     
     file_name = job.meta.get('file_name', 'Unknown')  # Default to 'Unknown' if not set
     submission_time = job.meta.get('submission_time', 'Unknown')
-    
-    return jsonify({'status': job.get_status(), 'file_name': file_name, 'submission_time': submission_time})
+    status=jsonify({'status': job.get_status(), 'file_name': file_name, 'submission_time': submission_time})
+    app.logger.info(status)
+    return status
     
 
 
