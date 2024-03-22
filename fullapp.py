@@ -286,6 +286,8 @@ def check_user_access_and_credits(user_email, job_type='infer', credit_type='son
 
     # Check the user's credits for the specified type
     credit_count = get_user_credits(user_email, credit_type)
+    app.logger.info(f"Credits for  this user {user_email} are {credit_count}")
+    
     if credit_count > 0:
         # If the user has credits, return a positive response to proceed
         return {'message': 'User is authorized and can submit a new job.'}, 200
