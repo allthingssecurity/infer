@@ -55,7 +55,34 @@
                     alert('Video generation initiated. Please check the job status page for updates.');
                     // Optionally redirect or update the UI here
                 })
-                .catch(error => console.error('Error submitting the form:', error));
+				.then(data => {
+    // Display the returned message from the server
+    if (data.message) {
+        alert(data.message); // This will show whatever message the server returned
+    } else {
+        // If for some reason there's no message, handle it gracefully
+        alert('Received an unexpected response from the server.');
+    }
+})
+.catch(error => {
+    // Handle any errors that occurred during fetch
+    console.error('Error:', error);
+    alert('An error occurred. Please try again.');
+});
+   .then(data => {
+    // Display the returned message from the server
+    if (data.message) {
+        alert(data.message); // This will show whatever message the server returned
+    } else {
+        // If for some reason there's no message, handle it gracefully
+        alert('Received an unexpected response from the server.');
+    }
+})
+.catch(error => {
+    // Handle any errors that occurred during fetch
+    console.error('Error:', error);
+    alert('An error occurred. Please try again.');
+});             
             });
         });
     </script>
