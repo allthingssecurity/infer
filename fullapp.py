@@ -324,9 +324,10 @@ def create_user_account_if_not_exists(user_email, initial_tier="trial"):
         # User does not exist, so initialize their account
         model_credits = 2
         song_credits = 5
+        video_credits= 2
         update_user_credits(user_email, "model", model_credits)
         update_user_credits(user_email, "song", song_credits)
-        
+        update_user_credits(user_email, "video", video_credits)
         # Set the user exists key in Redis
         redis_client.set(user_exists_key, 1)
         
@@ -384,8 +385,9 @@ def index():
     user_image = session.get('user_image', None)
     model_credits=get_user_credits(user_email,'model')
     song_credits=get_user_credits(user_email,'song')
+    video_credits=get_user_credits(user_email,'video')
       # Adjust this function to your implementation
-    return render_template('index.html', user_info=session, model_credits=model_credits, song_credits=song_credits)
+    return render_template('index.html', user_info=session, model_credits=model_credits, song_credits=song_credits,video_credits=video_credits)
 
 
 #old code will be removed  
@@ -416,12 +418,14 @@ def song_conversion():
         models = [model.decode('utf-8') for model in models]
         model_credits=get_user_credits(user_email,'model')
         song_credits=get_user_credits(user_email,'song')
-        return render_template('convert.html', models=models,model_credits=model_credits,song_credits=song_credits)
+        video_credits=get_user_credits(user_email,'video')
+        return render_template('convert.html', models=models,model_credits=model_credits,song_credits=song_credits,video_credits=video_credits)
     else:
         models = []
         model_credits=get_user_credits(user_email,'model')
         song_credits=get_user_credits(user_email,'song')
-        return render_template('convert.html', models=models,model_credits=model_credits,song_credits=song_credits)
+        video_credits=get_user_credits(user_email,'video')
+        return render_template('convert.html', models=models,model_credits=model_credits,song_credits=song_credits,video_credits=video_credits)
         
     
 
@@ -471,8 +475,9 @@ def gen_video():
                     return jsonify({'error': 'You must join the waitlist to access this feature.'}), 403
         model_credits=get_user_credits(user_email,'model')
         song_credits=get_user_credits(user_email,'song')
+        video_credits=get_user_credits(user_email,'video')
         
-        return render_template('video.html',model_credits=model_credits,song_credits=song_credits)
+        return render_template('video.html',model_credits=model_credits,song_credits=song_credits,video_credits=video_credits)
 
 
 
@@ -492,8 +497,9 @@ def train():
                     return jsonify({'error': 'You must join the waitlist to access this feature.'}), 403
         model_credits=get_user_credits(user_email,'model')
         song_credits=get_user_credits(user_email,'song')
+        video_credits=get_user_credits(user_email,'video')
         
-        return render_template('train.html',model_credits=model_credits,song_credits=song_credits)
+        return render_template('train.html',model_credits=model_credits,song_credits=song_credits,video_credits=video_credits)
 
 
 
@@ -890,9 +896,10 @@ def rechargeModel():
                     return jsonify({'error': 'You must join the waitlist to access this feature.'}), 403
         model_credits=get_user_credits(user_email,'model')
         song_credits=get_user_credits(user_email,'song')
+        video_credits=get_user_credits(user_email,'video')
         
         #return render_template('raz.html',model_credits=model_credits,song_credits=song_credits)
-        return render_template('wip.html',model_credits=model_credits,song_credits=song_credits)
+        return render_template('wip.html',model_credits=model_credits,song_credits=song_credits,video_credits=video_credits)
 
 
 
@@ -911,9 +918,9 @@ def rechargeSong():
                     return jsonify({'error': 'You must join the waitlist to access this feature.'}), 403
         model_credits=get_user_credits(user_email,'model')
         song_credits=get_user_credits(user_email,'song')
-        
+        video_credits=get_user_credits(user_email,'video')
         #return render_template('raz_song.html',model_credits=model_credits,song_credits=song_credits)
-        return render_template('wip.html',model_credits=model_credits,song_credits=song_credits)
+        return render_template('wip.html',model_credits=model_credits,song_credits=song_credits,video_credits=video_credits)
 
 
 
