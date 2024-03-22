@@ -132,5 +132,23 @@
         <a href="/get-jobs">Go to Job Tracking Page</a>
 
     </div>
+		<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all elements with class "dropdown" and bind a click event
+    var dropdowns = document.querySelectorAll('.navbar nav ul li.dropdown');
+    dropdowns.forEach(function(drop) {
+        drop.addEventListener('click', function() {
+            // Toggle the display of the dropdown content
+            var dropdownContent = this.querySelector('.dropdown-content');
+            if (dropdownContent.style.display === "block") {
+                dropdownContent.style.display = "none";
+            } else {
+                dropdownContent.style.display = "block";
+            }
+        });
+    });
+});
+</script>
+
 </body>
 </html>
