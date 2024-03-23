@@ -54,79 +54,38 @@
     <h2>Job Tracking</h2>
     <button onclick="refreshJobs()">Refresh Jobs</button>
 
-    <h3>Training Jobs</h3>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Job ID</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for job_id, status in training_jobs.items() %}
-            <tr>
-                <td>{{ job_id }}</td>
-                <td>{{ status }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-<h3>Inference Jobs</h3>
-<table border="1">
-    <thead>
-        <tr>
-            <th>Job ID</th>
-            <th>Status</th>
-            <th>Download</th> <!-- Add a column for download links -->
-        </tr>
-    </thead>
-    <tbody>
-        {% for job_id, status in inference_jobs.items() %}
-        <tr>
-            <td>{{ job_id }}</td>
-            <td>{{ status }}</td>
-            <td>
-                {% if status == 'finished' %} <!-- Conditionally display download link -->
-                    <a href="/download/{{ job_id }}">Download</a>
-                {% else %}
-                    N/A
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-
-
-<h3>Video Jobs</h3>
-<table border="1">
-    <thead>
-        <tr>
-            <th>Job ID</th>
-            <th>Status</th>
-            <th>Download</th> <!-- Add a column for download links -->
-        </tr>
-    </thead>
-    <tbody>
-        {% for job_id, status in video_jobs.items() %}
-        <tr>
-            <td>{{ job_id }}</td>
-            <td>{{ status }}</td>
-            <td>
-                {% if status == 'finished' %} <!-- Conditionally display download link -->
-                    <a href="/download_video/{{ job_id }}">Download</a>
-                {% else %}
-                    N/A
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-
+    {% for job_type, jobs in jobs_data.items() %}
+        <h3>{{ job_type | capitalize }} Jobs</h3>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Job ID</th>
+                    <th>Filename</th>
+                    <th>Submission Time</th>
+                    <th>Status</th>
+                    <th>Action</th> <!-- Generic column for actions like downloading -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for job in jobs %}
+                <tr>
+                    <td>{{ job['job_id'] }}</td>
+                    <td>{{ job.get('filename', 'N/A') }}</td>
+                    <td>{{ job.get('submission_time', 'N/A') }}</td>
+                    <td>{{ job['status'] }}</td>
+                    <td>
+                        {% if job['status'] == 'finished' %}
+                            <!-- Adjust the download link according to your routing and job type -->
+                            <a href="/download/{{ job['job_id'] }}">Download</a>
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endfor %}
 
 		<script>
 document.addEventListener('DOMContentLoaded', function() {

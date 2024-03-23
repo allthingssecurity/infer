@@ -17,7 +17,7 @@ from rq import get_current_job
 from credit import get_user_credits,update_user_credits,use_credit
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-
+from status import set_job_attributes,update_job_status,get_job_attributes
 
 runpod.api_key =os.getenv("RUNPOD_KEY")
 logging.basicConfig(level=logging.INFO)
@@ -89,10 +89,10 @@ def user_job_key(user_email,type_of_job):
     return f"user_jobs_{type_of_job}:{user_email}"
 
 
-def update_job_status(job_id, status, user_email,type_of_job):
-    """Update the status of a user's job."""
-    user_key = user_job_key(user_email,type_of_job)
-    redis_client.hset(user_key, job_id, status)
+#def update_job_status(job_id, status, user_email,type_of_job):
+#    """Update the status of a user's job."""
+#    user_key = user_job_key(user_email,type_of_job)
+#    redis_client.hset(user_key, job_id, status)
 
 def cleanup_job(job_id, user_email,type_of_job):
     """Remove a job from the user's map after completion."""
@@ -363,7 +363,9 @@ def convert_voice(file_path1, spk_id, user_email):
             response.raise_for_status()  # Ensure HTTP errors are caught
 
         # Handle successful upload outside the with block
-        update_job_status(job.id, "finished", user_email, 'infer')
+        
+        
+        update_job_status(redis_client,job_id,'finished')
         use_credit(user_email,'song')
         redis_client.decr(WORKER_COUNT_KEY)
         if pod_id:
@@ -380,7 +382,7 @@ def convert_voice(file_path1, spk_id, user_email):
         
         
         app.logger.info(f'Upload failed: {e}')
-        update_job_status(job.id, "failed", user_email, 'infer')
+        update_job_status(redis_client,job_id,'failed')
         redis_client.decr(WORKER_COUNT_KEY)
         
         if pod_id:
@@ -394,7 +396,8 @@ def convert_voice(file_path1, spk_id, user_email):
         app.logger.info(f'file ={file_key}')
         
         app.logger.error(f'Conversion failed: {e}')
-        update_job_status(job.id, "failed", user_email, 'infer')
+        
+        update_job_status(redis_client,job_id,'failed')
         redis_client.decr(WORKER_COUNT_KEY)
         if pod_id:
             terminate_pod(pod_id)
@@ -431,7 +434,9 @@ def download_and_save_mp3(url,audio_id, save_path):
 
 def train_model(file_name, model_name, user_email):
     job = get_current_job()
-    update_job_status(job.id, "started", user_email, 'train')
+    job_id=job.id
+    update_job_status(redis_client,job_id,'started')
+    
 
     try:
         bucket_name = "sing"
@@ -462,8 +467,9 @@ def train_model(file_name, model_name, user_email):
             app.logger.info('added model to user')
             use_credit(user_email,'model')
             app.logger.info('credit consumed')
-            #update_model_count(user_email, redis_client)
-            update_job_status(job.id, "finished", user_email, 'train')
+            
+            
+            update_job_status(redis_client,job_id,'finished')
             app.logger.info('updated model state to finished')
             #use_credit(user_email,'model')
             app.logger.info('credit consumed')
@@ -473,7 +479,8 @@ def train_model(file_name, model_name, user_email):
         # Proceed with additional job steps as needed
         else:
             app.logger.info('got false return from upload_files so setting job status fail')
-            update_job_status(job.id, "failed", user_email, 'train')
+            
+            update_job_status(redis_client,job_id,'failed')
             redis_client.decr(WORKER_COUNT_KEY)
             if pod_id:
                 terminate_pod(pod_id)
@@ -481,7 +488,8 @@ def train_model(file_name, model_name, user_email):
         
     except Exception as e:
         app.logger.error(f'Error during model training: {e}')
-        update_job_status(job.id, "failed", user_email, 'train')
+        
+        update_job_status(redis_client,job_id,'failed')
         print(f"Operation failed: {e}")
         redis_client.decr(WORKER_COUNT_KEY)
         if pod_id:
@@ -540,7 +548,9 @@ def rename_file(current_file_path, new_file_name_without_extension):
 
 def generate_video_job(source_image_path, audio_file_path,ref_video_path, audio_job_id,key,user_email):
     job = get_current_job()
-    update_job_status(job.id, "started", user_email, 'video')
+    job_id=job.id
+    
+    update_job_status(redis_client,job_id,'started')
 
     try:
         bucket_name = "sing"
@@ -577,8 +587,8 @@ def generate_video_job(source_image_path, audio_file_path,ref_video_path, audio_
             #file_exists = check_file_in_space(ACCESS_ID, SECRET_KEY, bucket_name, file_key)
             terminate_pod(pod_id)
             #update_model_count(user_email, redis_client)
-            update_job_status(job.id, "finished", user_email, 'video')
             
+            update_job_status(redis_client,job_id,'finished')
             app.logger.info('updated model state to finished')
             use_credit(user_email,'video')
             redis_client.decr(WORKER_COUNT_KEY)
@@ -589,7 +599,8 @@ def generate_video_job(source_image_path, audio_file_path,ref_video_path, audio_
         # Proceed with additional job steps as needed
         else:
             app.logger.info('got false return from upload_files so setting job status fail')
-            update_job_status(job.id, "failed", user_email, 'video')
+            
+            update_job_status(redis_client,job_id,'failed')
             redis_client.decr(WORKER_COUNT_KEY)
             if pod_id:
                 terminate_pod(pod_id)
@@ -597,7 +608,8 @@ def generate_video_job(source_image_path, audio_file_path,ref_video_path, audio_
         
     except Exception as e:
         app.logger.error(f'Error during model training: {e}')
-        update_job_status(job.id, "failed", user_email, 'train')
+        
+        update_job_status(redis_client,job_id,'failed')
         print(f"Operation failed: {e}")
         redis_client.decr(WORKER_COUNT_KEY)
         if pod_id:

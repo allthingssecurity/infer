@@ -25,6 +25,7 @@ import requests
 from pydub import AudioSegment
 import io
 from admin import admin_blueprint
+from status import set_job_attributes,update_job_status,get_job_attributes,add_job_to_user_index,get_user_job_ids
 #import librosa
 #import soundfile as sf
 #import pyrubberband as pyrb
@@ -314,7 +315,7 @@ def get_inference_jobs():
 
 @app.route('/get-jobs')
 @login_required
-def get_jobs():
+def get_jobs1():
     
     user_email = session['user_email']
     training_jobs_key = user_job_key(user_email, 'train')
@@ -644,15 +645,36 @@ def start_infer():
             job.meta['file_name'] = filename
             job.meta['submission_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             job.save_meta()  # Don't forget to save the metadata
+            
+            
+            
+            type_of_job = "infer"
+            job_id = job.id
+            add_job_to_user_index(redis_client,user_email,job_id)
+            attributes = {
+                "filename": filename,
+                "submission_time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                
+            }
+
+            # Set job attributes
+            set_job_attributes(redis_client,job_id, attributes)
+            #set_job_attributes(type_of_job, user_email,job_id, attributes)
+            
+            
+            
             if user_email:
                 # Update Redis with the new job ID and its initial status
                 app.logger.info(f"updating redis for job id {job.id} ")
-                user_key = user_job_key(user_email,'infer')
-                redis_client.hset(user_key, job.id, "queued")  # Initial status is "queued"
+                #user_key = user_job_key(user_email,'infer')
+                #redis_client.hset(user_key, job.id, "queued")  # Initial status is "queued"
+                
+                #update_job_status(type_of_job,user_email,'queued')
+                update_job_status(redis_client,job_id,'queued')
                 app.logger.info(f"updated redis for job id {job.id} ")
-            p = Process(target=start_worker)
-            p.start()     
-            return jsonify({'message': 'File uploaded successfully for conversion', 'job_id': job.get_id()})
+                p = Process(target=start_worker)
+                p.start()     
+                return jsonify({'message': 'File uploaded successfully for conversion', 'job_id': job.get_id()})
     else:
         app.logger.info(f"max song conversion exceeded for the user {user_email}. Buy credits")
         return jsonify({'message': 'You have reached max limits for song conversion. Buy credits '})
@@ -708,6 +730,9 @@ def download_for_video(job_id):
 
 
 
+
+
+
 def user_job_key(user_email,type_of_job):
     """Generate a Redis key based on user email."""
     return f"user_jobs_{type_of_job}:{user_email}"
@@ -716,6 +741,7 @@ def user_job_key(user_email,type_of_job):
 @app.route('/process_audio', methods=['POST'])
 def process_audio():
     user_email = session.get('user_email')
+    
     if is_feature_waitlist_enabled():
         if not is_user_authorized(user_email):
             if is_user_in_waitlist(user_email):
@@ -760,16 +786,33 @@ def process_audio():
                 args=(filename, model_name,user_email),  # Positional arguments for my_function
                 
                 timeout=2500  # Job-specific parameters like timeout
-        )
+            )
+            
+                        
+            type_of_job='train'
+            job_id = job.id
+            add_job_to_user_index(redis_client,user_email,job_id)
+            attributes = {
+                "filename": filename,
+                "type":type_of_job,
+                
+                "submission_time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                
+            }
 
+                    # Set job attributes
+                    
+            set_job_attributes(redis_client,job_id, attributes)
+                
             if user_email:
-            # Update Redis with the new job ID and its initial status
+                # Update Redis with the new job ID and its initial status
                 user_key = user_job_key(user_email,'train')
                 redis_client.hset(user_key, job.id, "queued")  # Initial status is "queued"
-            #job = q.enqueue(main, filename, model_name)
-            p = Process(target=start_worker)
-            p.start()     
-            return jsonify({'message': 'Model Training Job Started with ', 'job_id': job.get_id()})
+                update_job_status(redis_client,job_id,'queued')
+                #job = q.enqueue(main, filename, model_name)
+                p = Process(target=start_worker)
+                p.start()     
+                return jsonify({'message': 'Model Training Job Started with ', 'job_id': job.get_id()})
     else:
         app.logger.info(f"max train jobs exceeded for the user {user_email} ")
         return jsonify({'message': 'You have reached max limits '})
@@ -855,6 +898,23 @@ def generate_video():
                     
                     timeout=2500  # Job-specific parameters like timeout
             )
+            
+                type_of_job = "video"
+                job_id = job.id
+                add_job_to_user_index(redis_client,user_email,job_id)
+                attributes = {
+                    
+                    "user_email": user_email,
+                    "submission_time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    
+                }
+
+                # Set job attributes
+                
+                #set_job_attributes(type_of_job, user_email,job_id, attributes)
+                set_job_attributes(redis_client,job_id, attributes)
+                #update_job_status(type_of_job,user_email,'queued')
+                update_job_status(redis_client,job_id,'queued')
                 p = Process(target=start_worker)
                 p.start()     
                 app.logger.info("enqueed the job ")
@@ -871,7 +931,29 @@ def generate_video():
 
 
 
+@app.route('/get-jobs')
+@login_required
+def get_jobs():
+    user_email = session.get('user_email')
     
+    job_ids = get_user_job_ids(redis_client, user_email)
+    jobs_data = {}
+
+    for job_id in job_ids:
+        job_attributes = get_job_attributes(redis_client, job_id)
+        if job_attributes:
+            job_type = job_attributes.get('type', 'unknown')
+            if job_type not in jobs_data:
+                jobs_data[job_type] = []
+            jobs_data[job_type].append(job_attributes)
+    
+    model_credits=get_user_credits(user_email,'model')
+    song_credits=get_user_credits(user_email,'song')
+    video_credits=get_user_credits(user_email,'video')
+    
+    return render_template('job-tracking.html', jobs_data=jobs_data,model_credits=model_credits,song_credits=song_credits)
+
+
     
     
     
