@@ -313,7 +313,7 @@ def get_inference_jobs():
     return jsonify(inference_jobs=formatted_inference_jobs)
 
 
-@app.route('/get-jobs')
+@app.route('/get-jobs1')
 @login_required
 def get_jobs1():
     
