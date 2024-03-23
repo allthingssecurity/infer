@@ -19,7 +19,7 @@ EXPOSE 5000
 # Define environment variables for Redis connection and AWS credentials
 
 
-ENV FLASK_APP=ep_train.py
+ENV FLASK_APP=fullapp.py
 
 
 
