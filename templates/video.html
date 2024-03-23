@@ -33,12 +33,15 @@
             fetch('/get-inference-jobs')
                 .then(response => response.json())
                 .then(data => {
-                    const select = document.getElementById('jobIdSelect');
-                    Object.entries(data.inference_jobs).forEach(([key, value]) => {
-                        let option = new Option(`${key}`, key);
-                        select.appendChild(option);
-                    });
-                })
+    const select = document.getElementById('jobIdSelect');
+    select.innerHTML = ''; // Clear existing options first, if necessary
+    data.inference_jobs.forEach(job => {
+        // Assuming each job object has a 'job_id' attribute
+        let option = new Option(job.job_id, job.job_id);
+        select.appendChild(option);
+    });
+})
+
                 .catch(error => console.error('Error fetching inference jobs:', error));
 
             // Form submission to generate video

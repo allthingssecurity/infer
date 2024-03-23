@@ -298,19 +298,46 @@ def check_user_access_and_credits(user_email, job_type='infer', credit_type='son
 
 
 
-@app.route('/get-inference-jobs')
-@login_required
-def get_inference_jobs():
-    user_email = session['user_email']
-    inference_jobs_key = user_job_key(user_email, 'infer')
-    inference_jobs = redis_client.hgetall(inference_jobs_key)
-    formatted_inference_jobs = {key.decode('utf-8'): value.decode('utf-8') for key, value in inference_jobs.items()}
+# @app.route('/get-inference-jobs')
+# @login_required
+# def get_inference_jobs():
+    # user_email = session['user_email']
+    # inference_jobs_key = user_job_key(user_email, 'infer')
+    # inference_jobs = redis_client.hgetall(inference_jobs_key)
+    # formatted_inference_jobs = {key.decode('utf-8'): value.decode('utf-8') for key, value in inference_jobs.items()}
     
     # For a web page, you would use render_template and pass the jobs to it
     # return render_template('select-inference-job.html', inference_jobs=formatted_inference_jobs)
     
     # For an AJAX call, you might return JSON
-    return jsonify(inference_jobs=formatted_inference_jobs)
+    # return jsonify(inference_jobs=formatted_inference_jobs)
+
+
+
+@app.route('/get-inference-jobs')
+@login_required
+def get_inference_jobs():
+    user_email = session.get('user_email')
+
+    # Retrieve all job IDs associated with the user
+    job_ids = get_user_job_ids(redis_client, user_email)
+    # Initialize a dictionary to specifically store inference jobs
+    inference_jobs_data = []
+
+    for job_id in job_ids:
+        job_attributes = get_job_attributes(redis_client, job_id)
+        
+        # Filter for inference jobs
+        if job_attributes and job_attributes.get('type') == 'infer':
+            job_attributes['job_id'] = job_id  # Ensure the job_id is included
+            inference_jobs_data.append(job_attributes)
+
+    
+
+    # Decide on the response format based on the request (e.g., AJAX or direct web access)
+    # For simplicity, here's how you might return JSON for an AJAX call:
+    return jsonify(inference_jobs=inference_jobs_data)
+
 
 
 @app.route('/get-jobs1')
@@ -941,7 +968,9 @@ def get_jobs():
 
     for job_id in job_ids:
         job_attributes = get_job_attributes(redis_client, job_id)
+        
         if job_attributes:
+            job_attributes['job_id'] = job_id
             job_type = job_attributes.get('type', 'unknown')
             if job_type not in jobs_data:
                 jobs_data[job_type] = []
