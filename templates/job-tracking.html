@@ -54,38 +54,43 @@
     <h2>Job Tracking</h2>
     <button onclick="refreshJobs()">Refresh Jobs</button>
 
-    {% for job_type, jobs in jobs_data.items() %}
-        <h3>{{ job_type | capitalize }} Jobs</h3>
-        <table border="1">
-            <thead>
-                <tr>
-                    <th>Job ID</th>
-                    <th>Filename</th>
-                    <th>Submission Time</th>
-                    <th>Status</th>
-                    <th>Action</th> <!-- Generic column for actions like downloading -->
-                </tr>
-            </thead>
-            <tbody>
-                {% for job in jobs %}
-                <tr>
-                    <td>{{ job['job_id'] }}</td>
-                    <td>{{ job.get('filename', 'N/A') }}</td>
-                    <td>{{ job.get('submission_time', 'N/A') }}</td>
-                    <td>{{ job['status'] }}</td>
-                    <td>
-                        {% if job['status'] == 'finished' %}
-                            <!-- Adjust the download link according to your routing and job type -->
-                            <a href="/download/{{ job['job_id'] }}">Download</a>
+   {% for job_type, jobs in jobs_data.items() %}
+    <h3>{{ job_type | capitalize }} Jobs</h3>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Job ID</th>
+                <th>Filename</th>
+                <th>Submission Time</th>
+                <th>Status</th>
+                <th>Action</th> <!-- Generic column for actions like downloading -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for job in jobs %}
+            <tr>
+                <td>{{ job['job_id'] }}</td>
+                <td>{{ job.get('filename', 'N/A') }}</td>
+                <td>{{ job.get('submission_time', 'N/A') }}</td>
+                <td>{{ job['status'] }}</td>
+                <td>
+                    {% if job['status'] == 'finished' %}
+                        {% if job_type == 'video' %}
+                            <!-- Specific route for downloading video jobs -->
+                            <a href="/download_video/{{ job['job_id'] }}">Download</a>
                         {% else %}
-                            N/A
+                            <!-- General download link for all other job types -->
+                            <a href="/download/{{ job['job_id'] }}">Download</a>
                         {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% endfor %}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endfor %}
 
 		<script>
 document.addEventListener('DOMContentLoaded', function() {
