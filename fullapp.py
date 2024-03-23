@@ -329,11 +329,12 @@ def get_inference_jobs():
         
         # Filter for inference jobs
         if job_attributes and job_attributes.get('type') == 'infer':
+            app.logger.info("entered infer jobs")
             job_attributes['job_id'] = job_id  # Ensure the job_id is included
             inference_jobs_data.append(job_attributes)
 
     
-
+    app.logger.info(f'inference jobs= {inference_jobs_data}')
     # Decide on the response format based on the request (e.g., AJAX or direct web access)
     # For simplicity, here's how you might return JSON for an AJAX call:
     return jsonify(inference_jobs=inference_jobs_data)
@@ -679,6 +680,7 @@ def start_infer():
             job_id = job.id
             add_job_to_user_index(redis_client,user_email,job_id)
             attributes = {
+                "type":type_of_job,
                 "filename": filename,
                 "submission_time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                 
@@ -820,6 +822,7 @@ def process_audio():
             job_id = job.id
             add_job_to_user_index(redis_client,user_email,job_id)
             attributes = {
+                "type": type_of_job,
                 "filename": filename,
                 "type":type_of_job,
                 
@@ -930,7 +933,7 @@ def generate_video():
                 job_id = job.id
                 add_job_to_user_index(redis_client,user_email,job_id)
                 attributes = {
-                    
+                    "type":type_of_job,
                     "user_email": user_email,
                     "submission_time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                     
