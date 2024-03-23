@@ -663,11 +663,11 @@ def start_infer():
 def download_video(job_id):
     # Here, you would determine the file_key from the job_id
     # For this example, let's assume they are the same
-    #file_key = f'{job_id}.mp4'
+    file_key = f'{job_id}.mp4'
     
     # Call the download function
-    local_file_path = download_from_do_with_job_id(job_id)
-    
+    #local_file_path = download_from_do_with_job_id(job_id)
+    local_file_path = download_from_do(file_key)
     if local_file_path:
         return send_file(local_file_path, as_attachment=True)
     else:
