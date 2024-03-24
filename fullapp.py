@@ -108,7 +108,7 @@ def is_user_in_waitlist(user_email):
     return redis_client.sismember("waitlist_users", user_email)
     
     
-def analyze_mp3_file(file_storage):
+def analyze_mp3_file(file_storage, max_duration=120):
     """
     Analyzes an MP3 file to check its size and duration.
     
@@ -127,6 +127,8 @@ def analyze_mp3_file(file_storage):
     try:
         audio = MP3(temp_path)
         duration = audio.info.length
+        if duration > max_duration:
+            return False, f"File duration exceeds maximum allowed length of {max_duration/60} minutes.", None
         return True, "File analyzed successfully", duration
     except Exception as e:
         return False, f"Error analyzing file: {str(e)}", None
@@ -656,6 +658,9 @@ def start_infer():
         if 'file' not in request.files:
             return jsonify({'error': 'No file part'})
         file = request.files['file']
+            success, message, duration = analyze_mp3_file(file)
+            if not success:
+                return jsonify({"error": message}), 400
         speaker_name = request.form.get('spk_id', '')
         app.logger.info(f"enqued the job for speaker {speaker_name} ")
         if file.filename == '':
