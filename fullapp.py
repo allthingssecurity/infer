@@ -658,9 +658,9 @@ def start_infer():
         if 'file' not in request.files:
             return jsonify({'error': 'No file part'})
         file = request.files['file']
-            success, message, duration = analyze_mp3_file(file)
-            if not success:
-                return jsonify({"error": message}), 400
+        success, message, duration = analyze_mp3_file(file)
+        if not success:
+            return jsonify({"error": message}), 400
         speaker_name = request.form.get('spk_id', '')
         app.logger.info(f"enqued the job for speaker {speaker_name} ")
         if file.filename == '':
