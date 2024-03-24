@@ -9,6 +9,11 @@ RUN apt-get update && \
     ffmpeg \
     x264 \
     # python build dependencies \
+    build-essential \
+    libssl-dev \
+    zlib1g-dev \
+    libbz2-dev \
+    libreadline-dev \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
