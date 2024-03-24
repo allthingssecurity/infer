@@ -35,7 +35,8 @@ COPY . .
 
 # Command to run the Flask application
 
-CMD gunicorn --worker-tmp-dir /dev/shm --config gunicorn_config.py fullapp:app
+CMD gunicorn --worker-tmp-dir /dev/shm --config gunicorn_config.py --log-level=info --access-logfile - --error-logfile - fullapp:app
+
 
 
 
