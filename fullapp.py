@@ -5,6 +5,7 @@ from redis import Redis
 import os
 import time
 from functools import wraps
+from mutagen.mp3 import MP3
 from authlib.integrations.flask_client import OAuth
 from flask_session import Session
 import base64
@@ -53,6 +54,8 @@ google = oauth.register(
         'scope': 'openid email profile',
     }
 )
+
+app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10 MB
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -103,6 +106,33 @@ def is_user_authorized(user_email):
 
 def is_user_in_waitlist(user_email):
     return redis_client.sismember("waitlist_users", user_email)
+    
+    
+def analyze_mp3_file(file_storage):
+    """
+    Analyzes an MP3 file to check its size and duration.
+    
+    :param file_storage: Werkzeug FileStorage object from Flask upload
+    :return: Tuple (success: bool, message: str, duration: float or None)
+    """
+    # Check if the file extension is .mp3
+    if not file_storage.filename.endswith('.mp3'):
+        return False, "Only MP3 files are allowed", None
+    
+    # Temporarily save the file to analyze with mutagen
+    filename = secure_filename(file_storage.filename)
+    temp_path = os.path.join('/tmp', filename)
+    file_storage.save(temp_path)
+    
+    try:
+        audio = MP3(temp_path)
+        duration = audio.info.length
+        return True, "File analyzed successfully", duration
+    except Exception as e:
+        return False, f"Error analyzing file: {str(e)}", None
+    finally:
+        # Ensure temporary file is removed
+        os.remove(temp_path)
 
 @app.route('/add_to_waitlist', methods=['POST'])
 @login_required
