@@ -7,13 +7,7 @@ RUN apt-get update && \
     git \
     git-lfs \
     ffmpeg \
-    x264 \
-    # python build dependencies \
-    build-essential \
-    libssl-dev \
-    zlib1g-dev \
-    libbz2-dev \
-    libreadline-dev \
+    x264 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
