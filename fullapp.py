@@ -27,6 +27,8 @@ from pydub import AudioSegment
 import io
 from admin import admin_blueprint
 from status import set_job_attributes,update_job_status,get_job_attributes,add_job_to_user_index,get_user_job_ids
+from pydub import AudioSegment
+import io
 #import librosa
 #import soundfile as sf
 #import pyrubberband as pyrb
@@ -106,35 +108,49 @@ def is_user_authorized(user_email):
 
 def is_user_in_waitlist(user_email):
     return redis_client.sismember("waitlist_users", user_email)
-    
-    
-def analyze_mp3_file(file_storage, max_duration=120):
+
+
+
+
+def analyze_audio_file(file, max_size_bytes=10*1024*1024, max_duration_minutes=6):
     """
-    Analyzes an MP3 file to check its size and duration.
-    
-    :param file_storage: Werkzeug FileStorage object from Flask upload
-    :return: Tuple (success: bool, message: str, duration: float or None)
+    Analyzes an uploaded audio file for size, format, and duration.
+
+    :param file: FileStorage object from Flask's request.files.
+    :param max_size_bytes: Maximum allowed file size in bytes.
+    :param max_duration_minutes: Maximum allowed audio duration in minutes.
+    :return: A dictionary with success status, an error message if applicable, the audio duration in minutes, and a format check.
     """
     # Check if the file extension is .mp3
-    if not file_storage.filename.endswith('.mp3'):
-        return False, "Only MP3 files are allowed", None
+    if not file.filename.lower().endswith('.mp3'):
+        return {'success': False, 'error': 'Only MP3 files are allowed.', 'duration': None}
     
-    # Temporarily save the file to analyze with mutagen
-    filename = secure_filename(file_storage.filename)
-    temp_path = os.path.join('/tmp', filename)
-    file_storage.save(temp_path)
+    # Check file size
+    file.seek(0, io.SEEK_END)  # Move pointer to the end of the file to get its size
+    file_size = file.tell()
+    if file_size > max_size_bytes:
+        return {'success': False, 'error': 'File size exceeds the allowed limit.', 'duration': None}
     
+    # Reset file pointer after checking size
+    file.seek(0)
+
+    # Attempt to load the file with PyDub to calculate duration
     try:
-        audio = MP3(temp_path)
-        duration = audio.info.length
-        if duration > max_duration:
-            return False, f"File duration exceeds maximum allowed length of {max_duration/60} minutes.", None
-        return True, "File analyzed successfully", duration
+        audio = AudioSegment.from_file(file)
     except Exception as e:
-        return False, f"Error analyzing file: {str(e)}", None
-    finally:
-        # Ensure temporary file is removed
-        os.remove(temp_path)
+        return {'success': False, 'error': f'Failed to process the audio file: {str(e)}', 'duration': None}
+    
+    # Calculate audio length in minutes
+    audio_length_minutes = len(audio) / 60000.0
+
+    if audio_length_minutes > max_duration_minutes:
+        return {'success': False, 'error': 'Audio length exceeds the allowed duration.', 'duration': audio_length_minutes}
+
+    # If all checks pass
+    return {'success': True, 'error': None, 'duration': audio_length_minutes}
+
+
+    
 
 @app.route('/add_to_waitlist', methods=['POST'])
 @login_required
@@ -658,9 +674,10 @@ def start_infer():
         if 'file' not in request.files:
             return jsonify({'error': 'No file part'})
         file = request.files['file']
-        success, message, duration = analyze_mp3_file(file)
-        if not success:
-            return jsonify({"error": message}), 400
+        analysis_results = analyze_audio_file(file)
+        
+        if not analysis_results['success']:
+            return jsonify({"error": analysis_results['error']}), 400
         speaker_name = request.form.get('spk_id', '')
         app.logger.info(f"enqued the job for speaker {speaker_name} ")
         if file.filename == '':

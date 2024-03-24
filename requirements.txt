@@ -10,3 +10,4 @@ pydub
 gunicorn==20.0.4
 ffmpeg
 mutagen
+pydub
