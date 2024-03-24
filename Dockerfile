@@ -35,7 +35,15 @@ COPY . .
 
 # Command to run the Flask application
 
-CMD gunicorn --worker-tmp-dir /dev/shm --config gunicorn_config.py --log-level=info --access-logfile - --error-logfile - fullapp:app
+#CMD gunicorn --worker-tmp-dir /dev/shm --config gunicorn_config.py --log-level=info --access-logfile - --error-logfile - fullapp:app
+
+ENV FLASK_APP=fullapp.py
+
+# Expose the port Flask is running on
+EXPOSE 5000
+
+# Command to run the Flask application
+CMD ["flask", "run", "--host=0.0.0.0"]
 
 
 
