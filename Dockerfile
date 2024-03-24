@@ -26,6 +26,6 @@ COPY . .
 # Command to run the Flask application
 
 CMD gunicorn --worker-tmp-dir /dev/shm --config gunicorn_config.py fullapp:app
-CMD ["flask", "run", "--host=0.0.0.0"]
+
 
 
