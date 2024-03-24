@@ -14,16 +14,18 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Make port 5000 available to the world outside this container
-EXPOSE 5000
+
 
 # Define environment variables for Redis connection and AWS credentials
 
 
-ENV FLASK_APP=fullapp.py
+
 
 
 
 # Command to run the Flask application
+
+CMD gunicorn --worker-tmp-dir /dev/shm --config gunicorn_config.py fullapp:app
 CMD ["flask", "run", "--host=0.0.0.0"]
 
 
