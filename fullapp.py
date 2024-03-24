@@ -86,6 +86,14 @@ app.config['SESSION_REDIS'] = redis_client
 Session(app)
 
 
+handler = RotatingFileHandler('app.log', maxBytes=10000, backupCount=3)
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+
+app.logger.addHandler(handler)
+app.logger.setLevel(logging.INFO)
+
 q = Queue(connection=redis_client)
 # Initialize Redis
 FEATURE_FLAG_WAITLIST = True 
