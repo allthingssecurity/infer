@@ -86,14 +86,16 @@ app.config['SESSION_REDIS'] = redis_client
 Session(app)
 
 
-handler = RotatingFileHandler('app.log', maxBytes=10000, backupCount=3)
-handler.setLevel(logging.INFO)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-handler.setFormatter(formatter)
+for handler in app.logger.handlers:
+    app.logger.removeHandler(handler)
 
-app.logger.addHandler(handler)
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.INFO)  # Set the desired log level
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+stream_handler.setFormatter(formatter)
+
+app.logger.addHandler(stream_handler)
 app.logger.setLevel(logging.INFO)
-
 q = Queue(connection=redis_client)
 # Initialize Redis
 FEATURE_FLAG_WAITLIST = True 
@@ -1331,11 +1333,4 @@ def logout():
 # Add routes for login, logout, login callback as discussed earlier
 print("Starting Flask application ****************************")
 if __name__ == '__main__':
-    handler = RotatingFileHandler('app.log', maxBytes=10000, backupCount=3)
-    handler.setLevel(logging.INFO)
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    handler.setFormatter(formatter)
-    
-    app.logger.addHandler(handler)
-    app.logger.setLevel(logging.INFO)
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=False)
