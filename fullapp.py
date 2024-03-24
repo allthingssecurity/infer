@@ -130,6 +130,7 @@ def analyze_audio_file(file, max_size_bytes=10*1024*1024, max_duration_minutes=6
     :return: A dictionary with success status, an error message if applicable, the audio duration in minutes, and a format check.
     """
     # Check if the file extension is .mp3
+    print("entered analyse audio")
     if not file.filename.lower().endswith('.mp3'):
         return {'success': False, 'error': 'Only MP3 files are allowed.', 'duration': None}
     
@@ -654,6 +655,7 @@ def infer():
 @app.route('/start_infer', methods=['POST'])
 @login_required
 def start_infer():
+    print("entered infer")
     user_email = session.get('user_email')
     
     if is_feature_waitlist_enabled():
@@ -682,6 +684,7 @@ def start_infer():
         if 'file' not in request.files:
             return jsonify({'error': 'No file part'})
         file = request.files['file']
+        print("analyse audio")
         analysis_results = analyze_audio_file(file)
         
         if not analysis_results['success']:
