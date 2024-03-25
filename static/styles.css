@@ -138,6 +138,19 @@ body, html {
     display: block;
 }
 
+/* Ensures the dropdown container is positioned relatively */
+.navbar nav ul li.dropdown {
+    position: relative; /* Add this line */
+}
+
+/* Correctly positions the dropdown content */
+.dropdown-content {
+    position: absolute;
+    top: 100%; /* Positions the content right below the trigger */
+    left: 0;
+    display: none; /* Start with the dropdown content hidden */
+}
+
 
 /* Responsive Design Adjustments */
 @media (max-width: 600px) {
