@@ -1238,7 +1238,7 @@ def rechargeSong():
 @login_required
 def samples():
     # Display sample conversions
-    return render_template('samples1.html',model_credits=model_credits,song_credits=song_credits)
+    return render_template('samples1.html')
 
 @app.route('/reset-redis')
 def reset_redis():
