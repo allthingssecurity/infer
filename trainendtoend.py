@@ -53,7 +53,11 @@ env_vars = {
 }
 
 
-handler = RotatingFileHandler('train.log', maxBytes=10000, backupCount=3)
+
+
+
+
+handler = RotatingFileHandler('app.log', maxBytes=10000, backupCount=3)
 handler.setLevel(logging.INFO)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
