@@ -37,15 +37,6 @@ body, html {
 
 /* Dropdown Content (Hidden by Default) */
 /* Dropdown Content (Visible with contrasting background) */
-.dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: #123456; /* Make background match navbar for consistency */
-    min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1;
-    color: white; /* Ensuring text is white for visibility */
-}
 
 /* Change dropdown link colors for visibility */
 .dropdown-content a {
@@ -60,12 +51,20 @@ body, html {
     background-color: #f1f1f1; /*
 
 /* Change dropdown link colors */
-.dropdown-content a {
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
+
+
+.navbar nav ul li.dropdown {
+    position: relative; /* Add this line */
 }
+
+/* Correctly positions the dropdown content */
+.dropdown-content {
+    position: absolute;
+    top: 100%; /* Positions the content right below the trigger */
+    left: 0;
+    display: none; /* Start with the dropdown content hidden */
+}
+
 
 /* Show the dropdown menu on hover */
 .navbar nav ul li:hover .dropdown-content {
@@ -134,22 +133,9 @@ body, html {
 }
 
 /* Ensure dropdown stays open when hovered */
-.credits-info:hover {
-    display: block;
-}
+
 
 /* Ensures the dropdown container is positioned relatively */
-.navbar nav ul li.dropdown {
-    position: relative; /* Add this line */
-}
-
-/* Correctly positions the dropdown content */
-.dropdown-content {
-    position: absolute;
-    top: 100%; /* Positions the content right below the trigger */
-    left: 0;
-    display: none; /* Start with the dropdown content hidden */
-}
 
 
 /* Responsive Design Adjustments */
