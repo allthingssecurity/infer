@@ -144,7 +144,7 @@ def start_rq_workers(worker_count=2):
         # and the workers are configured to listen to the 'default' queue.
         # Adjust the command as necessary for your environment.
         subprocess.Popen(['rq', 'worker', 'default'])
-        print("Started an RQ worker.")
+        app.logger.info("Started an RQ worker.")
 
 
 def analyze_audio_file(file, max_size_bytes=10*1024*1024, max_duration_minutes=6):
