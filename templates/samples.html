@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Media Display</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            padding: 10px;
+        }
+
+        .navbar ul, .credits-info, .logout-btn {
+            text-align: center;
+            padding: 0;
+        }
+
+        .navbar img, .user-info img {
+            max-width: 100px;
+        }
+
+        table {
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+            border-collapse: collapse;
+        }
+
+        audio, video {
+            width: 100%;
+            max-width: 300px;
+        }
+
+        td {
+            text-align: center;
+            padding: 10px;
+        }
+
+        @media (min-width: 600px) {
+            .navbar ul {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="navbar">
+            <!-- Navigation and user info here, same as your initial template -->
+        </div>
+    </header>
+
+    <main style="padding: 20px;">
+        <h2>Media Library</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Audio Files</th>
+                    <th>Video Files</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <audio controls>
+                            <source src="{{ url_for('static', filename='1.mp3') }}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </td>
+                    <td rowspan="2">
+                        <video controls>
+                            <source src="{{ url_for('static', filename='1.mp4') }}" type="video/mp4">
+                            Your browser does not support the video element.
+                        </video>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <audio controls>
+                            <source src="{{ url_for('static', filename='2.mp3') }}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <audio controls>
+                            <source src="{{ url_for('static', filename='3.mp3') }}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </td>
+                    <td rowspan="2">
+                        <video controls>
+                            <source src="{{ url_for('static', filename='2.mp4') }}" type="video/mp4">
+                            Your browser does not support the video element.
+                        </video>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <audio controls>
+                            <source src="{{ url_for('static', filename='4.mp3') }}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+
+    		<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all elements with class "dropdown" and bind a click event
+    var dropdowns = document.querySelectorAll('.navbar nav ul li.dropdown');
+    dropdowns.forEach(function(drop) {
+        drop.addEventListener('click', function() {
+            // Toggle the display of the dropdown content
+            var dropdownContent = this.querySelector('.dropdown-content');
+            if (dropdownContent.style.display === "block") {
+                dropdownContent.style.display = "none";
+            } else {
+                dropdownContent.style.display = "block";
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>

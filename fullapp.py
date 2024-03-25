@@ -1124,6 +1124,16 @@ def get_jobs():
     return render_template('job-tracking.html', jobs_data=jobs_data,model_credits=model_credits,song_credits=song_credits)
 
 
+
+def get_samples():
+    user_email = session.get('user_email')
+    
+    
+    model_credits=get_user_credits(user_email,'model')
+    song_credits=get_user_credits(user_email,'song')
+    video_credits=get_user_credits(user_email,'video')
+    
+    return render_template('samples.html', jobs_data=jobs_data,model_credits=model_credits,song_credits=song_credits)
     
     
     
