@@ -1125,6 +1125,7 @@ def get_jobs():
 
 
 @app.route('/get_samples', methods=['GET'])
+@login_required
 def get_samples():
     user_email = session.get('user_email')
     
@@ -1237,7 +1238,7 @@ def rechargeSong():
 @login_required
 def samples():
     # Display sample conversions
-    pass
+    return render_template('samples1.html',model_credits=model_credits,song_credits=song_credits)
 
 @app.route('/reset-redis')
 def reset_redis():
