@@ -29,7 +29,8 @@ from admin import admin_blueprint
 from status import set_job_attributes,update_job_status,get_job_attributes,add_job_to_user_index,get_user_job_ids
 from pydub import AudioSegment
 import io
-
+from rq.job import Job
+from rq import get_failed_queue
 #import librosa
 #import soundfile as sf
 #import pyrubberband as pyrb
@@ -721,13 +722,13 @@ def start_infer():
                 app.logger.info("File does not exist, cannot proceed.")
                 return jsonify({'message': 'Issue with file upload'})
             
-            app.logger.error(f'file saved with filepath =: {filepath}')
+            app.logger.info(f'file saved with filepath =: {filepath}')
             # Adjusted to pass filepath and speaker_name to the main function
             
             absolute_path = os.path.abspath(filepath)
             #os.chmod(absolute_path, 0o666)
             
-            job = q.enqueue_call(
+            job = q.enqueue_call(            
                 func=convert_voice, 
                 args=(absolute_path, final_speaker_name,user_email),  # Positional arguments for my_function
                 
@@ -736,10 +737,13 @@ def start_infer():
             
             app.logger.info("enqueed the job ")
             #job = q.enqueue(convert_voice, absolute_path, final_speaker_name,user_email)
-            job.meta['file_name'] = filename
-            job.meta['submission_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            job.save_meta()  # Don't forget to save the metadata
+            #job.meta['file_name'] = filename
+            #job.meta['submission_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            #job.save_meta()  # Don't forget to save the metadata
             
+            app.logger.info(f"Job ID: {job.get_id()}")
+            app.logger.info(f"Job Status: {job.get_status()}")
+
             
             
             type_of_job = "infer"
@@ -928,6 +932,14 @@ def start_worker():
     for queue in all_queues:
         num_jobs = len(queue)
         app.logger.info(f"Number of jobs in '{queue.name}' queue: {num_jobs}")
+        
+    failed_queue = get_failed_queue(connection=redis_client)
+    app.logger.info(f"Number of failed jobs: {len(failed_queue)}")
+    for job in failed_queue.jobs:
+        app.logger.info(f"Failed Job ID: {job.get_id()}, Exception: {job.exc_info}")
+    
+    
+    
     if current_worker_count < MAX_WORKERS:
         # Increment the worker count atomically
         redis_client.incr(WORKER_COUNT_KEY)
