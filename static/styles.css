@@ -51,20 +51,12 @@ body, html {
     background-color: #f1f1f1; /*
 
 /* Change dropdown link colors */
-
-
-.navbar nav ul li.dropdown {
-    position: relative; /* Add this line */
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
 }
-
-/* Correctly positions the dropdown content */
-.dropdown-content {
-    position: absolute;
-    top: 100%; /* Positions the content right below the trigger */
-    left: 0;
-    display: none; /* Start with the dropdown content hidden */
-}
-
 
 /* Show the dropdown menu on hover */
 .navbar nav ul li:hover .dropdown-content {
@@ -136,6 +128,17 @@ body, html {
 
 
 /* Ensures the dropdown container is positioned relatively */
+.navbar nav ul li.dropdown {
+    position: relative; /* Add this line */
+}
+
+/* Correctly positions the dropdown content */
+.dropdown-content {
+    position: absolute;
+    top: 100%; /* Positions the content right below the trigger */
+    left: 0;
+    display: none; /* Start with the dropdown content hidden */
+}
 
 
 /* Responsive Design Adjustments */
