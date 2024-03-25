@@ -30,6 +30,7 @@ from status import set_job_attributes,update_job_status,get_job_attributes,add_j
 from pydub import AudioSegment
 import io
 from rq.job import Job
+import tempfile
 
 #import librosa
 #import soundfile as sf
@@ -133,37 +134,39 @@ def is_user_in_waitlist(user_email):
 
 
 
+
 def analyze_audio_file(file, max_size_bytes=10*1024*1024, max_duration_minutes=6):
     """
-    Analyzes an uploaded audio file for size, format, and duration.
+    Analyzes an uploaded audio file for size, format, and duration using a temporary file for audio processing.
 
     :param file: FileStorage object from Flask's request.files.
     :param max_size_bytes: Maximum allowed file size in bytes.
     :param max_duration_minutes: Maximum allowed audio duration in minutes.
     :return: A dictionary with success status, an error message if applicable, the audio duration in minutes, and a format check.
     """
-    # Check if the file extension is .mp3
+    
     print("entered analyse audio")
+    # Check if the file extension is .mp3
     if not file.filename.lower().endswith('.mp3'):
         return {'success': False, 'error': 'Only MP3 files are allowed.', 'duration': None}
     
-    # Check file size
-    file.seek(0, io.SEEK_END)  # Move pointer to the end of the file to get its size
+    # Check file size without creating a temporary file
+    file.seek(0, io.SEEK_END)
     file_size = file.tell()
     if file_size > max_size_bytes:
         return {'success': False, 'error': 'File size exceeds the allowed limit.', 'duration': None}
-    
-    # Reset file pointer after checking size
     file.seek(0)
 
-    # Attempt to load the file with PyDub to calculate duration
-    try:
-        audio = AudioSegment.from_file(file)
-    except Exception as e:
-        return {'success': False, 'error': f'Failed to process the audio file: {str(e)}', 'duration': None}
-    
-    # Calculate audio length in minutes
-    audio_length_minutes = len(audio) / 60000.0
+    # Use a temporary file for processing to ensure compatibility with PyDub
+    with tempfile.NamedTemporaryFile(suffix='.mp3') as tmp_file:
+        file.save(tmp_file.name)
+        try:
+            audio = AudioSegment.from_file(tmp_file.name)
+        except Exception as e:
+            return {'success': False, 'error': f'Failed to process the audio file: {str(e)}', 'duration': None}
+        
+        # Calculate audio length in minutes
+        audio_length_minutes = len(audio) / 60000.0
 
     if audio_length_minutes > max_duration_minutes:
         return {'success': False, 'error': 'Audio length exceeds the allowed duration.', 'duration': audio_length_minutes}
@@ -698,10 +701,10 @@ def start_infer():
             return jsonify({'error': 'No file part'})
         file = request.files['file']
         print("analyse audio")
-        #analysis_results = analyze_audio_file(file)
+        analysis_results = analyze_audio_file(file)
         
-        #if not analysis_results['success']:
-        #    return jsonify({"error": analysis_results['error']}), 400
+        if not analysis_results['success']:
+            return jsonify({"error": analysis_results['error']}), 400
         speaker_name = request.form.get('spk_id', '')
         app.logger.info(f"enqued the job for speaker {speaker_name} ")
         if file.filename == '':
