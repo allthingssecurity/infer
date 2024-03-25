@@ -80,11 +80,11 @@
                 <td>
                     {% if job['status'] == 'finished' %}
                         {% if job_type == 'video' %}
-                            <!-- Specific route for downloading video jobs -->
                             <a href="/download_video/{{ job['job_id'] }}">Download</a>
-                        {% else %}
-                            <!-- General download link for all other job types -->
+                        {% elif job_type != 'train' %}
                             <a href="/download/{{ job['job_id'] }}">Download</a>
+                        {% else %}
+                            N/A
                         {% endif %}
                     {% else %}
                         N/A
