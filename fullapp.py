@@ -30,7 +30,7 @@ from status import set_job_attributes,update_job_status,get_job_attributes,add_j
 from pydub import AudioSegment
 import io
 from rq.job import Job
-from rq import get_failed_queue
+
 #import librosa
 #import soundfile as sf
 #import pyrubberband as pyrb
@@ -933,8 +933,12 @@ def start_worker():
         num_jobs = len(queue)
         app.logger.info(f"Number of jobs in '{queue.name}' queue: {num_jobs}")
         
-    failed_queue = get_failed_queue(connection=redis_client)
-    app.logger.info(f"Number of failed jobs: {len(failed_queue)}")
+    failed_queue = Queue('failed', connection=redis_client)
+
+# Get the number of jobs in the failed queue
+    num_failed_jobs = len(failed_queue)
+    print(f"Number of failed jobs: {num_failed_jobs}")
+    app.logger.info(f"Number of failed jobs: {num_failed_jobs}")
     for job in failed_queue.jobs:
         app.logger.info(f"Failed Job ID: {job.get_id()}, Exception: {job.exc_info}")
     
