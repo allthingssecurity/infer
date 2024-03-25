@@ -143,7 +143,8 @@ def start_rq_workers(worker_count=2):
         # Assuming 'rq' command is available in the environment
         # and the workers are configured to listen to the 'default' queue.
         # Adjust the command as necessary for your environment.
-        subprocess.Popen(['rq', 'worker', 'default'])
+        #subprocess.Popen(['rq', 'worker', 'default'])
+        start_worker()
         app.logger.info("Started an RQ worker.")
 
 
