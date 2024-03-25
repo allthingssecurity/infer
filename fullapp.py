@@ -135,6 +135,7 @@ def is_user_in_waitlist(user_email):
 
 
 
+
 def analyze_audio_file(file, max_size_bytes=10*1024*1024, max_duration_minutes=6):
     """
     Analyzes an uploaded audio file for size, format, and duration using a temporary file for audio processing.
@@ -150,27 +151,35 @@ def analyze_audio_file(file, max_size_bytes=10*1024*1024, max_duration_minutes=6
     if not file.filename.lower().endswith('.mp3'):
         return {'success': False, 'error': 'Only MP3 files are allowed.', 'duration': None}
     
-    # Check file size without creating a temporary file
-    file.seek(0, io.SEEK_END)
-    file_size = file.tell()
-    if file_size > max_size_bytes:
-        return {'success': False, 'error': 'File size exceeds the allowed limit.', 'duration': None}
-    file.seek(0)
+    # Create a temporary copy of the file for all operations
+    file_copy = tempfile.NamedTemporaryFile(delete=False, suffix='.mp3')
+    file.save(file_copy.name)
+    file_copy.close()
+    
+    try:
+        # Check file size using the temporary file
+        file_size = os.path.getsize(file_copy.name)
+        if file_size > max_size_bytes:
+            os.remove(file_copy.name)  # Clean up temporary file
+            return {'success': False, 'error': 'File size exceeds the allowed limit.', 'duration': None}
 
-    # Use a temporary file for processing to ensure compatibility with PyDub
-    with tempfile.NamedTemporaryFile(suffix='.mp3') as tmp_file:
-        file.save(tmp_file.name)
-        try:
-            audio = AudioSegment.from_file(tmp_file.name)
-        except Exception as e:
-            return {'success': False, 'error': f'Failed to process the audio file: {str(e)}', 'duration': None}
+        # Load the audio file for processing
+        audio = AudioSegment.from_file(file_copy.name)
         
         # Calculate audio length in minutes
         audio_length_minutes = len(audio) / 60000.0
 
-    if audio_length_minutes > max_duration_minutes:
-        return {'success': False, 'error': 'Audio length exceeds the allowed duration.', 'duration': audio_length_minutes}
-
+        if audio_length_minutes > max_duration_minutes:
+            os.remove(file_copy.name)  # Clean up temporary file
+            return {'success': False, 'error': 'Audio length exceeds the allowed duration.', 'duration': audio_length_minutes}
+    
+    except Exception as e:
+        os.remove(file_copy.name)  # Ensure the temporary file is removed in case of an error
+        return {'success': False, 'error': f'Failed to process the audio file: {str(e)}', 'duration': None}
+    
+    # Clean up temporary file after successful processing
+    os.remove(file_copy.name)
+    
     # If all checks pass
     return {'success': True, 'error': None, 'duration': audio_length_minutes}
 
