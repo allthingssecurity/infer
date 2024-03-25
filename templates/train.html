@@ -88,66 +88,51 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    let mediaRecorder;
-    let audioBlob = null;
+let mediaRecorder;
+let audioBlob;
 
-    document.getElementById("startRecording").addEventListener("click", function() {
-        navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(stream => {
-                mediaRecorder = new MediaRecorder(stream);
-                let audioChunks = [];
-                mediaRecorder.ondataavailable = event => {
-                    audioChunks.push(event.data);
-                };
-                mediaRecorder.start();
+document.getElementById("startRecording").onclick = () => {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            mediaRecorder = new MediaRecorder(stream);
+            let audioChunks = [];
 
-                document.getElementById("startRecording").disabled = true;
-                document.getElementById("stopRecording").disabled = false;
+            mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+            mediaRecorder.onstop = () => {
+                audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                document.getElementById("audioPlayback").src = URL.createObjectURL(audioBlob);
+                document.getElementById("audioPlayback").hidden = false;
+            };
 
-mediaRecorder.onstop = () => {
-    audioBlob = new Blob(audioChunks, { type: 'audio/mpeg' }); // Adjust the MIME type if necessary
-    let audioUrl = URL.createObjectURL(audioBlob);
-    document.getElementById("audioPlayback").src = audioUrl;
-    document.getElementById("audioPlayback").hidden = false;
-    document.getElementById("stopRecording").disabled = true;
-    document.getElementById("startRecording").disabled = false;
+            mediaRecorder.start();
+            document.getElementById("startRecording").disabled = true;
+            document.getElementById("stopRecording").disabled = false;
+        })
+        .catch(error => console.error("Error accessing the microphone: ", error));
 };
 
-document.getElementById("stopRecording").addEventListener("click", function() {
+document.getElementById("stopRecording").onclick = () => {
     mediaRecorder.stop();
     document.getElementById("startRecording").disabled = false;
     document.getElementById("stopRecording").disabled = true;
-});
+};
 
-// Form submission with the recorded audio
-document.getElementById("uploadForm").addEventListener("submit", function(event) {
+document.getElementById("uploadForm").onsubmit = event => {
     event.preventDefault();
 
-    const formData = new FormData(this);
+    const formData = new FormData(event.target);
     if (audioBlob) {
         formData.append('file', audioBlob, 'recorded_audio.mp3');
     }
 
-    fetch('{{ url_for("process_audio") }}', {
+    fetch("YOUR_SERVER_ENDPOINT", {
         method: 'POST',
         body: formData,
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log(data);
-        alert('Upload successful!');
-    })
-    .catch(error => {
-        console.error('Error during fetch operation:', error);
-        alert('Upload failed. Please try again.');
-    });
-});
-});
+    .then(response => response.json())
+    .then(data => alert('Upload successful!'))
+    .catch(error => console.error('Upload failed:', error));
+};
 </script>
 </body>
+</html>
