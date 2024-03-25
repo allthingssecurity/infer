@@ -68,7 +68,7 @@
                 if (data.job_id) {
                     alert('File upload started. Track the job status on the Job Tracking page.');
                 } else {
-                    alert(data.message || 'Failed to start the job.'); // Fallback message if no specific message is provided
+                    alert(data.message || 'Failed to start the job. Either file format is not proper or file is too big'); // Fallback message if no specific message is provided
                 }
             } catch (error) {
                 console.error("Error submitting the form: ", error);
