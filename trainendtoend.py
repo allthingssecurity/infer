@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 app = Flask(__name__)
+
 ACCESS_ID=os.getenv("ACCESS_ID")
 SECRET_KEY=os.getenv("SECRET_KEY")
 
@@ -45,7 +46,7 @@ infer_url= os.getenv('INFER_URL', '')
 redis_client = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
 
 WORKER_COUNT_KEY = 'worker_count'
-
+logger = logging.getLogger('my_app_logger')
 
 env_vars = {
     "ACCESS_ID": ACCESS_ID,
@@ -306,7 +307,7 @@ def convert_voice(file_path1, spk_id, user_email):
     """
     #base_url = os.environ.get('INFER_URL')
     #url = f"{base_url}/convert_voice"
-    print("entered convert ")
+    logger.info("entered convert ")
     app.logger.info(f'filepath where file saved initiallu=: {file_path1}')
     job = get_current_job()
 
