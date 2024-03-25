@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Media Display</title>
+    <title>Media Display for Singing Voices</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
@@ -86,7 +86,7 @@
     </header>
 
     <main style="padding: 20px;">
-        <h2>Media Library</h2>
+        <h2>Media Library for Singing Voices. These are just representations and not to be used commercially </h2>
         <table>
             <thead>
                 <tr>
@@ -97,13 +97,15 @@
             <tbody>
                 <tr>
                     <td>
-                        <audio controls>
+					    <label for="audio1">Kishor Kumar</label>
+                        <audio id="audio1" controls>
                             <source src="{{ url_for('static', filename='1.mp3') }}" type="audio/mpeg">
                             Your browser does not support the audio element.
                         </audio>
                     </td>
                     <td rowspan="2">
-                        <video controls>
+					    <label for="video1">Modi</label>
+                        <video id="video1" controls>
                             <source src="{{ url_for('static', filename='1.mp4') }}" type="video/mp4">
                             Your browser does not support the video element.
                         </video>
@@ -111,7 +113,8 @@
                 </tr>
                 <tr>
                     <td>
-                        <audio controls>
+					    <label for="audio2">Rahul Gandhi</label>
+                        <audio id="audio2" controls>
                             <source src="{{ url_for('static', filename='2.mp3') }}" type="audio/mpeg">
                             Your browser does not support the audio element.
                         </audio>
@@ -119,13 +122,15 @@
                 </tr>
                 <tr>
                     <td>
-                        <audio controls>
+					    <label for="audio3">Modi</label>
+                        <audio id="audio3" controls>
                             <source src="{{ url_for('static', filename='3.mp3') }}" type="audio/mpeg">
                             Your browser does not support the audio element.
                         </audio>
                     </td>
                     <td rowspan="2">
-                        <video controls>
+					<label for="video2">Tom Hanks</label>
+                        <video id="video2" controls>
                             <source src="{{ url_for('static', filename='2.mp4') }}" type="video/mp4">
                             Your browser does not support the video element.
                         </video>
@@ -133,7 +138,8 @@
                 </tr>
                 <tr>
                     <td>
-                        <audio controls>
+					<label for="audio4">Trump</label>
+                        <audio id="audio4" controls>
                             <source src="{{ url_for('static', filename='4.mp3') }}" type="audio/mpeg">
                             Your browser does not support the audio element.
                         </audio>
