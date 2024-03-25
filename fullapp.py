@@ -333,6 +333,11 @@ def authorize():
         create_user_account_if_not_exists(user_info['email'])
         app.logger.info("after invoking user account creation")
         user_email=user_info['email']
+        model_credits=get_user_credits(user_email,'model')
+        song_credits=get_user_credits(user_email,'song')
+        video_credits=get_user_credits(user_email,'video')
+      # Adjust this function to your implementation
+    #return render_template('index.html', user_info=session, model_credits=model_credits, song_credits=song_credits,video_credits=video_credits)
         
         if is_feature_waitlist_enabled():
             if not is_user_authorized(user_email):
@@ -347,7 +352,7 @@ def authorize():
         
         
         # Perform any additional processing or actions as needed
-        return render_template('index.html')
+        return render_template('index.html',user_info=session,model_credits=model_credits, song_credits=song_credits,video_credits=video_credits)
     else:
         # Handle the case where the email is not available
         return redirect(url_for('login'))
