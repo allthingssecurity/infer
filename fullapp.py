@@ -919,9 +919,10 @@ def process_audio():
         return jsonify({'message': 'You have reached max limits '})
 def start_worker():
     # Fetch the current number of workers
+    app.logger.info("entered start worker")
     current_worker_count = int(redis_client.get(WORKER_COUNT_KEY) or 0)
-    print(f"current worker={current_worker_count}")
-    print("entered start worker")
+    app.logger.info(f"current worker={current_worker_count}")
+    
     if current_worker_count < MAX_WORKERS:
         # Increment the worker count atomically
         redis_client.incr(WORKER_COUNT_KEY)
