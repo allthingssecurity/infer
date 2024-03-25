@@ -767,9 +767,13 @@ def start_infer():
                 #update_job_status(type_of_job,user_email,'queued')
                 update_job_status(redis_client,job_id,'queued')
                 app.logger.info(f"updated redis for job id {job.id} ")
-                p = Process(target=start_worker)
-                p.start()     
-                return jsonify({'message': 'File uploaded successfully for conversion', 'job_id': job.get_id()})
+                
+                try:
+                    p = Process(target=start_worker)
+                    p.start()     
+                    return jsonify({'message': 'File uploaded successfully for conversion', 'job_id': job.get_id()})
+                except Exception as e:
+                    return jsonify({'message': 'Failed to start process'})
     else:
         app.logger.info(f"max song conversion exceeded for the user {user_email}. Buy credits")
         return jsonify({'message': 'You have reached max limits for song conversion. Buy credits '})
@@ -875,6 +879,7 @@ def process_audio():
             print(filepath)
             response = upload_to_do(filepath)
             user_email = session.get('user_email')
+            print(user_email)
             # Adjusted to pass filepath and speaker_name to the main function
             job = q.enqueue_call(
                 func=train_model, 
@@ -902,8 +907,8 @@ def process_audio():
                 
             if user_email:
                 # Update Redis with the new job ID and its initial status
-                user_key = user_job_key(user_email,'train')
-                redis_client.hset(user_key, job.id, "queued")  # Initial status is "queued"
+                #user_key = user_job_key(user_email,'train')
+                #redis_client.hset(user_key, job.id, "queued")  # Initial status is "queued"
                 update_job_status(redis_client,job_id,'queued')
                 #job = q.enqueue(main, filename, model_name)
                 p = Process(target=start_worker)
