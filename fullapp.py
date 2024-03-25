@@ -112,6 +112,9 @@ q = Queue(connection=redis_client)
 # Initialize Redis
 FEATURE_FLAG_WAITLIST = True 
 
+start_rq_workers(2)
+
+
 def login_required(f):
     @wraps(f)  # Preserve the function name and docstring
     def decorated_function(*args, **kwargs):
@@ -1398,6 +1401,6 @@ def logout():
 # Add routes for login, logout, login callback as discussed earlier
 print("Starting Flask application ****************************")
 if __name__ == '__main__':
-    start_rq_workers(2)
+    #start_rq_workers(2)
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=False)
     
