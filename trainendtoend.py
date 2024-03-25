@@ -21,8 +21,8 @@ from status import set_job_attributes,update_job_status,get_job_attributes
 
 runpod.api_key =os.getenv("RUNPOD_KEY")
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
+#logger = logging.getLogger(__name__)
+logger = logging.getLogger('my_app_logger')
 
 # Get all my pods
 #pods = runpod.get_pods()
@@ -297,7 +297,7 @@ def add_model_to_user(user_email, model_name):
     redis_client.set(training_done_key, "true")
 
 def convert_voice(file_path1, spk_id, user_email):
-    print("job done")
+    logger.info("job done")
     update_job_status(redis_client,job_id,'finished')
     
 def convert_voice1(file_path1, spk_id, user_email):
