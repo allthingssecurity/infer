@@ -95,8 +95,17 @@ handler.setLevel(logging.INFO)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 
+logger = logging.getLogger('my_app_logger')
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+
+# If you still want to attach this to your Flask app's logger for any reason:
 app.logger.addHandler(handler)
 app.logger.setLevel(logging.INFO)
+
+
+#app.logger.addHandler(handler)
+#app.logger.setLevel(logging.INFO)
 
 q = Queue(connection=redis_client)
 # Initialize Redis
@@ -689,10 +698,10 @@ def start_infer():
             return jsonify({'error': 'No file part'})
         file = request.files['file']
         print("analyse audio")
-        analysis_results = analyze_audio_file(file)
+        #analysis_results = analyze_audio_file(file)
         
-        if not analysis_results['success']:
-            return jsonify({"error": analysis_results['error']}), 400
+        #if not analysis_results['success']:
+        #    return jsonify({"error": analysis_results['error']}), 400
         speaker_name = request.form.get('spk_id', '')
         app.logger.info(f"enqued the job for speaker {speaker_name} ")
         if file.filename == '':
