@@ -730,6 +730,7 @@ def start_infer():
             #validation_response, status_code = validate_audio_file(file)
             #if validation_response:
             #    return validation_response, status_code
+            file.seek(0)
             filename = file.filename  # Original filename
             file_extension = os.path.splitext(filename)[1]  # Extracts file extension including the dot (.)
             new_filename = f"{uuid.uuid4()}{file_extension}"  # Generates a new filename with original extension
