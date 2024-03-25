@@ -927,7 +927,7 @@ def start_worker():
 # Iterate over each queue to count jobs
     for queue in all_queues:
         num_jobs = len(queue)
-        print(f"Number of jobs in '{queue.name}' queue: {num_jobs}")
+        app.logger.info(f"Number of jobs in '{queue.name}' queue: {num_jobs}")
     if current_worker_count < MAX_WORKERS:
         # Increment the worker count atomically
         redis_client.incr(WORKER_COUNT_KEY)
