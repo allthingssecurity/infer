@@ -391,8 +391,8 @@ def convert_voice(file_path1, spk_id, user_email):
         update_job_status(redis_client,job_id,'failed')
         redis_client.decr(WORKER_COUNT_KEY)
         
-        if pod_id:
-            terminate_pod(pod_id)
+        #if pod_id:
+        #    terminate_pod(pod_id)
         return False, str(e)
 
     except Exception as e:
@@ -405,8 +405,8 @@ def convert_voice(file_path1, spk_id, user_email):
         
         update_job_status(redis_client,job_id,'failed')
         redis_client.decr(WORKER_COUNT_KEY)
-        if pod_id:
-            terminate_pod(pod_id)
+        #if pod_id:
+        #    terminate_pod(pod_id)
         return False, str(e)
  
     
