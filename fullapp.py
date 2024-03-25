@@ -890,6 +890,9 @@ def process_audio():
         app.logger.info(f"job already running for this user {user_email} ")
         return jsonify({'message': 'Cannot submit new job. A job is already queued or started'})
     
+    
+    
+    
     credit_count=get_user_credits(user_email,'song')
     if (credit_count >0):
     
@@ -904,12 +907,17 @@ def process_audio():
         if file.filename == '':
             return jsonify({'error': 'No selected file'})
         
+        analysis_results = analyze_audio_file(file)
         
+        if not analysis_results['success']:
+            return jsonify({"error": analysis_results['error']}), 400    
         
         if file:
+        
             #validation_response, status_code = validate_audio_file(file)
             #if validation_response:
             #    return validation_response, status_code
+            file.seek(0)
             filename = uuid.uuid4().hex + '_' + file.filename
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             file.save(filepath)

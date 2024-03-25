@@ -1,203 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
- 
-     <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <title>Upload or Record Audio Files</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ensure proper scaling on mobile devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
- <style>
-    /* Add some basic responsive styling */
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        padding: 10px;
-    }
-
-    .navbar ul, .credits-info, .logout-btn {
-        text-align: center;
-        padding: 0;
-    }
-
-    .navbar img, .user-info img {
-        max-width: 100px; /* Make logo and user icon smaller on mobile */
-    }
-
-    form input[type="text"], form input[type="file"], form select, form input[type="submit"] {
-        width: 100%; /* Full width for form elements */
-        max-width: 400px; /* Limit the maximum width */
-        box-sizing: border-box; /* Include padding and border in the element's total width */
-        margin: 10px auto; /* Add some spacing and center align */
-        display: block; /* Ensure elements are block level for margin auto to work */
-    }
-
-    @media (min-width: 600px) {
-        /* Styles for screens larger than 600px */
-        .navbar ul {
-            text-align: left;
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            padding: 10px;
         }
-    }
-</style>
- 
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Assuming mediaRecorder is declared at a wider scope for access in multiple functions
-            let mediaRecorder;
-            let audioBlob = null; // To ensure we can check if an audio has been recorded
-
-            document.getElementById("uploadForm").addEventListener("submit", function(event) {
-                event.preventDefault(); // Prevent the default form submission
-
-                // Check if the model name field is empty and validate against constraints
-                const modelName = document.getElementById("model_name").value.trim();
-                if (!modelName) {
-                    alert('Please enter a model name.');
-                    return;
-                }
-
-                // Validate model name for special characters and length
-                if (!/^[a-zA-Z0-9]{1,10}$/.test(modelName)) {
-                    alert('Model name should only contain letters and numbers, up to 10 characters.');
-                    return;
-                }
-
-                // Check if a file is selected or an audio has been recorded
-                const fileInput = document.getElementById("file");
-                if (!fileInput.files.length && !audioBlob) {
-                    alert('Please select a file to upload or record an audio.');
-                    return;
-                }
-
-                const formData = new FormData(this);
-                if (audioBlob) {
-                    formData.append('file', audioBlob, 'recorded_audio.mp3');
-                }
-                
-                fetch('{{ url_for("process_audio") }}', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert('File upload started. Track the job status on the Job Tracking page.');
-                })
-                .catch(error => console.error("Error submitting the form: ", error));
-            });
-
-            // Audio recording logic
-            document.getElementById("startRecording").addEventListener("click", function() {
-                navigator.mediaDevices.getUserMedia({ audio: true })
-                    .then(stream => {
-                        mediaRecorder = new MediaRecorder(stream);
-                        const audioChunks = [];
-                        mediaRecorder.ondataavailable = event => {
-                            audioChunks.push(event.data);
-                        };
-                        mediaRecorder.start();
-
-                        document.getElementById("startRecording").disabled = true;
-                        document.getElementById("stopRecording").disabled = false;
-
-                        mediaRecorder.onstop = () => {
-                            audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
-                            const audioUrl = URL.createObjectURL(audioBlob);
-                            document.getElementById("audioPlayback").src = audioUrl;
-                            document.getElementById("audioPlayback").hidden = false;
-                            document.getElementById("confirmUpload").hidden = false;
-                            // Clear the file input since we're using recorded audio
-                            document.getElementById("file").value = "";
-                        };
-                    }).catch(error => console.error("Error accessing the microphone: ", error));
-            });
-
-            document.getElementById("stopRecording").addEventListener("click", function() {
-                mediaRecorder.stop();
-                document.getElementById("stopRecording").disabled = true;
-                document.getElementById("startRecording").disabled = false;
-            });
-        });
-    </script>
+        .navbar ul, .credits-info, .logout-btn {
+            text-align: center;
+            padding: 0;
+        }
+        .navbar img, .user-info img {
+            max-width: 100px; /* Make logo and user icon smaller on mobile */
+        }
+        form input[type="text"], form input[type="file"], form select, form input[type="submit"], button {
+            width: 100%; /* Full width for form elements */
+            max-width: 400px; /* Limit the maximum width */
+            box-sizing: border-box; /* Include padding and border in the element's total width */
+            margin: 10px auto; /* Add some spacing and center align */
+            display: block; /* Ensure elements are block level for margin auto to work */
+        }
+        @media (min-width: 600px) {
+            .navbar ul {
+                text-align: left;
+            }
+        }
+    </style>
 </head>
 <body>
 <header>
-        <div class="navbar">
-            <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" class="logo">
-            <nav>
-        <ul>
-            <li class="dropdown">
-                <a href="javascript:void(0)">Generation &#9662;</a>
-                <div class="dropdown-content">
-                    <a href="/train">Model Training</a>
-                    <a href="/song_conversion">Song Conversion</a>
-                    <a href="/gen_video">Generate Video</a>
-                </div>
-            </li>
-            <li class="dropdown">
-                <a href="javascript:void(0)">Recharge &#9662;</a>
-                <div class="dropdown-content">
-                    <a href="/rechargeModel">Recharge Model</a>
-                    <a href="/rechargeSong">Recharge Song</a>
-                </div>
-            </li>
-            <li><a href="/samples">Samples</a></li>
-        </ul>
-    </nav>
-             <div class="user-info">
-                <img src="{{ session['user_image'] if session['user_image'] else url_for('static', filename='default-user-icon.png') }}" alt="User Icon" class="user-icon">
-                <span>Welcome, {{ session['username'] }}</span>
-                <!-- Displaying Credits Information -->
-                <div class="credits-info">
-                    <span>Model Credits: {{ model_credits }}</span>
-                    <span>Song Credits: {{ song_credits }}</span>
-					<span>Singing Head Credits: {{ video_credits }}</span>
-                </div>
-                <a href="/logout" class="logout-btn">Logout</a>
+    <div class="navbar">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" class="logo">
+        <nav>
+            <ul>
+                <li class="dropdown">
+                    <a href="javascript:void(0)">Generation &#9662;</a>
+                    <div class="dropdown-content">
+                        <a href="/train">Model Training</a>
+                        <a href="/song_conversion">Song Conversion</a>
+                        <a href="/gen_video">Generate Video</a>
+                    </div>
+                </li>
+                <li class="dropdown">
+                    <a href="javascript:void(0)">Recharge &#9662;</a>
+                    <div class="dropdown-content">
+                        <a href="/rechargeModel">Recharge Model</a>
+                        <a href="/rechargeSong">Recharge Song</a>
+                    </div>
+                </li>
+                <li><a href="/samples">Samples</a></li>
+            </ul>
+        </nav>
+        <div class="user-info">
+            <img src="{{ session['user_image'] if session['user_image'] else url_for('static', filename='default-user-icon.png') }}" alt="User Icon" class="user-icon">
+            <span>Welcome, {{ session['username'] }}</span>
+            <div class="credits-info">
+                <span>Model Credits: {{ model_credits }}</span>
+                <span>Song Credits: {{ song_credits }}</span>
+                <span>Singing Head Credits: {{ video_credits }}</span>
             </div>
+            <a href="/logout" class="logout-btn">Logout</a>
         </div>
-    </header>
-
-    <h2>Upload Audio Files for Processing</h2>
-    <form id="uploadForm" action="{{ url_for('process_audio') }}" method="post" enctype="multipart/form-data">
-        <label for="files">Choose audio files (only mp3 format):</label>
-        
-        <input type="file" id="file" name="file" accept=".mp3" required><br><br> <!-- Only allows .mp3 files -->
-        <label for="model_name">Model Name:</label>
-        <input type="text" id="model_name" name="model_name" required><br><br>
-        
-        <input type="submit" value="Upload">
-    </form>
-
-   <!-- <hr>
-
-    //<h2>Or Record Audio</h2>
-    //<button id="startRecording">Start Recording</button>
-    //<button id="stopRecording" disabled>Stop Recording</button>
-    //<audio id="audioPlayback" controls hidden></audio>
-    //<button id="confirmUpload" hidden>Confirm Upload</button>
-
-    //<hr>
--->
-    <div>
-        <a href="/get-jobs">Go to Job Tracking Page</a>
-
     </div>
-		<script>
+</header>
+
+<h2>Upload Audio Files for Processing</h2>
+<form id="uploadForm" action="{{ url_for('process_audio') }}" method="post" enctype="multipart/form-data">
+    <label for="file">Choose audio files (only mp3 format):</label>
+    <input type="file" id="file" name="file" accept=".mp3"><br><br>
+    <label for="model_name">Model Name:</label>
+    <input type="text" id="model_name" name="model_name" required><br><br>
+    <input type="submit" value="Upload">
+</form>
+
+<h2>Or Record Audio</h2>
+<button id="startRecording">Start Recording</button>
+<button id="stopRecording" disabled>Stop Recording</button>
+<audio id="audioPlayback" controls hidden></audio>
+
+<div>
+    <a href="/get-jobs">Go to Job Tracking Page</a>
+</div>
+
+<script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Get all elements with class "dropdown" and bind a click event
-    var dropdowns = document.querySelectorAll('.navbar nav ul li.dropdown');
-    dropdowns.forEach(function(drop) {
-        drop.addEventListener('click', function() {
-            // Toggle the display of the dropdown content
-            var dropdownContent = this.querySelector('.dropdown-content');
-            if (dropdownContent.style.display === "block") {
-                dropdownContent.style.display = "none";
-            } else {
-                dropdownContent.style.display = "block";
-            }
-        });
+    let mediaRecorder;
+    let audioBlob = null;
+
+    document.getElementById("startRecording").addEventListener("click", function() {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                let audioChunks = [];
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+                mediaRecorder.start();
+
+                document.getElementById("startRecording").disabled = true;
+                document.getElementById("stopRecording").disabled = false;
+
+mediaRecorder.onstop = () => {
+    audioBlob = new Blob(audioChunks, { type: 'audio/mpeg' }); // Adjust the MIME type if necessary
+    let audioUrl = URL.createObjectURL(audioBlob);
+    document.getElementById("audioPlayback").src = audioUrl;
+    document.getElementById("audioPlayback").hidden = false;
+    document.getElementById("stopRecording").disabled = true;
+    document.getElementById("startRecording").disabled = false;
+};
+
+document.getElementById("stopRecording").addEventListener("click", function() {
+    mediaRecorder.stop();
+    document.getElementById("startRecording").disabled = false;
+    document.getElementById("stopRecording").disabled = true;
+});
+
+// Form submission with the recorded audio
+document.getElementById("uploadForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const formData = new FormData(this);
+    if (audioBlob) {
+        formData.append('file', audioBlob, 'recorded_audio.mp3');
+    }
+
+    fetch('{{ url_for("process_audio") }}', {
+        method: 'POST',
+        body: formData,
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log(data);
+        alert('Upload successful!');
+    })
+    .catch(error => {
+        console.error('Error during fetch operation:', error);
+        alert('Upload failed. Please try again.');
     });
 });
+});
 </script>
-
-</body>
-</html>
