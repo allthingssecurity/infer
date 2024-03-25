@@ -886,9 +886,9 @@ def process_audio():
             else:
                 return jsonify({'error': 'You must join the waitlist to access this feature.'}), 403
 
-    if has_active_jobs(user_email,'train'):
-        app.logger.info(f"job already running for this user {user_email} ")
-        return jsonify({'message': 'Cannot submit new job. A job is already queued or started'})
+    #if has_active_jobs(user_email,'train'):
+    #    app.logger.info(f"job already running for this user {user_email} ")
+    #    return jsonify({'message': 'Cannot submit new job. A job is already queued or started'})
     
     
     
