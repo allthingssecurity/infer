@@ -112,9 +112,6 @@ q = Queue(connection=redis_client)
 # Initialize Redis
 FEATURE_FLAG_WAITLIST = True 
 
-start_rq_workers(2)
-
-
 def login_required(f):
     @wraps(f)  # Preserve the function name and docstring
     def decorated_function(*args, **kwargs):
@@ -810,8 +807,8 @@ def start_infer():
                 app.logger.info(f"updated redis for job id {job.id} ")
                 
                 try:
-                    #p = Process(target=start_worker)
-                    #p.start()     
+                    p = Process(target=start_worker)
+                    p.start()     
                     return jsonify({'message': 'File uploaded successfully for conversion', 'job_id': job.get_id()})
                 except Exception as e:
                     return jsonify({'message': 'Failed to start process'})
@@ -1401,6 +1398,6 @@ def logout():
 # Add routes for login, logout, login callback as discussed earlier
 print("Starting Flask application ****************************")
 if __name__ == '__main__':
-    #start_rq_workers(2)
+    
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=False)
     
