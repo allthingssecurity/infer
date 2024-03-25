@@ -722,7 +722,7 @@ def start_infer():
             # Adjusted to pass filepath and speaker_name to the main function
             
             absolute_path = os.path.abspath(filepath)
-            os.chmod(absolute_path, 0o666)
+            #os.chmod(absolute_path, 0o666)
             
             job = q.enqueue_call(
                 func=convert_voice, 
