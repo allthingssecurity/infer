@@ -931,9 +931,9 @@ def start_worker():
             queues_to_listen = ['default']
             with Connection(redis_client):
                 worker = Worker(map(Queue, queues_to_listen))
-                print("created worker")
+                app.logger.info("created worker")
                 worker.work(logging_level='DEBUG')
-                print("launched worker")
+                app.logger.info("launched worker")
         finally:
             # Ensure the worker count is decremented when the worker stops working
             redis_client.decr(WORKER_COUNT_KEY)
