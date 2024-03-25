@@ -912,7 +912,7 @@ def process_audio():
 def start_worker():
     # Fetch the current number of workers
     current_worker_count = int(redis_client.get(WORKER_COUNT_KEY) or 0)
-    
+    print("entered start worker")
     if current_worker_count < MAX_WORKERS:
         # Increment the worker count atomically
         redis_client.incr(WORKER_COUNT_KEY)
@@ -921,7 +921,9 @@ def start_worker():
             queues_to_listen = ['default']
             with Connection(redis_client):
                 worker = Worker(map(Queue, queues_to_listen))
+                print("created worker")
                 worker.work()
+                print("launched worker")
         finally:
             # Ensure the worker count is decremented when the worker stops working
             redis_client.decr(WORKER_COUNT_KEY)

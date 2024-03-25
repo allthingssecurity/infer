@@ -302,6 +302,7 @@ def convert_voice(file_path1, spk_id, user_email):
     """
     #base_url = os.environ.get('INFER_URL')
     #url = f"{base_url}/convert_voice"
+    print("entered convert ")
     app.logger.info(f'filepath where file saved initiallu=: {file_path1}')
     job = get_current_job()
 
