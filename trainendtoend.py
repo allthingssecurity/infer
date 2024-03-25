@@ -296,8 +296,11 @@ def add_model_to_user(user_email, model_name):
     training_done_key = f"{user_email}:trained"
     redis_client.set(training_done_key, "true")
 
-
 def convert_voice(file_path1, spk_id, user_email):
+    print("job done")
+    update_job_status(redis_client,job_id,'finished')
+    
+def convert_voice1(file_path1, spk_id, user_email):
     """
     Synchronously uploads a file and handles voice conversion.
 
