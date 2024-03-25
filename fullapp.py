@@ -1124,7 +1124,7 @@ def get_jobs():
     return render_template('job-tracking.html', jobs_data=jobs_data,model_credits=model_credits,song_credits=song_credits)
 
 
-
+@app.route('/get_samples', methods=['GET'])
 def get_samples():
     user_email = session.get('user_email')
     
