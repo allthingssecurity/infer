@@ -135,6 +135,17 @@ def is_user_in_waitlist(user_email):
 
 
 
+def start_rq_workers(worker_count=2):
+    """
+    Start a specified number of RQ workers.
+    """
+    for _ in range(worker_count):
+        # Assuming 'rq' command is available in the environment
+        # and the workers are configured to listen to the 'default' queue.
+        # Adjust the command as necessary for your environment.
+        subprocess.Popen(['rq', 'worker', 'default'])
+        print("Started an RQ worker.")
+
 
 def analyze_audio_file(file, max_size_bytes=10*1024*1024, max_duration_minutes=6):
     """
@@ -795,8 +806,8 @@ def start_infer():
                 app.logger.info(f"updated redis for job id {job.id} ")
                 
                 try:
-                    p = Process(target=start_worker)
-                    p.start()     
+                    #p = Process(target=start_worker)
+                    #p.start()     
                     return jsonify({'message': 'File uploaded successfully for conversion', 'job_id': job.get_id()})
                 except Exception as e:
                     return jsonify({'message': 'Failed to start process'})
@@ -1387,3 +1398,4 @@ def logout():
 print("Starting Flask application ****************************")
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=False)
+    start_rq_workers(2)
