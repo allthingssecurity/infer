@@ -1133,7 +1133,7 @@ def get_samples():
     song_credits=get_user_credits(user_email,'song')
     video_credits=get_user_credits(user_email,'video')
     
-    return render_template('samples.html', jobs_data=jobs_data,model_credits=model_credits,song_credits=song_credits)
+    return render_template('samples.html',model_credits=model_credits,song_credits=song_credits)
     
     
     
