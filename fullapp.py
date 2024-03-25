@@ -321,7 +321,7 @@ def authorize():
     print(user_profile)  # Or just print it for debugging purposes
     print(user_info['email'])
     
-    
+    app.logger.info(user_info['email'])
     
     
     
@@ -329,7 +329,9 @@ def authorize():
         session['user_email'] = user_info['email']
         session['logged_in'] = True
         session['user_image'] = user_profile.get('picture', None)
+        app.logger.info("before invoking user account creation")
         create_user_account_if_not_exists(user_info['email'])
+        app.logger.info("after invoking user account creation")
         user_email=user_info['email']
         
         if is_feature_waitlist_enabled():
@@ -481,7 +483,7 @@ def create_user_account_if_not_exists(user_email, initial_tier="trial"):
     """
     user_exists_key = f"user:{user_email}:exists"  # Key to check if user account already exists
     user_exists = redis_client.get(user_exists_key)
-    
+    app.logger.info("entered create user account")
     if not user_exists:
         # User does not exist, so initialize their account
         model_credits = 2
@@ -492,7 +494,7 @@ def create_user_account_if_not_exists(user_email, initial_tier="trial"):
         update_user_credits(user_email, "video", video_credits)
         # Set the user exists key in Redis
         redis_client.set(user_exists_key, 1)
-        
+        app.logger.info("account and credits initialized")    
         print(f"Account and credits initialized for {user_email}.")
     else:
         # User already exists, no need to re-initialize
