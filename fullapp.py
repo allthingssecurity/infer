@@ -29,6 +29,7 @@ from admin import admin_blueprint
 from status import set_job_attributes,update_job_status,get_job_attributes,add_job_to_user_index,get_user_job_ids
 from pydub import AudioSegment
 import io
+
 #import librosa
 #import soundfile as sf
 #import pyrubberband as pyrb
@@ -45,6 +46,8 @@ app.secret_key = 'your_secret_key'
 UPLOAD_FOLDER = 'uploads'
 MAX_WORKERS = 20  # Adjust based on your requirements
 WORKER_COUNT_KEY = 'worker_count'
+
+
 
 oauth = OAuth(app)
 google = oauth.register(
@@ -912,6 +915,7 @@ def process_audio():
 def start_worker():
     # Fetch the current number of workers
     current_worker_count = int(redis_client.get(WORKER_COUNT_KEY) or 0)
+    print(f"current worker={current_worker_count}")
     print("entered start worker")
     if current_worker_count < MAX_WORKERS:
         # Increment the worker count atomically
@@ -922,7 +926,7 @@ def start_worker():
             with Connection(redis_client):
                 worker = Worker(map(Queue, queues_to_listen))
                 print("created worker")
-                worker.work()
+                worker.work(logging_level='DEBUG')
                 print("launched worker")
         finally:
             # Ensure the worker count is decremented when the worker stops working
