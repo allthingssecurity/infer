@@ -50,12 +50,16 @@
         </div>
     </header>
 
-    <main>
+ <main>
+    <div class="content-container">
+        <img src="{{ url_for('static', filename='image1.png') }}" alt="Transformation Image" class="side-image left-image">
         <section class="welcome-section">
             <h1>Welcome to Mai Bhi Singer</h1>
             <p>Explore our features and enjoy the stay.</p>
         </section>
-    </main>
+        <img src="{{ url_for('static', filename='image2.png') }}" alt="Triumph Image" class="side-image right-image">
+    </div>
+</main>
 	
 	<script>
 document.addEventListener('DOMContentLoaded', function() {

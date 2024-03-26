@@ -35,6 +35,39 @@ body, html {
     text-decoration: none;
 }
 
+.content-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap; /* Ensures responsiveness */
+}
+
+.side-image {
+    max-width: 20%; /* Adjust based on preference */
+    height: auto;
+    display: block; /* Adjust this to 'none' in smaller screens if desired */
+}
+
+.welcome-section {
+    flex-grow: 1;
+    max-width: 60%; /* Adjust based on preference */
+    text-align: center; /* Centers the content text */
+    padding: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .side-image {
+        max-width: 100%;
+        display: none; /* Hides the images on smaller screens */
+    }
+    .welcome-section {
+        max-width: 100%;
+    }
+}
+
+
 /* Dropdown Content (Hidden by Default) */
 /* Dropdown Content (Visible with contrasting background) */
 .dropdown-content {
