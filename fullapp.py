@@ -943,6 +943,7 @@ def process_audio():
     
     
     credit_count=get_user_credits(user_email,'song')
+    app.logger.info(f"credits for {user_email}={credit_count}")
     if (credit_count >0):
     
         
@@ -955,9 +956,9 @@ def process_audio():
         model_name = request.form.get('model_name', '')
         if file.filename == '':
             return jsonify({'error': 'No selected file'})
-        
+        app.logger.info(f"before analysing audio")
         analysis_results = analyze_audio_file(file)
-        
+        app.logger.info(f"after analysing audio")
         if not analysis_results['success']:
             return jsonify({"error": analysis_results['error']}), 400    
         
@@ -972,6 +973,7 @@ def process_audio():
             file.save(filepath)
             
             print(filepath)
+            app.logger.info(f"filepath={filepath}")
             response = upload_to_do(filepath)
             user_email = session.get('user_email')
             print(user_email)
