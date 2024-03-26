@@ -140,9 +140,17 @@ document.addEventListener('DOMContentLoaded', function() {
         if (audioBlob) {
             // Here we append the audio blob to the form data
             // Make sure the 'name' attribute matches your server's expectation
-			const defaultFilename = `recorded_audio_${new Date().toISOString()}.webm`; // Example filename: recorded_audio_2023-03-26T123456.789Z.webm
+			//const defaultFilename = `recorded_audio_${new Date().toISOString()}.webm`; // Example filename: recorded_audio_2023-03-26T123456.789Z.webm
 
-            formData.append('file', audioBlob, defaultFilename);
+            //formData.append('file', audioBlob, defaultFilename);
+			
+			        // Convert the Blob to a File object, explicitly setting a filename
+        const recordedFile = new File([audioBlob], "recorded_audio.mp3", { type: "audio/mp3" });
+        
+        // Append the File object instead of the Blob
+        formData.append('file', recordedFile);
+			
+			
         }
 
         // Fetch API to submit form data
