@@ -7,6 +7,8 @@ RUN apt-get update && \
     git \
     git-lfs \
     ffmpeg \
+	libmagic1 \
+	libmagic-dev \
     x264 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
