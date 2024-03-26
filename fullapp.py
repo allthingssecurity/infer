@@ -826,12 +826,12 @@ def start_infer():
                 update_job_status(redis_client,job_id,'queued')
                 app.logger.info(f"updated redis for job id {job.id} ")
                 
-                try:
-                    p = Process(target=start_worker)
-                    p.start()     
-                    return jsonify({'message': 'File uploaded successfully for conversion', 'job_id': job.get_id()})
-                except Exception as e:
-                    return jsonify({'message': 'Failed to start process'})
+                #try:
+                #    p = Process(target=start_worker)
+                #    p.start()     
+                return jsonify({'message': 'File uploaded successfully for conversion', 'job_id': job.get_id()})
+                #except Exception as e:
+                #    return jsonify({'message': 'Failed to start process'})
     else:
         app.logger.info(f"max song conversion exceeded for the user {user_email}. Buy credits")
         return jsonify({'message': 'You have reached max limits for song conversion. Buy credits '})
