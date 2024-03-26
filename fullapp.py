@@ -229,6 +229,7 @@ def analyze_audio_file(file, max_size_bytes=10*1024*1024, max_duration_minutes=6
     
     except Exception as e:
         os.remove(file_copy.name)  # Ensure the temporary file is removed in case of an error
+        app.logger.error(f"error in file analysis={str(e)}")
         return {'success': False, 'error': f'Failed to process the audio file: {str(e)}', 'duration': None}
     
     # Clean up temporary file after successful processing
