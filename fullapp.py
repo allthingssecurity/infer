@@ -949,12 +949,14 @@ def process_audio():
         
     
     
-
+        app.logger.info("enough credits")
         if 'file' not in request.files:
             return jsonify({'error': 'No file part'})
         file = request.files['file']
         model_name = request.form.get('model_name', '')
+        app.logger.info(f"model for {user_email}={model_name}")
         if file.filename == '':
+            app.logger.info(f"no file name")
             return jsonify({'error': 'No selected file'})
         app.logger.info(f"before analysing audio")
         analysis_results = analyze_audio_file(file)
