@@ -201,10 +201,11 @@ def analyze_audio_file(file, max_size_bytes=10*1024*1024, max_duration_minutes=6
     """
     
     print("entered analyse audio")
+    app.logger.info("entered audio analysis")
     # Check if the file extension is .mp3
     if not file.filename.lower().endswith('.mp3'):
         return {'success': False, 'error': 'Only MP3 files are allowed.', 'duration': None}
-    
+    app.logger.info("file check succeeded")
     # Create a temporary copy of the file for all operations
     file_copy = tempfile.NamedTemporaryFile(delete=False, suffix='.mp3')
     file.save(file_copy.name)
@@ -212,17 +213,19 @@ def analyze_audio_file(file, max_size_bytes=10*1024*1024, max_duration_minutes=6
     
     try:
         # Check file size using the temporary file
+        app.logger.info("entered try block")
         file_size = os.path.getsize(file_copy.name)
         if file_size > max_size_bytes:
             os.remove(file_copy.name)  # Clean up temporary file
             return {'success': False, 'error': 'File size exceeds the allowed limit.', 'duration': None}
 
         # Load the audio file for processing
+        app.logger.info("before reading")
         audio = AudioSegment.from_file(file_copy.name)
         
         # Calculate audio length in minutes
         audio_length_minutes = len(audio) / 60000.0
-
+        app.logger.info("audio length={audio_length_minutes}")
         if audio_length_minutes > max_duration_minutes:
             os.remove(file_copy.name)  # Clean up temporary file
             return {'success': False, 'error': 'Audio length exceeds the allowed duration.', 'duration': audio_length_minutes}
