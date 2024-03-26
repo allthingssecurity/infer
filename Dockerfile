@@ -37,7 +37,7 @@ COPY . .
 
 #CMD gunicorn --worker-tmp-dir /dev/shm --config gunicorn_config.py --log-level=info --access-logfile - --error-logfile - fullapp:app
 
-ENV FLASK_APP=fullapp:create_app
+ENV FLASK_APP=fullapp.py
 
 # Expose the port Flask is running on
 EXPOSE 5000
