@@ -119,10 +119,17 @@ FEATURE_FLAG_WAITLIST = True
 @with_appcontext
 def start_workers():
     
-    redis_url = os.getenv['REDIS_URL']
-    redis_conn = Redis.from_url(redis_url)
+    #redis_url = os.getenv['REDIS_URL']
+    #redis_conn = Redis.from_url(redis_url)
+    redis_host = os.getenv('REDIS_HOST', 'default_host')
+    redis_port = int(os.getenv('REDIS_PORT', 25061))  # Default Redis port
+    redis_username = os.getenv('REDIS_USERNAME', 'default')
+    redis_password = os.getenv('REDIS_PASSWORD', '')
+
+    # Creating a Redis client and attaching it to the app config
+    redis_client = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
     
-    with Connection(redis_conn):
+    with Connection(redis_client):
         
         for _ in range(worker_count):
         # Assuming 'rq' command is available in the environment
