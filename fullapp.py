@@ -131,7 +131,7 @@ def start_workers():
     
     with Connection(redis_client):
         
-        for _ in range(worker_count):
+        for _ in range(2):
         # Assuming 'rq' command is available in the environment
         # and the workers are configured to listen to the 'default' queue.
         # Adjust the command as necessary for your environment.
