@@ -97,11 +97,11 @@
 </div>
 
 <script>
+
 document.addEventListener('DOMContentLoaded', function() {
     let mediaRecorder;
     let audioBlob = null;
 
-    // When the "Start Recording" button is clicked
     document.getElementById("startRecording").addEventListener("click", function() {
         navigator.mediaDevices.getUserMedia({ audio: true })
             .then(stream => {
@@ -113,7 +113,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
 
                 mediaRecorder.onstop = () => {
-                    audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                    // Adjust the MIME type if necessary. This assumes MediaRecorder outputs webm audio format
+                    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                     const audioUrl = URL.createObjectURL(audioBlob);
                     document.getElementById("audioPlayback").src = audioUrl;
                     document.getElementById("audioPlayback").hidden = false;
@@ -126,25 +127,24 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => console.error("Error accessing the microphone: ", error));
     });
 
-    // When the "Stop Recording" button is clicked
     document.getElementById("stopRecording").addEventListener("click", function() {
         mediaRecorder.stop();
         document.getElementById("startRecording").disabled = false;
         document.getElementById("stopRecording").disabled = true;
     });
 
-    // Form submission handling
     document.getElementById("uploadForm").onsubmit = function(event) {
         event.preventDefault();
 
-        // Use the form's action attribute as the submission endpoint
-        const serverEndpoint = event.target.action;
         const formData = new FormData(this);
         if (audioBlob) {
-            formData.append('file', audioBlob, 'recorded_audio.mp3');
+            // Here we append the audio blob to the form data
+            // Make sure the 'name' attribute matches your server's expectation
+            formData.append('file', audioBlob, 'recorded_audio.webm');
         }
 
-        fetch(serverEndpoint, {
+        // Fetch API to submit form data
+        fetch('{{ url_for("process_audio") }}', { // Ensure this template syntax is correctly processed or replaced with your actual server endpoint
             method: 'POST',
             body: formData,
         })
@@ -157,6 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             alert('Upload successful!');
             console.log(data);
+            // Optionally, redirect or update the UI upon success
         })
         .catch(error => {
             console.error('Upload failed:', error);
@@ -164,6 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 });
+
 
 document.addEventListener('DOMContentLoaded', function() {
     // Get all elements with class "dropdown" and bind a click event
