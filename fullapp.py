@@ -207,8 +207,18 @@ def convert_audio_to_mp3(file, upload_folder='/tmp'):
     os.makedirs(upload_folder, exist_ok=True)
 
     # Secure the filename and save the original file temporarily
-    original_filename = secure_filename(file.filename)
+    
+    if file.filename == '':
+        # Generate a unique filename to avoid collisions
+        original_filename = uuid.uuid4().hex + ".mp3"
+    else:
+        original_filename = secure_filename(file.filename)
+    
     temp_path = os.path.join(upload_folder, original_filename)
+    
+    
+    #original_filename = secure_filename(file.filename)
+    #temp_path = os.path.join(upload_folder, original_filename)
     file.save(temp_path)
 
     # Use python-magic to identify the MIME type of the file
