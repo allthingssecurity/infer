@@ -172,6 +172,41 @@ body, html {
 }
 
 
+.content-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Adjust this as needed */
+    overflow: hidden; /* Prevents overflow from the scrolling content */
+}
+
+.scrolling-content {
+    width: 60%; /* Adjust based on your design */
+    height: 100vh; /* Adjust height as needed */
+    overflow: hidden;
+    position: relative;
+}
+
+.scroll-text {
+    position: absolute;
+    width: 100%;
+    will-change: transform; /* Optimizes the animation */
+}
+
+@keyframes scroll {
+    0% {
+        transform: translateY(100%);
+    }
+    100% {
+        transform: translateY(-100%);
+    }
+}
+
+.scrolling-content {
+    animation: scroll 60s linear infinite; /* Adjust duration for speed */
+}
+
+
+
 /* Responsive Design Adjustments */
 @media (max-width: 600px) {
     .navbar {
