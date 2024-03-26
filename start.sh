@@ -1,13 +1,14 @@
-#!/bin/bash
-# Start Flask app
+#!/bin/sh
+
+# Start the Flask application in the background
 flask run --host=0.0.0.0 &
 
-# Start 4 RQ workers
-rq worker default & 
-rq worker default & 
+# Start the RQ workers in the background
+# Assuming you have defined a Flask CLI command "start-workers" as shown in previous examples
+flask start-workers &
 
+# Wait for any processes to exit
+wait -n
 
-# Wait for all background jobs to finish
-wait
-
-kill $(jobs -p)
+# If any process exits, terminate the others
+kill 0

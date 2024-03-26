@@ -31,6 +31,8 @@ from pydub import AudioSegment
 import io
 from rq.job import Job
 import tempfile
+import click
+from flask.cli import with_appcontext
 
 #import librosa
 #import soundfile as sf
@@ -111,6 +113,26 @@ app.logger.setLevel(logging.INFO)
 q = Queue(connection=redis_client)
 # Initialize Redis
 FEATURE_FLAG_WAITLIST = True 
+
+
+@app.cli.command("start-workers")
+@with_appcontext
+def start_workers():
+    
+    redis_url = os.getenv['REDIS_URL']
+    redis_conn = Redis.from_url(redis_url)
+    
+    with Connection(redis_conn):
+        
+        for _ in range(worker_count):
+        # Assuming 'rq' command is available in the environment
+        # and the workers are configured to listen to the 'default' queue.
+        # Adjust the command as necessary for your environment.
+        #subprocess.Popen(['rq', 'worker', 'default'])
+        #start_worker()
+            app.logger.info("Started an RQ worker.")
+            worker = Worker(Queue())
+            worker.work()
 
 
 def create_app():

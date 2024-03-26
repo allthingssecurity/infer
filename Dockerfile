@@ -43,7 +43,13 @@ ENV FLASK_APP=fullapp.py
 EXPOSE 5000
 
 # Command to run the Flask application
-CMD ["flask", "run", "--host=0.0.0.0"]
+#CMD ["flask", "run", "--host=0.0.0.0"]
+
+# Make the shell script executable
+RUN chmod +x start.sh
+
+# Run start.sh when the container launches
+CMD ["./start.sh"]
 
 
 
