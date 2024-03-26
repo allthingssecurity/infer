@@ -955,9 +955,17 @@ def process_audio():
         file = request.files['file']
         model_name = request.form.get('model_name', '')
         app.logger.info(f"model for {user_email}={model_name}")
-        if file.filename == '':
-            app.logger.info(f"no file name")
-            return jsonify({'error': 'No selected file'})
+        
+        if file and file.filename == '':
+        # If no filename is detected, assign a default or generated filename
+            filename = 'default_filename.mp3'
+        else:
+        # Use the actual filename from the upload
+            filename = file.filename
+        
+        #if file.filename == '':
+        #    app.logger.info(f"no file name")
+        #    return jsonify({'error': 'No selected file'})
         app.logger.info(f"before analysing audio")
         analysis_results = analyze_audio_file(file)
         app.logger.info(f"after analysing audio")
