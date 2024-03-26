@@ -3,8 +3,8 @@
 flask run --host=0.0.0.0 &
 
 # Start 4 RQ workers
-rq worker & 
-rq worker & 
+rq worker default & 
+rq worker default & 
 
 
 # Wait for all background jobs to finish

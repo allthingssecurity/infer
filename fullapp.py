@@ -112,6 +112,19 @@ q = Queue(connection=redis_client)
 # Initialize Redis
 FEATURE_FLAG_WAITLIST = True 
 
+
+def create_app():
+    app = Flask(__name__)
+    redis_host = os.getenv('REDIS_HOST', 'default_host')
+    redis_port = int(os.getenv('REDIS_PORT', 25061))  # Default Redis port
+    redis_username = os.getenv('REDIS_USERNAME', 'default')
+    redis_password = os.getenv('REDIS_PASSWORD', '')
+
+    # Creating a Redis client and attaching it to the app config
+    redis_client = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
+    start_rq_workers()
+    return app
+
 def login_required(f):
     @wraps(f)  # Preserve the function name and docstring
     def decorated_function(*args, **kwargs):
