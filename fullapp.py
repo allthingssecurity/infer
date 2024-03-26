@@ -223,7 +223,7 @@ def convert_audio_to_mp3(file, upload_folder='/tmp'):
 
     # Use python-magic to identify the MIME type of the file
     mime_type = magic.from_file(temp_path, mime=True)
-
+    app.logger.info(f"file mime type={mime_type}")
     # Define the output path
     output_filename = original_filename.rsplit('.', 1)[0] + '.mp3'
     output_path = os.path.join(upload_folder, output_filename)
@@ -234,6 +234,7 @@ def convert_audio_to_mp3(file, upload_folder='/tmp'):
         return temp_path
     elif mime_type in ['audio/wav', 'audio/webm', 'audio/ogg']:
         # Convert to MP3 using FFmpeg
+        app.logger.info(f"convert to mp3")
         subprocess.run(['ffmpeg', '-i', temp_path, '-vn', '-ar', 44100, '-ac', 2, '-b:a', '192k', output_path], check=True)
         
         # Cleanup the temporary original file if conversion was successful
