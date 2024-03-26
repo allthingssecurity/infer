@@ -33,6 +33,7 @@ from rq.job import Job
 import tempfile
 import click
 from flask.cli import with_appcontext
+import magic
 
 #import librosa
 #import soundfile as sf
@@ -188,6 +189,49 @@ def start_rq_workers(worker_count=2):
         #subprocess.Popen(['rq', 'worker', 'default'])
         start_worker()
         app.logger.info("Started an RQ worker.")
+
+
+def convert_audio_to_mp3(file, upload_folder='/tmp'):
+    """
+    Checks the MIME type of the uploaded file and converts it to MP3 if necessary.
+    Returns the path to the MP3 file (or the original file if no conversion was needed).
+
+    Args:
+        file (FileStorage): The uploaded file object from Flask request.
+        upload_folder (str): The directory where the file will be saved.
+
+    Returns:
+        str: Path to the MP3 file or the original file.
+    """
+    # Ensure the upload folder exists
+    os.makedirs(upload_folder, exist_ok=True)
+
+    # Secure the filename and save the original file temporarily
+    original_filename = secure_filename(file.filename)
+    temp_path = os.path.join(upload_folder, original_filename)
+    file.save(temp_path)
+
+    # Use python-magic to identify the MIME type of the file
+    mime_type = magic.from_file(temp_path, mime=True)
+
+    # Define the output path
+    output_filename = original_filename.rsplit('.', 1)[0] + '.mp3'
+    output_path = os.path.join(upload_folder, output_filename)
+
+    # Check if the file is already in MP3 format or if it's a supported audio format for conversion
+    if mime_type == 'audio/mpeg':
+        # File is already an MP3, so no conversion needed
+        return temp_path
+    elif mime_type in ['audio/wav', 'audio/webm', 'audio/ogg']:
+        # Convert to MP3 using FFmpeg
+        subprocess.run(['ffmpeg', '-i', temp_path, '-vn', '-ar', 44100, '-ac', 2, '-b:a', '192k', output_path], check=True)
+        
+        # Cleanup the temporary original file if conversion was successful
+        os.remove(temp_path)
+        return output_path
+    else:
+        # Unsupported format, return the original file or handle accordingly
+        return temp_path
 
 
 def analyze_audio_file(file, max_size_bytes=10*1024*1024, max_duration_minutes=6):
@@ -928,8 +972,8 @@ def user_job_key(user_email,type_of_job):
     return f"user_jobs_{type_of_job}:{user_email}"
 
 
-@app.route('/process_audio', methods=['POST'])
-def process_audio():
+@app.route('/process_audio1', methods=['POST'])
+def process_audio1():
     user_email = session.get('user_email')
     
     if is_feature_waitlist_enabled():
@@ -958,6 +1002,8 @@ def process_audio():
             return jsonify({'error': 'No file part'})
         file = request.files['file']
         model_name = request.form.get('model_name', '')
+        #converted_path = convert_audio_to_mp3(file)
+        
         app.logger.info(f"model for {user_email}={model_name}")
         
         if file and file.filename == '':
@@ -1028,6 +1074,68 @@ def process_audio():
     else:
         app.logger.info(f"max train jobs exceeded for the user {user_email} ")
         return jsonify({'message': 'You have reached max limits '})
+
+
+
+
+
+@app.route('/process_audio', methods=['POST'])
+def process_audio():
+    user_email = session.get('user_email')
+    
+    # Insert your feature waitlist and credit checks here.
+    
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    
+    file = request.files['file']
+    model_name = request.form.get('model_name', '')
+
+    # Convert the audio file to MP3 if necessary and get the path.
+    converted_path = convert_audio_to_mp3(file)
+
+    # Generate a secure, unique filename for the processed file.
+    secure_filename = uuid.uuid4().hex + '_' + (file.filename if file.filename else "uploaded_audio.mp3")
+    filepath = os.path.join(UPLOAD_FOLDER, secure_filename)
+
+    # Assuming convert_audio_to_mp3 saves the file, open it for further processing.
+    with open(converted_path, 'rb') as file:
+        app.logger.info("Before analysing audio")
+        analysis_results = analyze_audio_file(file)
+        app.logger.info("After analysing audio")
+        if not analysis_results['success']:
+            return jsonify({"error": analysis_results['error']}), 400
+
+    # File has been analyzed; now move it to a permanent location.
+    os.rename(converted_path, filepath)
+    app.logger.info(f"File saved to {filepath}")
+    
+    # Example of further processing: queue a job for model training.
+    job = q.enqueue_call(func=train_model, args=(filepath, model_name, user_email), timeout=2500)
+    job_id = job.get_id()
+    add_job_to_user_index(redis_client, user_email, job_id)
+    
+    attributes = {
+        "type": "train",
+        "filename": secure_filename,
+        "submission_time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+    }
+    set_job_attributes(redis_client, job_id, attributes)
+    update_job_status(redis_client, job_id, 'queued')
+
+    # Optionally, start a background worker if not already running.
+    # Be cautious with starting processes; ensure it's controlled and necessary.
+    # p = Process(target=start_worker)
+    # p.start()
+
+    return jsonify({'message': 'Model Training Job Started', 'job_id': job_id})
+
+
+
+
+
+
+
 def start_worker():
     # Fetch the current number of workers
     app.logger.info("entered start worker")
