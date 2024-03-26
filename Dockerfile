@@ -49,7 +49,8 @@ EXPOSE 5000
 RUN chmod +x start.sh
 
 # Run start.sh when the container launches
-CMD ["./start.sh"]
+CMD ["/bin/bash", "./start.sh"]
+
 
 
 
