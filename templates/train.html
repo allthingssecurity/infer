@@ -5,33 +5,36 @@
     <title>Upload or Record Audio Files</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <style>
+  <style>
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
             padding: 10px;
+            font-family: Arial, sans-serif;
         }
-        .navbar ul, .credits-info, .logout-btn {
-            text-align: center;
-            padding: 0;
+        /* Adjusting alignment to the left and reducing form control sizes */
+        .left-aligned-container {
+            text-align: left;
+            width: 100%;
+            max-width: 500px; /* Limiting the max width for larger screens */
+            margin: 0 auto; /* Centering the container for aesthetics on larger screens */
         }
-        .navbar img, .user-info img {
-            max-width: 100px; /* Make logo and user icon smaller on mobile */
+        form label, form input, form select, form button, .record-controls button {
+            margin: 5px 0;
+            width: auto; /* Auto width to reduce size and add padding for spacing */
+            padding: 8px; /* Reduced padding */
+            box-sizing: border-box;
         }
-        form input[type="text"], form input[type="file"], form select, form input[type="submit"], button {
-            width: 100%; /* Full width for form elements */
-            max-width: 400px; /* Limit the maximum width */
-            box-sizing: border-box; /* Include padding and border in the element's total width */
-            margin: 10px auto; /* Add some spacing and center align */
-            display: block; /* Ensure elements are block level for margin auto to work */
+        form input[type="text"], form input[type="file"], form select, form input[type="submit"], .record-controls button {
+            max-width: 100%; /* Ensuring they don't exceed their container's width */
         }
-        @media (min-width: 600px) {
-            .navbar ul {
-                text-align: left;
+        @media (max-width: 599px) {
+            /* Adjustments for mobile devices */
+            .left-aligned-container {
+                max-width: none; /* Allows the container to be more fluid on small screens */
             }
         }
     </style>
-</head>
+ </head>
 <body>
 <header>
     <div class="navbar">
@@ -72,7 +75,7 @@
         </div>
     </div>
 </header>
-
+<div class="left-aligned-container">
 <h2>Upload Audio Files for Processing</h2>
 <form id="uploadForm" action="{{ url_for('process_audio') }}" method="post" enctype="multipart/form-data">
     <label for="file">Choose audio files (only mp3 format):</label>
@@ -81,13 +84,15 @@
     <input type="text" id="model_name" name="model_name" required><br><br>
     <input type="submit" value="Upload">
 </form>
-
+</div>
+<div class="left-aligned-container record-controls">
 <h2>Or Record Audio</h2>
 <button id="startRecording">Start Recording</button>
 <button id="stopRecording" disabled>Stop Recording</button>
 <audio id="audioPlayback" controls hidden></audio>
+</div>
 
-<div>
+<div class="left-aligned-container">
     <a href="/get-jobs">Go to Job Tracking Page</a>
 </div>
 
