@@ -1158,7 +1158,8 @@ def process_audio():
     # Generate a secure, unique filename for the processed file.
     secure_filename = uuid.uuid4().hex + '_' + (file.filename if file.filename else "uploaded_audio.mp3")
     filepath = os.path.join(UPLOAD_FOLDER, secure_filename)
-
+    os.rename(converted_path, filepath)
+    app.logger.info(f"File saved to {filepath}")
     # Assuming convert_audio_to_mp3 saves the file, open it for further processing.
     #with open(converted_path, 'rb') as file:
      #   app.logger.info("Before analysing audio")
@@ -1168,8 +1169,7 @@ def process_audio():
         return jsonify({"error": analysis_results['error']}), 400
 
     # File has been analyzed; now move it to a permanent location.
-    os.rename(converted_path, filepath)
-    app.logger.info(f"File saved to {filepath}")
+    
     
     # Example of further processing: queue a job for model training.
     job = q.enqueue_call(func=train_model, args=(filepath, model_name, user_email), timeout=2500)
