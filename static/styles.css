@@ -172,16 +172,23 @@ body, html {
 }
 
 
-.content-container {
+.main-container {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start; /* Adjust this as needed */
-    overflow: hidden; /* Prevents overflow from the scrolling content */
+    align-items: flex-start;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.side-image {
+    width: 20%; /* Adjust based on your needs */
+    object-fit: cover; /* Adjust how images fit their box */
+    height: 100vh; /* Full height */
 }
 
 .scrolling-content {
-    width: 60%; /* Adjust based on your design */
-    height: 100vh; /* Adjust height as needed */
+    width: 60%; /* Adjust based on the space left by images */
+    height: 100vh;
     overflow: hidden;
     position: relative;
 }
@@ -189,20 +196,16 @@ body, html {
 .scroll-text {
     position: absolute;
     width: 100%;
-    will-change: transform; /* Optimizes the animation */
+    animation: scroll 20s linear infinite;
 }
 
 @keyframes scroll {
     0% {
-        transform: translateY(100%);
+        top: 100%;
     }
     100% {
-        transform: translateY(-100%);
+        top: -100%;
     }
-}
-
-.scrolling-content {
-    animation: scroll 60s linear infinite; /* Adjust duration for speed */
 }
 
 
