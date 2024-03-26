@@ -244,6 +244,54 @@ def convert_audio_to_mp3(file, upload_folder='/tmp'):
         return temp_path
 
 
+from pydub import AudioSegment
+import os
+import tempfile
+
+def analyze_audio_file1(file_path, max_size_bytes=10*1024*1024, max_duration_minutes=6):
+    """
+    Analyzes an uploaded audio file for size, format, and duration.
+
+    :param file_path: Path to the audio file.
+    :param max_size_bytes: Maximum allowed file size in bytes.
+    :param max_duration_minutes: Maximum allowed audio duration in minutes.
+    :return: A dictionary with success status, an error message if applicable, the audio duration in minutes, and a format check.
+    """
+    print("entered analyse audio")
+    app.logger.info("entered audio analysis")
+    
+    # Check if the file extension is .mp3
+    if not file_path.lower().endswith('.mp3'):
+        return {'success': False, 'error': 'Only MP3 files are allowed.', 'duration': None}
+    app.logger.info("file check succeeded")
+    
+    try:
+        # Check file size
+        app.logger.info("entered try block")
+        file_size = os.path.getsize(file_path)
+        if file_size > max_size_bytes:
+            return {'success': False, 'error': 'File size exceeds the allowed limit.', 'duration': None}
+        
+        # Load the audio file for processing
+        app.logger.info("before reading")
+        audio = AudioSegment.from_file(file_path)
+        
+        # Calculate audio length in minutes
+        audio_length_minutes = len(audio) / 60000.0
+        app.logger.info(f"audio length={audio_length_minutes}")
+        if audio_length_minutes > max_duration_minutes:
+            return {'success': False, 'error': 'Audio length exceeds the allowed duration.', 'duration': audio_length_minutes}
+    
+    except Exception as e:
+        app.logger.error(f"error in file analysis={str(e)}")
+        return {'success': False, 'error': f'Failed to process the audio file: {str(e)}', 'duration': None}
+    
+    # If all checks pass
+    return {'success': True, 'error': None, 'duration': audio_length_minutes}
+
+
+
+
 def analyze_audio_file(file, max_size_bytes=10*1024*1024, max_duration_minutes=6):
     """
     Analyzes an uploaded audio file for size, format, and duration using a temporary file for audio processing.
@@ -257,6 +305,8 @@ def analyze_audio_file(file, max_size_bytes=10*1024*1024, max_duration_minutes=6
     print("entered analyse audio")
     app.logger.info("entered audio analysis")
     # Check if the file extension is .mp3
+    
+    
     if not file.filename.lower().endswith('.mp3'):
         return {'success': False, 'error': 'Only MP3 files are allowed.', 'duration': None}
     app.logger.info("file check succeeded")
@@ -1110,12 +1160,12 @@ def process_audio():
     filepath = os.path.join(UPLOAD_FOLDER, secure_filename)
 
     # Assuming convert_audio_to_mp3 saves the file, open it for further processing.
-    with open(converted_path, 'rb') as file:
-        app.logger.info("Before analysing audio")
-        analysis_results = analyze_audio_file(file)
-        app.logger.info("After analysing audio")
-        if not analysis_results['success']:
-            return jsonify({"error": analysis_results['error']}), 400
+    #with open(converted_path, 'rb') as file:
+     #   app.logger.info("Before analysing audio")
+    analysis_results = analyze_audio_file1(filepath)
+    #    app.logger.info("After analysing audio")
+    if not analysis_results['success']:
+        return jsonify({"error": analysis_results['error']}), 400
 
     # File has been analyzed; now move it to a permanent location.
     os.rename(converted_path, filepath)
