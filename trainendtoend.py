@@ -438,7 +438,7 @@ def download_and_save_mp3(url,audio_id, save_path):
 
 
 
-def train_model(file_path, model_name, user_email):
+def train_model(file_name, model_name, user_email):
     job = get_current_job()
     job_id=job.id
     update_job_status(redis_client,job_id,'started')
