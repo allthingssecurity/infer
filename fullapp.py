@@ -906,6 +906,7 @@ def start_infer():
             new_filename = f"{uuid.uuid4()}{file_extension}"  # Generates a new filename with original extension
             filepath = os.path.join(UPLOAD_FOLDER, secure_filename(new_filename))
             file.save(filepath)
+            response = upload_to_do(filepath)
             
             if os.path.exists(filepath):
                 app.logger.info("File exists, proceeding with the process.")
@@ -922,7 +923,7 @@ def start_infer():
             
             job = q.enqueue_call(            
                 func=convert_voice, 
-                args=(absolute_path, final_speaker_name,user_email),  # Positional arguments for my_function
+                args=(filename, final_speaker_name,user_email),  # Positional arguments for my_function
                 
                 timeout=2500  # Job-specific parameters like timeout
         )

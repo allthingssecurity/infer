@@ -297,7 +297,7 @@ def add_model_to_user(user_email, model_name):
     redis_client.set(training_done_key, "true")
 
     
-def convert_voice(file_path1, spk_id, user_email):
+def convert_voice(filename, spk_id, user_email):
     """
     Synchronously uploads a file and handles voice conversion.
 
@@ -308,7 +308,7 @@ def convert_voice(file_path1, spk_id, user_email):
     #base_url = os.environ.get('INFER_URL')
     #url = f"{base_url}/convert_voice"
     logger.info("entered convert ")
-    app.logger.info(f'filepath where file saved initiallu=: {file_path1}')
+    #app.logger.info(f'filepath where file saved initiallu=: {file_path1}')
     job = get_current_job()
 
     # Define user_key outside the try block to ensure it's available in the except block
@@ -316,21 +316,22 @@ def convert_voice(file_path1, spk_id, user_email):
     job_id = job.id if job else 'default_id'  # Fallback ID in case this runs outside a job context
      
     
-    directory, filename = os.path.split(file_path1)
+    #directory, filename = os.path.split(file_path1)
     
 
 # Generate the new file path with job_id as the filename, preserving the original extension
     
     new_filename = f"{job_id}{os.path.splitext(filename)[1]}"  # Preserves original file extension
     app.logger.error(f'new file name=: {new_filename}')
-    app.logger.error(f'directory=: {directory}')
+    #app.logger.error(f'directory=: {directory}')
     #file_path = os.path.join(directory, new_filename)
     #os.rename(file_path1, file_path)
     #app.logger.error(f'new file path=: {file_path}')
     
 
     try:
-        
+        file_path1 = download_from_do(filename)
+        directory, filename1 = os.path.split(file_path1)
         file_path = os.path.join(directory, new_filename)
         app.logger.error(f'old filepath =: {file_path1}')
         app.logger.error(f'new filepath =: {file_path}')
