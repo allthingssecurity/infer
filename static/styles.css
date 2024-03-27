@@ -49,6 +49,18 @@ body, html {
     display: block; /* Adjust this to 'none' in smaller screens if desired */
 }
 
+.video-container {
+    flex: 1; /* Allows the container to grow */
+    max-width: calc(33% - 20px); /* Adjust based on the gap and number of items */
+    text-align: center; /* Centers the video if it's smaller than the max-width */
+}
+
+.embedded-video {
+    width: 100%; /* Makes the video responsive */
+    height: auto; /* Maintain aspect ratio */
+}
+
+
 .welcome-section {
     flex-grow: 1;
     max-width: 60%; /* Adjust based on preference */
