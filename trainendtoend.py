@@ -454,7 +454,7 @@ def train_model(file_path, model_name, user_email):
 
         check_pod_is_ready(pod_id)
         app.logger.info('checked that pod is ready now')
-        #file_path = download_from_do(file_name)
+        file_path = download_from_do(file_name)
         app.logger.info('downloaded file from do')
         final_model_name = f"{user_email}_{model_name}"
         

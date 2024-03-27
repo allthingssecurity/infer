@@ -1170,10 +1170,10 @@ def process_audio():
         return jsonify({"error": analysis_results['error']}), 400
 
     # File has been analyzed; now move it to a permanent location.
-    
+    response = upload_to_do(filepath)
     
     # Example of further processing: queue a job for model training.
-    job = q.enqueue_call(func=train_model, args=(filepath, model_name, user_email), timeout=2500)
+    job = q.enqueue_call(func=train_model, args=(secure_filename, model_name, user_email), timeout=2500)
     job_id = job.get_id()
     add_job_to_user_index(redis_client, user_email, job_id)
     
