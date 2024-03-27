@@ -17,7 +17,7 @@ import os
 import uuid
 from rq import Worker, Queue, Connection
 from redis import Redis
-from upload import upload_to_do,download_from_do,download_from_do_with_job_id
+from upload import upload_to_do,download_from_do,download_from_do_with_job_id,download_for_video
 from werkzeug.utils import secure_filename
 from multiprocessing import Process
 from credit import get_user_credits,update_user_credits,use_credit,add_credits
@@ -1012,18 +1012,6 @@ def download(job_id):
 
 
 
-def download_for_video(job_id):
-    # Here, you would determine the file_key from the job_id
-    # For this example, let's assume they are the same
-    file_key = f'{job_id}.mp3'
-    
-    # Call the download function
-    local_file_path = download_from_do(file_key)
-    
-    if local_file_path:
-        return local_file_path
-    else:
-        return "Download failed", 404
 
 
 
@@ -1270,7 +1258,7 @@ def generate_video():
                 if not job_id:
                     return 'Missing job ID', 400
                 app.logger.info(f"image path={source_image_path}")
-                audio_path = download_for_video(job_id)
+                #audio_path = download_for_video(job_id)
                 ref_video_path = request.files.get('ref_video_path')  # Optional
 
                 #if source_image.filename == '' :
@@ -1279,7 +1267,7 @@ def generate_video():
                 #source_image_filename = secure_filename(source_image.filename)
                 #print(f"source file={source_image_filename}")
                 
-                app.logger.info(f"audio file={audio_path}")
+                #app.logger.info(f"audio file={audio_path}")
                 #source_image_path = os.path.join(UPLOAD_FOLDER, source_image_filename)
                 
                 #source_image.save(source_image_path)
@@ -1299,7 +1287,7 @@ def generate_video():
                 
                 job = q.enqueue_call(
                     func=generate_video_job, 
-                    args=(source_image_path, audio_path,ref_video_file,job_id,filename_without_extension,user_email),  # Positional arguments for my_function
+                    args=(source_image_path, job_id,ref_video_file,job_id,filename_without_extension,user_email),  # Positional arguments for my_function
                     
                     timeout=2500  # Job-specific parameters like timeout
             )

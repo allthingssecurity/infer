@@ -134,3 +134,15 @@ def download_from_do_with_job_id(job_id):
         print("No files found matching the job ID.")
         return None
 
+def download_for_video(job_id):
+    # Here, you would determine the file_key from the job_id
+    # For this example, let's assume they are the same
+    file_key = f'{job_id}.mp3'
+    
+    # Call the download function
+    local_file_path = download_from_do(file_key)
+    
+    if local_file_path:
+        return local_file_path
+    else:
+        return "Download failed", 404

@@ -8,7 +8,7 @@ import boto3
 import os
 from botocore.exceptions import ClientError
 import logging
-from upload import download_from_do,upload_to_do
+from upload import download_from_do,upload_to_do,download_for_video
 import redis
 from redis import Redis
 from logging.handlers import RotatingFileHandler
@@ -553,7 +553,7 @@ def rename_file(current_file_path, new_file_name_without_extension):
 
 
 
-def generate_video_job(source_image_path, audio_file_path,ref_video_path, audio_job_id,key,user_email):
+def generate_video_job(source_image_path, job_id1,ref_video_path, audio_job_id,key,user_email):
     job = get_current_job()
     job_id=job.id
     
@@ -579,6 +579,7 @@ def generate_video_job(source_image_path, audio_file_path,ref_video_path, audio_
         
         #def generate_video_call(source_image_path, audio_file_path,audio_job_id, url):
         job_id=job.id
+        audio_file_path=download_for_video(job_id1)
         audio_file_path_new=rename_file(audio_file_path,job_id)
         app.logger.info(f"audio file path renamed={audio_file_path_new}")
         filename_without_extension = key
