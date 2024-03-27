@@ -37,35 +37,33 @@ body, html {
 
 .content-container {
     display: flex;
-    flex-direction: row;
-    justify-content: space-around;
+    justify-content: center;
     align-items: center;
-    flex-wrap: wrap; /* Ensures responsiveness */
+    flex-wrap: wrap;
+    gap: 20px;
 }
 
+
 .side-image {
-    max-width: 20%; /* Adjust based on preference */
+    flex: 1;
+    max-width: calc(33% - 20px); /* Adjust as necessary */
     height: auto;
-    display: block; /* Adjust this to 'none' in smaller screens if desired */
 }
 
 .video-container {
-    flex: 1; /* Allows the container to grow */
-    max-width: calc(33% - 20px); /* Adjust based on the gap and number of items */
-    text-align: center; /* Centers the video if it's smaller than the max-width */
+    flex: 1;
+    max-width: calc(33% - 20px);
 }
 
 .embedded-video {
-    width: 100%; /* Makes the video responsive */
-    height: auto; /* Maintain aspect ratio */
+    width: 100%;
+    height: auto;
 }
 
 
 .welcome-section {
-    flex-grow: 1;
-    max-width: 60%; /* Adjust based on preference */
-    text-align: center; /* Centers the content text */
-    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px; /* Adds some space between the welcome section and the content-container */
 }
 
 /* Responsive adjustments */
