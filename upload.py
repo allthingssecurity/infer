@@ -6,6 +6,13 @@ ACCESS_ID = os.getenv('ACCESS_ID', 'default_value')
 SECRET_KEY = os.getenv('SECRET_KEY', 'default_value')
 
 
+retry_config = Config(
+    retries={
+        'max_attempts': 5,  # Maximum number of retries
+        'mode': 'standard',  # Retry mode (standard or adaptive)
+    }
+)
+
 def upload_to_do(file_path):
     
     boto_session=session.Session()
@@ -13,7 +20,7 @@ def upload_to_do(file_path):
                             region_name='nyc3',
                             endpoint_url='https://nyc3.digitaloceanspaces.com',
                             aws_access_key_id=ACCESS_ID,
-                            aws_secret_access_key=SECRET_KEY)
+                            aws_secret_access_key=SECRET_KEY,config=retry_config)
     filename_only = os.path.basename(file_path)
     # Upload a file to your Space
     response=client.upload_file(file_path, 'sing', filename_only)
@@ -27,7 +34,7 @@ def download_from_do(file_key):
                                  region_name='nyc3',
                                  endpoint_url='https://nyc3.digitaloceanspaces.com',
                                  aws_access_key_id=ACCESS_ID,
-                                 aws_secret_access_key=SECRET_KEY)
+                                 aws_secret_access_key=SECRET_KEY,config=retry_config)
     
       # Ensure the downloads directory exists
     downloads_dir = 'downloads'

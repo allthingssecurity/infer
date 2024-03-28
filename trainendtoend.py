@@ -615,7 +615,7 @@ def generate_video_job(source_image_path, job_id1,ref_video_path, audio_job_id,k
         
         
     except Exception as e:
-        app.logger.error(f'Error during model training: {e}')
+        app.logger.error(f'Error during video creation: {e}')
         
         update_job_status(redis_client,job_id,'failed')
         print(f"Operation failed: {e}")
