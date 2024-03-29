@@ -216,7 +216,8 @@ def convert_audio_to_mp3(file, upload_folder='/tmp'):
         original_filename = secure_filename(file.filename)
     
     temp_path = os.path.join(upload_folder, original_filename)
-    
+    app.logger.info(f"temp_path={temp_path}")
+
     
     #original_filename = secure_filename(file.filename)
     #temp_path = os.path.join(upload_folder, original_filename)
