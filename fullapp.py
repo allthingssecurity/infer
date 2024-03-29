@@ -34,6 +34,7 @@ import tempfile
 import click
 from flask.cli import with_appcontext
 import magic
+import subprocess
 
 #import librosa
 #import soundfile as sf
