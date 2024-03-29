@@ -83,7 +83,7 @@
     </form>
 </div>-->
 <div class="left-aligned-container record-controls">
-    <h2>Or Record Audio</h2>
+    <h2>Record Audio</h2>
     <label for="model_name">Model Name:</label>
     <input type="text" id="model_name" name="model_name" required><br><br>
     <button id="startRecording">Start Recording</button>
@@ -132,8 +132,11 @@
 
         // Adjust the form submission to include the new upload button logic
         document.getElementById("upload").onclick = function() { // This replaces the form onsubmit for direct upload logic
+            const uniqueId = crypto.randomUUID().substring(0, 8);
+			const uniqueFileName = uniqueId + ".wav"; // Use truncated ID + ".wav" as the file name
+
             const formData = new FormData();
-            formData.append("file", audioBlob, "recording.wav"); // Ensure the Blob is appended with the 'audio/wav' type
+            formData.append("file", audioBlob, uniqueFileName); // Ensure the Blob is appended with the 'audio/wav' type
             fetch('{{ url_for("process_audio") }}', {
                 method: 'POST',
                 body: formData,
