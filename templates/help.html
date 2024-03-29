@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Help Document</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            padding: 10px;
+        }
+        .modal { 
+            display: none; 
+            position: fixed; 
+            z-index: 1; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgb(0,0,0); 
+            background-color: rgba(0,0,0,0.4); 
+        }
+        .modal-content { 
+            background-color: #fefefe; 
+            margin: 15% auto; 
+            padding: 20px; 
+            border: 1px solid #888; 
+            width: 80%; 
+        }
+        .close { 
+            color: #aaa; 
+            float: right; 
+            font-size: 28px; 
+            font-weight: bold; 
+        }
+        .close:hover, 
+        .close:focus { 
+            color: black; 
+            text-decoration: none; 
+            cursor: pointer; 
+        }
+        iframe {
+            width: 100%;
+            height: 500px;
+        }
+    </style>
+</head>
+<body>
+
+   <header>
+        <div class="navbar">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" class="logo">
+            <nav>
+        <ul>
+            <li class="dropdown">
+                <a href="javascript:void(0)">Generation &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="/train">Model Training</a>
+                    <a href="/song_conversion">Song Conversion</a>
+                    <a href="/gen_video">Generate Video</a>
+                </div>
+            </li>
+            <li class="dropdown">
+                <a href="javascript:void(0)">Recharge &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="/rechargeModel">Recharge Model</a>
+                    <a href="/rechargeSong">Recharge Song</a>
+                </div>
+            </li>
+			 <li class="dropdown">
+                        <a href="javascript:void(0)">Credits &#9662;</a>
+                        <div class="dropdown-content">
+                            <a href="javascript:void(0)">Model Credits: {{ model_credits }}</a>
+                            <a href="javascript:void(0)">Song Credits: {{ song_credits }}</a>
+                            <a href="javascript:void(0)">Singing Head Credits: {{ video_credits }}</a>
+                        </div>
+                    </li>
+            <li><a href="/get_samples">Samples</a></li>
+ <li><a href="javascript:void(0)" onclick="openHelpPdf()">Help</a></li>
+        </ul>
+    </nav>
+             <div class="user-info">
+                <img src="{{ session['user_image'] if session['user_image'] else url_for('static', filename='default-user-icon.png') }}" alt="User Icon" class="user-icon">
+                <span>Welcome, {{ session['username'] }}</span>
+                <!-- Displaying Credits Information -->
+                
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
+        </div>
+    </header>
+
+<!-- Help Modal -->
+<div id="helpModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <iframe id="pdfViewer" src="" frameborder="0"></iframe>
+    </div>
+</div>
+
+<script>
+function openHelpPdf() {
+    var modal = document.getElementById("helpModal");
+    var span = document.getElementsByClassName("close")[0];
+    var pdfViewer = document.getElementById("pdfViewer");
+    pdfViewer.src = "{{ url_for('static', filename='help.pdf') }}";
+    modal.style.display = "block";
+
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+}
+</script>
+
+</body>
+</html>
