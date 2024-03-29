@@ -96,30 +96,29 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         let mediaRecorder;
-        let audioBlob = null;
+        let audioChunks = [];
+        let audioBlob;
 
         document.getElementById("startRecording").addEventListener("click", function() {
             navigator.mediaDevices.getUserMedia({ audio: true })
                 .then(stream => {
                     mediaRecorder = new MediaRecorder(stream);
-                    const audioChunks = [];
-
                     mediaRecorder.ondataavailable = event => {
                         audioChunks.push(event.data);
                     };
-
                     mediaRecorder.onstop = () => {
-                        audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        audioBlob = new Blob(audioChunks, { type: 'audio/wav' }); // Changed type to 'audio/wav'
                         const audioUrl = URL.createObjectURL(audioBlob);
                         document.getElementById("audioPlayback").src = audioUrl;
                         document.getElementById("audioPlayback").hidden = false;
+                        // The upload button is enabled here after recording is done.
+                        document.getElementById("upload").disabled = false; // Ensure you have this button in your HTML
+                        audioChunks = [];
                     };
-
                     mediaRecorder.start();
                     document.getElementById("startRecording").disabled = true;
                     document.getElementById("stopRecording").disabled = false;
-                })
-                .catch(error => console.error("Error accessing the microphone: ", error));
+                });
         });
 
         document.getElementById("stopRecording").addEventListener("click", function() {
@@ -128,33 +127,25 @@
             document.getElementById("stopRecording").disabled = true;
         });
 
-        document.getElementById("uploadForm").onsubmit = function(event) {
-            event.preventDefault();
-
-            const formData = new FormData(this);
-            if (audioBlob) {
-                const recordedFile = new File([audioBlob], "recorded_audio.webm", { type: "audio/webm" });
-                formData.append('file', recordedFile);
-            }
-
+        // Adjust the form submission to include the new upload button logic
+        document.getElementById("upload").onclick = function() { // This replaces the form onsubmit for direct upload logic
+            const formData = new FormData();
+            formData.append("audio", audioBlob, "recording.wav"); // Ensure the Blob is appended with the 'audio/wav' type
             fetch('{{ url_for("process_audio") }}', {
                 method: 'POST',
                 body: formData,
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                alert('Upload successful!');
                 console.log(data);
-                // Optionally, redirect or update the UI upon success
+                alert('Upload successful!');
+                // Reset the UI
+                document.getElementById("audioPlayback").hidden = true;
+                document.getElementById("upload").disabled = true;
             })
             .catch(error => {
-                console.error('Upload failed:', error);
-                alert('Upload failed. Please try again.');
+                console.error('Error:', error);
+                alert('Upload failed.');
             });
         };
     });
