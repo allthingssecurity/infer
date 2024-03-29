@@ -230,9 +230,10 @@ def convert_audio_to_mp3(file, upload_folder='/tmp'):
 
     # Check if the file is already in MP3 format or if it's a supported audio format for conversion
     if mime_type == 'audio/mpeg':
+        app.logger.info(f"File is already an MP3, so no conversion needed")
         # File is already an MP3, so no conversion needed
         return temp_path
-    elif mime_type in ['audio/wav', 'audio/webm', 'audio/ogg']:
+    elif mime_type in ['audio/wav', 'audio/webm', 'audio/ogg' ,'video/webm']:
         # Convert to MP3 using FFmpeg
         app.logger.info(f"convert to mp3")
         subprocess.run(['ffmpeg', '-i', temp_path, '-vn', '-ar', 44100, '-ac', 2, '-b:a', '192k', output_path], check=True)
