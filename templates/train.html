@@ -5,36 +5,34 @@
     <title>Upload or Record Audio Files</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-  <style>
+    <style>
         body {
             margin: 0;
             padding: 10px;
             font-family: Arial, sans-serif;
         }
-        /* Adjusting alignment to the left and reducing form control sizes */
         .left-aligned-container {
             text-align: left;
             width: 100%;
-            max-width: 500px; /* Limiting the max width for larger screens */
-            margin: 0 auto; /* Centering the container for aesthetics on larger screens */
+            max-width: 500px;
+            margin: 0 auto;
         }
         form label, form input, form select, form button, .record-controls button {
             margin: 5px 0;
-            width: auto; /* Auto width to reduce size and add padding for spacing */
-            padding: 8px; /* Reduced padding */
+            width: auto;
+            padding: 8px;
             box-sizing: border-box;
         }
         form input[type="text"], form input[type="file"], form select, form input[type="submit"], .record-controls button {
-            max-width: 100%; /* Ensuring they don't exceed their container's width */
+            max-width: 100%;
         }
         @media (max-width: 599px) {
-            /* Adjustments for mobile devices */
             .left-aligned-container {
-                max-width: none; /* Allows the container to be more fluid on small screens */
+                max-width: none;
             }
         }
     </style>
- </head>
+</head>
 <body>
 <header>
     <div class="navbar">
@@ -56,40 +54,39 @@
                         <a href="/rechargeSong">Recharge Song</a>
                     </div>
                 </li>
-				 <li class="dropdown">
-                        <a href="javascript:void(0)">Credits &#9662;</a>
-                        <div class="dropdown-content">
-                            <a href="javascript:void(0)">Model Credits: {{ model_credits }}</a>
-                            <a href="javascript:void(0)">Song Credits: {{ song_credits }}</a>
-                            <a href="javascript:void(0)">Singing Head Credits: {{ video_credits }}</a>
-                        </div>
-                    </li>
+                <li class="dropdown">
+                    <a href="javascript:void(0)">Credits &#9662;</a>
+                    <div class="dropdown-content">
+                        <a href="javascript:void(0)">Model Credits: {{ model_credits }}</a>
+                        <a href="javascript:void(0)">Song Credits: {{ song_credits }}</a>
+                        <a href="javascript:void(0)">Singing Head Credits: {{ video_credits }}</a>
+                    </div>
+                </li>
                 <li><a href="/get_samples">Samples</a></li>
             </ul>
         </nav>
         <div class="user-info">
             <img src="{{ session['user_image'] if session['user_image'] else url_for('static', filename='default-user-icon.png') }}" alt="User Icon" class="user-icon">
             <span>Welcome, {{ session['username'] }}</span>
-            
             <a href="/logout" class="logout-btn">Logout</a>
         </div>
     </div>
 </header>
 <div class="left-aligned-container">
-<h2>Upload Audio Files for Processing</h2>
-<form id="uploadForm" action="{{ url_for('process_audio') }}" method="post" enctype="multipart/form-data">
-    <label for="file">Choose audio files (only mp3 format):</label>
-    <input type="file" id="file" name="file" accept=".mp3"><br><br>
-    <label for="model_name">Model Name:</label>
-    <input type="text" id="model_name" name="model_name" required><br><br>
-    <input type="submit" value="Upload">
-</form>
+    <h2>Upload Audio Files for Processing</h2>
+    <form id="uploadForm" action="{{ url_for('process_audio') }}" method="post" enctype="multipart/form-data">
+        <label for="file">Choose audio files (only mp3 format):</label>
+        <input type="file" id="file" name="file" accept=".mp3"><br><br>
+        <label for="model_name">Model Name:</label>
+        <input type="text" id="model_name" name="model_name" required><br><br>
+        <input type="submit" value="Upload">
+    </form>
 </div>
 <div class="left-aligned-container record-controls">
-<h2>Or Record Audio</h2>
-<button id="startRecording">Start Recording</button>
-<button id="stopRecording" disabled>Stop Recording</button>
-<audio id="audioPlayback" controls hidden></audio>
+    <h2>Or Record Audio</h2>
+    <button id="startRecording">Start Recording</button>
+    <button id="stopRecording" disabled>Stop Recording</button>
+    <audio id="audioPlayback" controls hidden></audio>
 </div>
 
 <div class="left-aligned-container">
@@ -97,102 +94,70 @@
 </div>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let mediaRecorder;
+        let audioBlob = null;
 
-document.addEventListener('DOMContentLoaded', function() {
-    let mediaRecorder;
-    let audioBlob = null;
+        document.getElementById("startRecording").addEventListener("click", function() {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    mediaRecorder = new MediaRecorder(stream);
+                    const audioChunks = [];
 
-    document.getElementById("startRecording").addEventListener("click", function() {
-        navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(stream => {
-                mediaRecorder = new MediaRecorder(stream);
-                const audioChunks = [];
+                    mediaRecorder.ondataavailable = event => {
+                        audioChunks.push(event.data);
+                    };
 
-                mediaRecorder.ondataavailable = event => {
-                    audioChunks.push(event.data);
-                };
+                    mediaRecorder.onstop = () => {
+                        audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        document.getElementById("audioPlayback").src = audioUrl;
+                        document.getElementById("audioPlayback").hidden = false;
+                    };
 
-                mediaRecorder.onstop = () => {
-                    // Adjust the MIME type if necessary. This assumes MediaRecorder outputs webm audio format
-                    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    const audioUrl = URL.createObjectURL(audioBlob);
-                    document.getElementById("audioPlayback").src = audioUrl;
-                    document.getElementById("audioPlayback").hidden = false;
-                };
+                    mediaRecorder.start();
+                    document.getElementById("startRecording").disabled = true;
+                    document.getElementById("stopRecording").disabled = false;
+                })
+                .catch(error => console.error("Error accessing the microphone: ", error));
+        });
 
-                mediaRecorder.start();
-                document.getElementById("startRecording").disabled = true;
-                document.getElementById("stopRecording").disabled = false;
+        document.getElementById("stopRecording").addEventListener("click", function() {
+            mediaRecorder.stop();
+            document.getElementById("startRecording").disabled = false;
+            document.getElementById("stopRecording").disabled = true;
+        });
+
+        document.getElementById("uploadForm").onsubmit = function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            if (audioBlob) {
+                const recordedFile = new File([audioBlob], "recorded_audio.webm", { type: "audio/webm" });
+                formData.append('file', recordedFile);
+            }
+
+            fetch('{{ url_for("process_audio") }}', {
+                method: 'POST',
+                body: formData,
             })
-            .catch(error => console.error("Error accessing the microphone: ", error));
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert('Upload successful!');
+                console.log(data);
+                // Optionally, redirect or update the UI upon success
+            })
+            .catch(error => {
+                console.error('Upload failed:', error);
+                alert('Upload failed. Please try again.');
+            });
+        };
     });
-
-    document.getElementById("stopRecording").addEventListener("click", function() {
-        mediaRecorder.stop();
-        document.getElementById("startRecording").disabled = false;
-        document.getElementById("stopRecording").disabled = true;
-    });
-
-    document.getElementById("uploadForm").onsubmit = function(event) {
-        event.preventDefault();
-
-        const formData = new FormData(this);
-        if (audioBlob) {
-            // Here we append the audio blob to the form data
-            // Make sure the 'name' attribute matches your server's expectation
-			//const defaultFilename = `recorded_audio_${new Date().toISOString()}.webm`; // Example filename: recorded_audio_2023-03-26T123456.789Z.webm
-
-            //formData.append('file', audioBlob, defaultFilename);
-			
-			        // Convert the Blob to a File object, explicitly setting a filename
-        const recordedFile = new File([audioBlob], "recorded_audio.mp3", { type: "audio/mp3" });
-        
-        // Append the File object instead of the Blob
-        formData.append('file', recordedFile);
-			
-			
-        }
-
-        // Fetch API to submit form data
-        fetch('{{ url_for("process_audio") }}', { // Ensure this template syntax is correctly processed or replaced with your actual server endpoint
-            method: 'POST',
-            body: formData,
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            alert('Upload successful!');
-            console.log(data);
-            // Optionally, redirect or update the UI upon success
-        })
-        .catch(error => {
-            console.error('Upload failed:', error);
-            alert('Upload failed. Please try again.');
-        });
-    };
-});
-
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Get all elements with class "dropdown" and bind a click event
-    var dropdowns = document.querySelectorAll('.navbar nav ul li.dropdown');
-    dropdowns.forEach(function(drop) {
-        drop.addEventListener('click', function() {
-            // Toggle the display of the dropdown content
-            var dropdownContent = this.querySelector('.dropdown-content');
-            if (dropdownContent.style.display === "block") {
-                dropdownContent.style.display = "none";
-            } else {
-                dropdownContent.style.display = "block";
-            }
-        });
-    });
-});
-
 </script>
 
 </body>
