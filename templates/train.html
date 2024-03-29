@@ -134,9 +134,12 @@
         document.getElementById("upload").onclick = function() { // This replaces the form onsubmit for direct upload logic
             const uniqueId = crypto.randomUUID().substring(0, 8);
 			const uniqueFileName = uniqueId + ".wav"; // Use truncated ID + ".wav" as the file name
-
+             const modelName = document.getElementById("model_name").value;
             const formData = new FormData();
             formData.append("file", audioBlob, uniqueFileName); // Ensure the Blob is appended with the 'audio/wav' type
+             formData.append("model_name", modelName);
+
+
             fetch('{{ url_for("process_audio") }}', {
                 method: 'POST',
                 body: formData,
