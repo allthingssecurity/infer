@@ -1155,9 +1155,10 @@ def process_audio():
     # Convert the audio file to MP3 if necessary and get the path.
     converted_path = convert_audio_to_mp3(file)
     app.logger.info(f"converted path={converted_path}")
+    filename_from_path = os.path.basename(converted_path)
 
     # Generate a secure, unique filename for the processed file.
-    secure_filename = uuid.uuid4().hex + '_' + (file.filename if file.filename else "uploaded_audio.mp3")
+    secure_filename = uuid.uuid4().hex + '_' + filename_from_path
     filepath = os.path.join(UPLOAD_FOLDER, secure_filename)
     os.rename(converted_path, filepath)
     app.logger.info(f"File saved to {filepath}")
