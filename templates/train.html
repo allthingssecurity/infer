@@ -130,7 +130,7 @@
         // Adjust the form submission to include the new upload button logic
         document.getElementById("upload").onclick = function() { // This replaces the form onsubmit for direct upload logic
             const formData = new FormData();
-            formData.append("audio", audioBlob, "recording.wav"); // Ensure the Blob is appended with the 'audio/wav' type
+            formData.append("file", audioBlob, "recording.wav"); // Ensure the Blob is appended with the 'audio/wav' type
             fetch('{{ url_for("process_audio") }}', {
                 method: 'POST',
                 body: formData,
