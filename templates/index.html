@@ -35,7 +35,7 @@
                             <a href="javascript:void(0)">Singing Head Credits: {{ video_credits }}</a>
                         </div>
                     </li>
-			
+
             <li><a href="/get_samples">Samples</a></li>
         </ul>
     </nav>
@@ -44,7 +44,7 @@
                 <span>Welcome, {{ session['username'] }}</span>
                 <!-- Displaying Credits Information -->
             <!-- Dropdown Trigger -->
-        
+
                 <a href="/logout" class="logout-btn">Logout</a>
             </div>
         </div>
@@ -60,7 +60,11 @@
     <!-- Container for images and video -->
     <div class="content-container">
         <img src="{{ url_for('static', filename='image1.png') }}" alt="Transformation Image" class="side-image left-image">
-        
+            <div class="instructional-content">
+		        <h2>Start Your Singing Adventure!</h2>
+		        <p>Hey there, Singing Star! 🌟 Ready to unleash your voice and wow the world? If you're stepping onto this magical musical stage for the first time, let's get you ready for the spotlight with a fun and easy 'Voice Tune-Up'. It's like a quick rehearsal in our virtual studio to make sure you sound absolutely dazzling! <a href="/train">Start your Voice Tune-Up here.</a></p>
+		        <p>Already tuned and tested your singing powers with us? Fantastic! It's time to hit the big stage and transform your tunes into sensational songs. Dive right into the <a href="/song_conversion">Song Transformation Zone</a> and let's create some hits together!</p>
+    </div>
         <!-- Video Embed -->
         <div class="video-container">
             <video controls class="embedded-video">
@@ -68,11 +72,11 @@
                 Your browser does not support the video tag.
             </video>
         </div>
-        
+
         <img src="{{ url_for('static', filename='image2.png') }}" alt="Triumph Image" class="side-image right-image">
     </div>
 </main>
-	
+
 	<script>
 document.addEventListener('DOMContentLoaded', function() {
     // Get all elements with class "dropdown" and bind a click event
