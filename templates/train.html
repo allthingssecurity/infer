@@ -46,7 +46,40 @@
 <body>
 <header>
     <div class="navbar">
-        <!-- Your navigation bar content -->
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" class="logo">
+        <nav>
+            <ul>
+                <li class="dropdown">
+                    <a href="javascript:void(0)">Generation &#9662;</a>
+                    <div class="dropdown-content">
+                        <a href="/train">Model Training</a>
+                        <a href="/song_conversion">Song Conversion</a>
+                        <a href="/gen_video">Generate Video</a>
+                    </div>
+                </li>
+                <li class="dropdown">
+                    <a href="javascript:void(0)">Recharge &#9662;</a>
+                    <div class="dropdown-content">
+                        <a href="/rechargeModel">Recharge Model</a>
+                        <a href="/rechargeSong">Recharge Song</a>
+                    </div>
+                </li>
+                <li class="dropdown">
+                    <a href="javascript:void(0)">Credits &#9662;</a>
+                    <div class="dropdown-content">
+                        <a href="javascript:void(0)">Model Credits: {{ model_credits }}</a>
+                        <a href="javascript:void(0)">Song Credits: {{ song_credits }}</a>
+                        <a href="javascript:void(0)">Singing Head Credits: {{ video_credits }}</a>
+                    </div>
+                </li>
+                <li><a href="/get_samples">Samples</a></li>
+            </ul>
+        </nav>
+        <div class="user-info">
+            <img src="{{ session['user_image'] if session['user_image'] else url_for('static', filename='default-user-icon.png') }}" alt="User Icon" class="user-icon">
+            <span>Welcome, {{ session['username'] }}</span>
+            <a href="/logout" class="logout-btn">Logout</a>
+        </div>
     </div>
 </header>
 
