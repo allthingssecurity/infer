@@ -103,62 +103,92 @@ const hindiScript = ` कल्पना कीजिए कि आप एक �
 यह साहसिक यात्रा आपको दोस्ती, जिज्ञासा, और प्रकृति के आश्चर्यों की खोज के आनंद की शक्ति की याद दिलाती है। और जैसे ही आप जादुई जंगल छोड़ते हैं, आप जानते हैं कि आपका एक हिस्सा हमेशा के लिए इस मोहक दुनिया का हिस्सा बना रहेगा।
 `;
     document.addEventListener('DOMContentLoaded', function() {
-        const scripts = {
-	    English: englishScript,
-        Hindi: hindiScript
+	    const scripts = {
+	        English: englishScript,
+	        Hindi: hindiScript
+	    };
 
-        document.getElementById("languageSelect").addEventListener("change", function() {
-            const selectedLanguage = this.value;
-            document.getElementById("scriptText").textContent = scripts[selectedLanguage];
-        });
+	    document.getElementById("scriptText").textContent = scripts["English"];
 
-        document.getElementById("scriptText").textContent = scripts["English"];
+	    document.getElementById("languageSelect").addEventListener("change", function() {
+	        const selectedLanguage = this.value;
+	        document.getElementById("scriptText").textContent = scripts[selectedLanguage];
+	    });
 
-        let mediaRecorder;
-        let audioChunks = [];
-        let audioBlob;
+	    let mediaRecorder;
+	    let audioChunks = [];
+	    let audioBlob;
 
-        document.getElementById("startRecording").addEventListener("click", function() {
-            navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(stream => {
-                    mediaRecorder = new MediaRecorder(stream);
-                    mediaRecorder.ondataavailable = event => {
-                        audioChunks.push(event.data);
-                    };
-                    mediaRecorder.onstop = () => {
-                        audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                        const audioUrl = URL.createObjectURL(audioBlob);
-                        document.getElementById("audioPlayback").src = audioUrl;
-                        document.getElementById("audioPlayback").hidden = false;
-                        document.getElementById("upload").disabled = false;
-                        audioChunks = [];
-                    };
-                    mediaRecorder.start();
-                    document.getElementById("startRecording").disabled = true;
-                    document.getElementById("stopRecording").disabled = false;
-                    document.getElementById("cancelRecording").disabled = false;
-                });
-        });
+	    document.getElementById("startRecording").addEventListener("click", function() {
+	        navigator.mediaDevices.getUserMedia({ audio: true })
+	            .then(stream => {
+	                mediaRecorder = new MediaRecorder(stream);
+	                mediaRecorder.ondataavailable = event => {
+	                    audioChunks.push(event.data);
+	                };
+	                mediaRecorder.onstop = () => {
+	                    audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+	                    const audioUrl = URL.createObjectURL(audioBlob);
+	                    document.getElementById("audioPlayback").src = audioUrl;
+	                    document.getElementById("audioPlayback").hidden = false;
+	                    document.getElementById("upload").disabled = false;
+	                    audioChunks = [];
+	                };
+	                mediaRecorder.start();
+	                document.getElementById("startRecording").disabled = true;
+	                document.getElementById("stopRecording").disabled = false;
+	                document.getElementById("cancelRecording").disabled = false;
+	            });
+	    });
 
-        document.getElementById("stopRecording").addEventListener("click", function() {
-            mediaRecorder.stop();
-            document.getElementById("startRecording").disabled = false;
-            document.getElementById("stopRecording").disabled = true;
-        });
+	    document.getElementById("stopRecording").addEventListener("click", function() {
+	        mediaRecorder.stop();
+	        document.getElementById("startRecording").disabled = false;
+	        document.getElementById("stopRecording").disabled = true;
+	    });
 
-        document.getElementById("cancelRecording").addEventListener("click", function() {
-            document.getElementById("audioPlayback").hidden = true;
-            document.getElementById("upload").disabled = true;
-            document.getElementById("startRecording").disabled = false;
-            document.getElementById("stopRecording").disabled = true;
-            document.getElementById("cancelRecording").disabled = true;
-            audioChunks = [];
-        });
+	    document.getElementById("cancelRecording").addEventListener("click", function() {
+	        document.getElementById("audioPlayback").hidden = true;
+	        document.getElementById("upload").disabled = true;
+	        document.getElementById("startRecording").disabled = false;
+	        document.getElementById("stopRecording").disabled = true;
+	        document.getElementById("cancelRecording").disabled = true;
+	        audioChunks = [];
+	    });
 
-        document.getElementById("upload").onclick = function() {
-            // Upload logic goes here
-        };
-    });
+	    document.getElementById("upload").addEventListener("click", function() {
+	        const modelName = document.getElementById("model_name").value.replace(/\s+/g, ''); // Removes spaces
+	        const uniqueId = Math.random().toString(36).substring(2, 10); // Generates an 8-character unique ID
+	        const formData = new FormData();
+	        formData.append("file", audioBlob, uniqueId + ".wav");
+	        formData.append("model_name", modelName); // Model name without spaces
+
+	        fetch('/process_audio', { // Using the specified endpoint
+	            method: 'POST',
+	            body: formData,
+	        })
+	        .then(response => {
+	            if (!response.ok) {
+	                throw new Error('Network response was not ok');
+	            }
+	            return response.json();
+	        })
+	        .then(data => {
+	            console.log(data);
+	            alert('Upload successful!');
+	        })
+	        .catch(error => {
+	            console.error('Error during the upload:', error);
+	            alert('Upload failed.');
+	        });
+
+	        // Reset state after upload
+	        document.getElementById("audioPlayback").hidden = true;
+	        document.getElementById("upload").disabled = true;
+	        document.getElementById("startRecording").disabled = false;
+	        audioChunks = [];
+	    });
+});
 </script>
 </body>
 </html>
