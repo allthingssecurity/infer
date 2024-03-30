@@ -73,12 +73,43 @@
     <a href="/get-jobs">Go to Job Tracking Page</a>
 </div>
 
+
+<script>
+// Define scripts
+const englishScript = `Imagine stepping into a magical forest where the trees whisper secrets of ancient times, and the breeze carries tales of adventure. As you walk along the mossy path, you encounter a talking squirrel named Sammy. Sammy is on a quest to find the Golden Acorn, a legendary treasure that brings prosperity to the forest.
+
+Sammy invites you on this adventure, promising it to be filled with mystery and excitement. Together, you venture deeper into the forest, crossing streams where fish shimmer like jewels under the sun’s rays and birds sing melodies that uplift your spirits.
+
+You come across various challenges, like riddles from the wise old owl, Oliver, who guards the bridge to the Enchanted Glade. With teamwork and clever thinking, you solve Oliver's riddles and proceed.
+
+As the journey continues, you witness the wonders of the magical forest - flowers that glow in the dark, trees that change colors with your emotions, and a hidden waterfall that flows with sparkling water.
+
+Finally, in the heart of the forest, beneath the oldest tree, you find the Golden Acorn. The forest celebrates your success with a grand feast, where animals of all kinds come to share stories and enjoy the magic of the night.
+
+This adventure reminds you of the power of friendship, curiosity, and the joy of discovering the wonders of nature. And as you leave the magical forest, you know that a part of you will always belong to this enchanting world.
+
+`;
+
+const hindiScript = ` कल्पना कीजिए कि आप एक जादुई जंगल में कदम रखते हैं, जहाँ पेड़ प्राचीन समय के रहस्यों की फुसफुसाहट करते हैं, और हवा साहसिक कथाओं को ले जाती है। जैसे ही आप मॉसी पथ पर चलते हैं, आप एक बातूनी गिलहरी से मिलते हैं, जिसका नाम सैमी है। सैमी एक ऐसे खजाने की खोज में है जिसे गोल्डन एकोर्न कहा जाता है, एक पौराणिक खजाना जो जंगल में समृद्धि लाता है।
+
+सैमी आपको इस साहसिक यात्रा पर आमंत्रित करता है, जिसका वादा रहस्य और रोमांच से भरा होता है। आप साथ में जंगल के गहरे हिस्से में जाते हैं, नदियों को पार करते हैं जहाँ मछलियाँ सूरज की किरणों के नीचे जवाहरात की तरह चमकती हैं और पक्षी ऐसे मेलोडी गाते हैं जो आपकी आत्माओं को उठाते हैं।
+
+आप विभिन्न चुनौतियों का सामना करते हैं, जैसे कि बुद्धिमान पुराने उल्लू, ओलिवर से पहेलियाँ, जो जादुई ग्लेड के पुल की रक्षा करता है। टीमवर्क और चतुर सोच के साथ, आप ओलिवर की पहेलियों को हल करते हैं और आगे बढ़ते हैं।
+
+यात्रा जारी रहने पर, आप जादुई जंगल के आश्चर्यों को देखते हैं - अंधेरे में चमकने वाले फूल, आपकी भावनाओं के साथ रंग बदलने वाले पेड़, और एक छिपा हुआ झरना जो चमकदार पानी से बहता है।
+
+अंत में, जंगल के दिल में, सबसे पुराने पेड़ के नीचे, आप गोल्डन एकोर्न पाते हैं। जंगल आपकी सफलता का जश्न एक भव्य दावत के साथ मनाता है, जहाँ सभी प्रकार के जानवर कहानियाँ साझा करने और रात के जादू का आनंद लेने आते हैं।
+
+यह साहसिक यात्रा आपको दोस्ती, जिज्ञासा, और प्रकृति के आश्चर्यों की खोज के आनंद की शक्ति की याद दिलाती है। और जैसे ही आप जादुई जंगल छोड़ते हैं, आप जानते हैं कि आपका एक हिस्सा हमेशा के लिए इस मोहक दुनिया का हिस्सा बना रहेगा।
+`;
+</script>
+
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const scripts = {
-            English: "Your English script goes here...",
-            Hindi: "Your Hindi script goes here..."
-        };
+	           English: englishScript,
+        Hindi: hindiScript
 
         document.getElementById("languageSelect").addEventListener("change", function() {
             const selectedLanguage = this.value;
