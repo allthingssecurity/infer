@@ -12,3 +12,6 @@ ffmpeg
 mutagen
 pydub
 python-magic
+pyloudnorm
+noisereduce
+soundfile

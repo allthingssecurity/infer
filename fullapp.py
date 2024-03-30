@@ -35,6 +35,7 @@ import click
 from flask.cli import with_appcontext
 import magic
 import subprocess
+from quality import adjust_loudness
 
 #import librosa
 #import soundfile as sf
@@ -1173,12 +1174,14 @@ def process_audio():
     app.logger.info(f"File saved to {filepath}")
     # Assuming convert_audio_to_mp3 saves the file, open it for further processing.
     #with open(converted_path, 'rb') as file:
-     #   app.logger.info("Before analysing audio")
+    app.logger.info("Before analysing audio")
     analysis_results = analyze_audio_file1(filepath)
-    #    app.logger.info("After analysing audio")
+    app.logger.info("After analysing audio")
     if not analysis_results['success']:
         return jsonify({"error": analysis_results['error']}), 400
-
+    app.logger.info("Before adjusting loudness of audio")
+    filepath=adjust_loudness(filepath)
+    app.logger.info("After adjusting loudness of audio")
     # File has been analyzed; now move it to a permanent location.
     response = upload_to_do(filepath)
     
