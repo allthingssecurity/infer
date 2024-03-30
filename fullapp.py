@@ -117,12 +117,11 @@ q = Queue(connection=redis_client)
 FEATURE_FLAG_WAITLIST = True 
 
 
+from multiprocessing import Process
+
 @app.cli.command("start-workers")
 @with_appcontext
 def start_workers():
-    
-    #redis_url = os.getenv['REDIS_URL']
-    #redis_conn = Redis.from_url(redis_url)
     redis_host = os.getenv('REDIS_HOST', 'default_host')
     redis_port = int(os.getenv('REDIS_PORT', 25061))  # Default Redis port
     redis_username = os.getenv('REDIS_USERNAME', 'default')
@@ -130,18 +129,28 @@ def start_workers():
 
     # Creating a Redis client and attaching it to the app config
     redis_client = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
-    
-    with Connection(redis_client):
-        
-        for _ in range(2):
-        # Assuming 'rq' command is available in the environment
-        # and the workers are configured to listen to the 'default' queue.
-        # Adjust the command as necessary for your environment.
-        #subprocess.Popen(['rq', 'worker', 'default'])
-        #start_worker()
+
+    def start_rq_worker():
+        """Function to start an RQ worker."""
+        with Connection(redis_client):
             app.logger.info("Started an RQ worker.")
             worker = Worker(Queue())
             worker.work()
+
+    # Number of workers you want to start
+    num_workers = 3
+
+    # Creating a process for each worker
+    processes = []
+    for _ in range(num_workers):
+        process = Process(target=start_rq_worker)
+        process.start()
+        processes.append(process)
+
+    # Wait for all processes to finish
+    for process in processes:
+        process.join()
+
 
 
 def create_app():
