@@ -1179,9 +1179,9 @@ def process_audio():
     app.logger.info("After analysing audio")
     if not analysis_results['success']:
         return jsonify({"error": analysis_results['error']}), 400
-    app.logger.info("Before adjusting loudness of audio")
-    filepath=adjust_loudness(filepath)
-    app.logger.info("After adjusting loudness of audio")
+    #app.logger.info("Before adjusting loudness of audio")
+    #filepath=adjust_loudness(filepath)
+    #app.logger.info("After adjusting loudness of audio")
     # File has been analyzed; now move it to a permanent location.
     response = upload_to_do(filepath)
     
