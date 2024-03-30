@@ -36,58 +36,35 @@
 <body>
 <header>
     <div class="navbar">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" class="logo">
-        <nav>
-            <ul>
-                <li class="dropdown">
-                    <a href="javascript:void(0)">Generation &#9662;</a>
-                    <div class="dropdown-content">
-                        <a href="/train">Model Training</a>
-                        <a href="/song_conversion">Song Conversion</a>
-                        <a href="/gen_video">Generate Video</a>
-                    </div>
-                </li>
-                <li class="dropdown">
-                    <a href="javascript:void(0)">Recharge &#9662;</a>
-                    <div class="dropdown-content">
-                        <a href="/rechargeModel">Recharge Model</a>
-                        <a href="/rechargeSong">Recharge Song</a>
-                    </div>
-                </li>
-                <li class="dropdown">
-                    <a href="javascript:void(0)">Credits &#9662;</a>
-                    <div class="dropdown-content">
-                        <a href="javascript:void(0)">Model Credits: {{ model_credits }}</a>
-                        <a href="javascript:void(0)">Song Credits: {{ song_credits }}</a>
-                        <a href="javascript:void(0)">Singing Head Credits: {{ video_credits }}</a>
-                    </div>
-                </li>
-                <li><a href="/get_samples">Samples</a></li>
-            </ul>
-        </nav>
-        <div class="user-info">
-            <img src="{{ session['user_image'] if session['user_image'] else url_for('static', filename='default-user-icon.png') }}" alt="User Icon" class="user-icon">
-            <span>Welcome, {{ session['username'] }}</span>
-            <a href="/logout" class="logout-btn">Logout</a>
-        </div>
+        <!-- Your navigation bar content -->
     </div>
 </header>
-<!--<div class="left-aligned-container">
-    <h2>Upload Audio Files for Processing</h2>
-    <form id="uploadForm" action="{{ url_for('process_audio') }}" method="post" enctype="multipart/form-data">
-        <label for="file">Choose audio files (only mp3 format):</label>
-        <input type="file" id="file" name="file" accept=".mp3"><br><br>
-        <label for="model_name">Model Name:</label>
-        <input type="text" id="model_name" name="model_name" required><br><br>
-        <input type="submit" value="Upload">
-    </form>
-</div>-->
-<div class="left-aligned-container record-controls">
+
+<div class="left-aligned-container">
     <h2>Record Audio</h2>
-    <label for="model_name">Model Name:</label>
-    <input type="text" id="model_name" name="model_name" required><br><br>
+    <label for="languageSelect">Choose Language:</label>
+    <select id="languageSelect">
+        <option value="English">English</option>
+        <option value="Hindi">Hindi</option>
+    </select><br><br>
+
+    <label for="scriptText">Script:</label>
+    <textarea id="scriptText" rows="10" cols="50" readonly></textarea><br><br>
+
+    <div id="instructions">
+        <strong>Instructions:</strong>
+        <ol>
+            <li>Choose language.</li>
+            <li>Start recording and begin reading the script aloud.</li>
+            <li>Click 'Stop Recording' when done.</li>
+            <li>Play back your recording. If unsatisfied, click 'Cancel' to restart.</li>
+            <li>Once satisfied, click 'Upload' and wait. Please do not click 'Upload' multiple times.</li>
+        </ol>
+    </div>
+
     <button id="startRecording">Start Recording</button>
     <button id="stopRecording" disabled>Stop Recording</button>
+    <button id="cancelRecording" disabled>Cancel</button>
     <button id="upload" disabled>Upload</button>
     <audio id="audioPlayback" controls hidden></audio>
 </div>
@@ -98,6 +75,18 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const scripts = {
+            English: "Your English script goes here...",
+            Hindi: "Your Hindi script goes here..."
+        };
+
+        document.getElementById("languageSelect").addEventListener("change", function() {
+            const selectedLanguage = this.value;
+            document.getElementById("scriptText").textContent = scripts[selectedLanguage];
+        });
+
+        document.getElementById("scriptText").textContent = scripts["English"];
+
         let mediaRecorder;
         let audioChunks = [];
         let audioBlob;
@@ -110,17 +99,17 @@
                         audioChunks.push(event.data);
                     };
                     mediaRecorder.onstop = () => {
-                        audioBlob = new Blob(audioChunks, { type: 'audio/wav' }); // Changed type to 'audio/wav'
+                        audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
                         const audioUrl = URL.createObjectURL(audioBlob);
                         document.getElementById("audioPlayback").src = audioUrl;
                         document.getElementById("audioPlayback").hidden = false;
-                        // The upload button is enabled here after recording is done.
-                        document.getElementById("upload").disabled = false; // Ensure you have this button in your HTML
+                        document.getElementById("upload").disabled = false;
                         audioChunks = [];
                     };
                     mediaRecorder.start();
                     document.getElementById("startRecording").disabled = true;
                     document.getElementById("stopRecording").disabled = false;
+                    document.getElementById("cancelRecording").disabled = false;
                 });
         });
 
@@ -130,35 +119,19 @@
             document.getElementById("stopRecording").disabled = true;
         });
 
-        // Adjust the form submission to include the new upload button logic
-        document.getElementById("upload").onclick = function() { // This replaces the form onsubmit for direct upload logic
-            const uniqueId = crypto.randomUUID().substring(0, 8);
-			const uniqueFileName = uniqueId + ".wav"; // Use truncated ID + ".wav" as the file name
-             const modelName = document.getElementById("model_name").value;
-            const formData = new FormData();
-            formData.append("file", audioBlob, uniqueFileName); // Ensure the Blob is appended with the 'audio/wav' type
-             formData.append("model_name", modelName);
+        document.getElementById("cancelRecording").addEventListener("click", function() {
+            document.getElementById("audioPlayback").hidden = true;
+            document.getElementById("upload").disabled = true;
+            document.getElementById("startRecording").disabled = false;
+            document.getElementById("stopRecording").disabled = true;
+            document.getElementById("cancelRecording").disabled = true;
+            audioChunks = [];
+        });
 
-
-            fetch('{{ url_for("process_audio") }}', {
-                method: 'POST',
-                body: formData,
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                alert('Upload successful!');
-                // Reset the UI
-                document.getElementById("audioPlayback").hidden = true;
-                document.getElementById("upload").disabled = true;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Upload failed.');
-            });
+        document.getElementById("upload").onclick = function() {
+            // Upload logic goes here
         };
     });
 </script>
-
 </body>
 </html>
