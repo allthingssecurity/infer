@@ -913,7 +913,7 @@ def start_infer():
         add_job_to_user_index(redis_client, user_email, job_id)
         attributes = {
             "type": type_of_job,
-            "filename": filename,
+            "filename": youtube_link,
             "submission_time": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         }
 
