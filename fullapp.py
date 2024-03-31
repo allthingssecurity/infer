@@ -914,7 +914,7 @@ def start_infer():
         attributes = {
             "type": type_of_job,
             "filename": youtube_link,
-            "submission_time": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            "submission_time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         }
 
         # Set job attributes
