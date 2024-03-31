@@ -27,10 +27,6 @@ def download_video_as_mp3(url, output_path, max_length=180):
     except PermissionError as e:
         print(f"Error deleting file {downloaded_file}: {e}")
 
-# Example usage
-youtube_url = 'https://www.youtube.com/watch?v=T8qg2CYanh4'  # Replace with your YouTube video's URL
-output_mp3_path = 'output_audio.mp3'
-download_video_as_mp3(youtube_url, output_mp3_path)
 
 
 
