@@ -897,7 +897,7 @@ def start_infer():
         # Return an error response if youtube_link is blank
             return jsonify({'error': 'YouTube link is required'}), 400
         
-        q = Queue(connection=conn)
+        #q = Queue(connection=conn)
         job = q.enqueue_call(
             func=convert_voice_youtube,
             args=(youtube_link, final_speaker_name, user_email),  # Positional arguments for the function
