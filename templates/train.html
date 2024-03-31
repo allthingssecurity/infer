@@ -85,6 +85,16 @@
 
 <div class="left-aligned-container">
     <h2>Record Audio</h2>
+     <div id="instructions">
+	        <strong>Instructions:</strong>
+	        <ol>
+	            <li>Choose language.</li>
+	            <li>Start recording and begin reading the script aloud.</li>
+	            <li>Click 'Stop Recording' when done.</li>
+	            <li>Play back your recording. If unsatisfied, click 'Cancel' to restart.</li>
+	            <li>Once satisfied, click 'Upload' and wait. Please do not click 'Upload' multiple times.</li>
+	        </ol>
+    </div>
     <label for="languageSelect">Choose Language:</label>
     <select id="languageSelect">
         <option value="English">English</option>
@@ -94,16 +104,7 @@
     <label for="scriptText">Script:</label>
     <textarea id="scriptText" readonly></textarea><br><br>
 
-    <div id="instructions">
-        <strong>Instructions:</strong>
-        <ol>
-            <li>Choose language.</li>
-            <li>Start recording and begin reading the script aloud.</li>
-            <li>Click 'Stop Recording' when done.</li>
-            <li>Play back your recording. If unsatisfied, click 'Cancel' to restart.</li>
-            <li>Once satisfied, click 'Upload' and wait. Please do not click 'Upload' multiple times.</li>
-        </ol>
-    </div>
+
 
     <label for="model_name">Model Name (no spaces):</label>
     <input type="text" id="model_name" name="model_name" required><br><br>
