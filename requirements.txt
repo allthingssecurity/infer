@@ -15,3 +15,5 @@ python-magic
 pyloudnorm
 noisereduce
 soundfile
+pytube
+moviepy

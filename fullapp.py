@@ -12,7 +12,7 @@ import base64
 from flask import request
 import logging
 from logging.handlers import RotatingFileHandler
-from trainendtoend import train_model,convert_voice,generate_video_job
+from trainendtoend import train_model,convert_voice,generate_video_job,convert_voice_youtube
 import os
 import uuid
 from rq import Worker, Queue, Connection
@@ -864,12 +864,78 @@ def infer():
         return render_template('infer.html', user_email=user_email)
 
 
-
-
-
 @app.route('/start_infer', methods=['POST'])
 @login_required
 def start_infer():
+    print("entered infer")
+    user_email = session.get('user_email')
+    
+    if is_feature_waitlist_enabled():
+        if not is_user_authorized(user_email):
+            if is_user_in_waitlist(user_email):
+                return jsonify({'error': 'You are on the waitlist but not yet authorized. Please wait for authorization.'}), 403
+            else:
+                return jsonify({'error': 'You must join the waitlist to access this feature.'}), 403
+
+    if has_active_jobs(user_email, 'infer'):
+        app.logger.info(f"job already running for this user {user_email}")
+        return jsonify({'message': 'Cannot submit new job. A job is already queued or started'})
+
+    credit_count = get_user_credits(user_email, 'song')
+    if credit_count > 0:
+        speaker_name = request.form.get('spk_id', '')
+        app.logger.info(f"enqued the job for speaker {speaker_name}")
+        final_speaker_name = f'{user_email}_{speaker_name}'
+        trained_model_key = f"{user_email}:trained"
+        
+        if not redis_client.exists(trained_model_key):
+            # Model not trained for this speaker
+            return jsonify({'error': 'Model is not yet trained for the specified speaker'})
+
+        youtube_link = request.form.get('youtube_link', '')
+        if not youtube_link.strip():  # .strip() removes leading/trailing whitespace
+        # Return an error response if youtube_link is blank
+            return jsonify({'error': 'YouTube link is required'}), 400
+        
+        q = Queue(connection=conn)
+        job = q.enqueue_call(
+            func=convert_voice_youtube,
+            args=(youtube_link, final_speaker_name, user_email),  # Positional arguments for the function
+            timeout=2500  # Job-specific parameters like timeout
+        )
+
+        app.logger.info("enqueued the job ")
+        app.logger.info(f"Job ID: {job.get_id()}")
+        app.logger.info(f"Job Status: {job.get_status()}")
+
+        type_of_job = "infer"
+        job_id = job.id
+        add_job_to_user_index(redis_client, user_email, job_id)
+        attributes = {
+            "type": type_of_job,
+            "filename": filename,
+            "submission_time": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        }
+
+        # Set job attributes
+        set_job_attributes(redis_client, job_id, attributes)
+        
+        # Update job status
+        update_job_status(redis_client, job_id, 'queued')
+        app.logger.info(f"updated redis for job id {job.id}")
+
+        return jsonify({'message': 'File uploaded successfully for conversion', 'job_id': job.get_id()})
+    else:
+        app.logger.info(f"max song conversion exceeded for the user {user_email}. Buy credits")
+        return jsonify({'message': 'You have reached max limits for song conversion. Buy credits'})
+
+
+
+
+
+@app.route('/start_infer1', methods=['POST'])
+@login_required
+def start_infer1():
     print("entered infer")
     user_email = session.get('user_email')
     

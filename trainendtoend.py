@@ -18,7 +18,7 @@ from credit import get_user_credits,update_user_credits,use_credit
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from status import set_job_attributes,update_job_status,get_job_attributes
-
+from youtube import download_video_as_mp3
 runpod.api_key =os.getenv("RUNPOD_KEY")
 logging.basicConfig(level=logging.INFO)
 #logger = logging.getLogger(__name__)
@@ -411,6 +411,126 @@ def convert_voice(filename, spk_id, user_email):
         return False, str(e)
  
     
+
+
+
+def convert_voice_youtube(youtube_link, spk_id, user_email):
+    """
+    Synchronously uploads a file and handles voice conversion.
+
+    :param file_path: The file path of the audio file to upload.
+    :param spk_id: Speaker ID for voice transformation.
+    :param user_email: User's email for job tracking.
+    """
+    UPLOAD_FOLDER = 'uploads'
+    #base_url = os.environ.get('INFER_URL')
+    #url = f"{base_url}/convert_voice"
+    logger.info("entered convert ")
+    #app.logger.info(f'filepath where file saved initiallu=: {file_path1}')
+    job = get_current_job()
+
+    # Define user_key outside the try block to ensure it's available in the except block
+    
+    job_id = job.id if job else 'default_id'  # Fallback ID in case this runs outside a job context
+     
+    
+    #directory, filename = os.path.split(file_path1)
+    
+
+# Generate the new file path with job_id as the filename, preserving the original extension
+    
+    new_filename = f"{job_id}{os.path.splitext(filename)[1]}"  # Preserves original file extension
+    app.logger.error(f'new file name=: {new_filename}')
+    #app.logger.error(f'directory=: {directory}')
+    file_path = os.path.join(UPLOAD_FOLDER, new_filename)
+    #os.rename(file_path1, file_path)
+    #app.logger.error(f'new file path=: {file_path}')
+    
+
+    try:
+        
+        
+        
+        
+        #file_path1 = download_from_do(filename)
+        #directory, filename1 = os.path.split(file_path1)
+        app.logger.info(f'Before downloading audio from youtube to filepath={file_path}')
+        download_video_as_mp3(youtube_link,file_path)
+        app.logger.info(f'After downloading audio from youtube to filepath={file_path}')
+        
+        bucket_name = "sing"
+        pod_id = create_pod_and_get_id("infer", "smjain/infer:v6", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
+        app.logger.info('After creating pod for training')
+
+        if not pod_id:
+            raise Exception("Failed to create the pod or retrieve the pod ID.")
+
+        check_pod_is_ready(pod_id)
+        
+        app.logger.info('checked that pod is ready now')
+        
+        
+        
+        
+        url = f'https://{pod_id}-5000.proxy.runpod.net/convert_voice'
+        app.logger.info('before call to upload files for training done')
+
+        time.sleep(20)
+        
+    # Open the file and prepare for the POST request
+        with open(file_path, 'rb') as file:
+            files = {'file': file}
+            data = {'spk_id': spk_id, 'voice_transform': '0'}
+            app.logger.info(f'Infer url: {url}')
+
+            # Send the POST request within the with block to ensure file is open
+            response = requests_retry_session().post(url, files=files, data=data, timeout=600)
+            #response = requests.post(url, files=files, data=data, timeout=600)
+            response.raise_for_status()  # Ensure HTTP errors are caught
+
+        # Handle successful upload outside the with block
+        
+        
+        update_job_status(redis_client,job_id,'finished')
+        use_credit(user_email,'song')
+        redis_client.decr(WORKER_COUNT_KEY)
+        if pod_id:
+            terminate_pod(pod_id)
+        return True, "File uploaded successfully."
+
+    except requests.exceptions.RequestException as e:
+        # Handle specific request exceptions
+        
+        #app.logger.info('timeout occured')
+        app.logger.info("Timeout occurred, checking file presence in cloud storage...")
+        file_key = f'{job_id}.mp3'
+        app.logger.info(f'file ={file_key}')
+        
+        
+        app.logger.info(f'Upload failed: {e}')
+        update_job_status(redis_client,job_id,'failed')
+        redis_client.decr(WORKER_COUNT_KEY)
+        
+        if pod_id:
+            terminate_pod(pod_id)
+        return False, str(e)
+
+    except Exception as e:
+        # Handle other exceptions
+        app.logger.info("error occured .now check file presence in space")
+        file_key = f'{job_id}.mp3'
+        app.logger.info(f'file ={file_key}')
+        
+        app.logger.error(f'Conversion failed: {e}')
+        
+        update_job_status(redis_client,job_id,'failed')
+        redis_client.decr(WORKER_COUNT_KEY)
+        if pod_id:
+            terminate_pod(pod_id)
+        return False, str(e)
+
+
+
    
 
 def download_and_save_mp3(url,audio_id, save_path):
