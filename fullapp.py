@@ -17,7 +17,7 @@ import os
 import uuid
 from rq import Worker, Queue, Connection
 from redis import Redis
-from upload import upload_to_do,download_from_do,download_from_do_with_job_id,download_for_video
+from upload import upload_to_do,download_from_do,download_from_do_with_job_id,download_for_video,generate_presigned_url
 from werkzeug.utils import secure_filename
 from multiprocessing import Process
 from credit import get_user_credits,update_user_credits,use_credit,add_credits
