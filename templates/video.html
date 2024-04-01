@@ -118,18 +118,19 @@
         <div>
     <label>Choose a Source Image:</label>
     <div>
-        <input type="radio" id="cartoonImage" name="source_image_filename" value="cartoon.jpg" required>
+        <input type="radio" id="cartoonImage" name="source_image_filename" value="local:cartoon.jpg" required>
         <label for="cartoonImage"><img src="{{ url_for('static', filename='cartoon.jpg') }}" alt="Cartoon Image"></label>
     </div>
     <div>
-        <input type="radio" id="manImage" name="source_image_filename" value="man.png">
+        <input type="radio" id="manImage" name="source_image_filename" value="local:man.png">
         <label for="manImage"><img src="{{ url_for('static', filename='man.png') }}" alt="Anime Image"></label>
     </div>
+    <div>
+        <input type="radio" id="manImage1" name="source_image_filename" value="remote:{{ image_name }}" required>
+        <label for="manImage1"><img src="{{ image_url }}" alt="Secure Image"></label>
+    </div>	
 	
-   <div>
-        <input type="radio" id="manImage1" name="source_image_filename" value="man1.png">
-        <label for="manImage1"><img src="{{ url_for('static', filename='man1.png') }}" alt="Anime Image"></label>
-    </div>
+
  
 
  <!-- Add more images as needed -->

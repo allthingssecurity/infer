@@ -813,11 +813,20 @@ def gen_video():
                     return jsonify({'error': 'You are on the waitlist but not yet authorized. Please wait for authorization.'}), 403
                 else:
                     return jsonify({'error': 'You must join the waitlist to access this feature.'}), 403
+                    
+                    
+        bucket_name = 'sing'
+        object_name = f"{user_email}_capture.jpg"  # This could also be dynamically determined
+        image_url = generate_presigned_url(bucket_name, object_name, expiration=3600)  # 1 hour validity
+
         model_credits=get_user_credits(user_email,'model')
         song_credits=get_user_credits(user_email,'song')
         video_credits=get_user_credits(user_email,'video')
         
-        return render_template('video.html',model_credits=model_credits,song_credits=song_credits,video_credits=video_credits)
+        return render_template('video.html',model_credits=model_credits,song_credits=song_credits,video_credits=video_credits,image_url=image_url,image_name=object_name)
+
+
+
 
 
 
@@ -1396,7 +1405,21 @@ def generate_video():
             if status_code == 200:
             # Check if the post request has the file parts
                 source_image_filename = request.form.get('source_image_filename')
-                source_image_path = os.path.join(app.static_folder, source_image_filename)
+                
+                if not source_image_filename:
+                    return "No image selected", 400
+                    
+                prefix, image_name = source_image_filename.split(':', 1)
+                
+                if prefix == 'remote':
+                
+                    source_image_path=download_from_do(image_name)
+                    
+                else :
+                    
+                    source_image_path = os.path.join(app.static_folder, source_image_filename)
+                    
+                
                 app.logger.info(f"image path={source_image_path}")
                 
                 
