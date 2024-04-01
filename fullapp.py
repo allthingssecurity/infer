@@ -1291,8 +1291,14 @@ def upload_image():
     if file:
         filename = secure_filename(file.filename)
         email_prefix = secure_filename(email.split('@')[0]) # Basic sanitization
+        
         temp_filename = f"{email_prefix}_{filename}"
-        temp_path = os.path.join(app.config['UPLOAD_FOLDER'], temp_filename)
+        
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+        temp_path = os.path.join(UPLOAD_FOLDER, temp_filename)
+        
+        
         
         file.save(temp_path)
         
