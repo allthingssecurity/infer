@@ -7,6 +7,7 @@
 
 <video id="video" width="640" height="480" autoplay></video>
 <button id="capture">Capture</button>
+<button id="upload" style="display:none;">Upload</button> <!-- Upload button added -->
 <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
 
 <script>
@@ -24,19 +25,20 @@
     var canvas = document.getElementById('canvas');
     var context = canvas.getContext('2d');
     var captureButton = document.getElementById('capture');
+    var uploadButton = document.getElementById('upload'); // Get the upload button
 
     captureButton.addEventListener('click', function() {
         context.drawImage(video, 0, 0, 640, 480);
-        video.style.display = 'none';
-        canvas.style.display = 'block';
-        uploadImage();
+        video.style.display = 'none'; // Hide the video element
+        canvas.style.display = 'block'; // Show the canvas
+        uploadButton.style.display = 'inline'; // Show the upload button
     });
 
     // Upload the captured image to the Flask endpoint
-    function uploadImage() {
+    uploadButton.addEventListener('click', function() {
         canvas.toBlob(function(blob) {
             var formData = new FormData();
-            formData.append('file', blob, 'capture.jpg');
+            formData.append('file', blob, 'capture.jpg'); // Use the blob
             
             fetch('/upload-image', {
                 method: 'POST',
@@ -45,12 +47,14 @@
             .then(response => response.json())
             .then(data => {
                 console.log(data);
+                // Hide the upload button again after upload, or show a success message
+                uploadButton.style.display = 'none'; // Optional: Hide upload button after upload
             })
             .catch(error => {
                 console.error('Error:', error);
             });
         }, 'image/jpeg');
-    }
+    });
 </script>
 
 </body>
