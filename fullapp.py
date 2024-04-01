@@ -816,7 +816,14 @@ def gen_video():
                     
                     
         bucket_name = 'sing'
-        object_name = f"{user_email}_capture.jpg"  # This could also be dynamically determined
+        
+        email_prefix = secure_filename(user_email.split('@')[0]) # Basic sanitization
+        
+        #temp_filename = f"{email_prefix}_{filename}"
+        
+        object_name = f"{email_prefix}_capture.jpg"  # This could also be dynamically determined
+        
+        app.logger.info(f"object name for image= {object_name}")
         image_url = generate_presigned_url(bucket_name, object_name, expiration=3600)  # 1 hour validity
 
         model_credits=get_user_credits(user_email,'model')
