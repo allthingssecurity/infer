@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Webcam Capture and Upload</title>
+</head>
+<body>
+
+<video id="video" width="640" height="480" autoplay></video>
+<button id="capture">Capture</button>
+<canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+
+<script>
+    // Access the user's webcam
+    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+        .then(function(stream) {
+            video.srcObject = stream;
+            video.play();
+        })
+        .catch(function(err) {
+            console.log("An error occurred: " + err);
+        });
+
+    var video = document.getElementById('video');
+    var canvas = document.getElementById('canvas');
+    var context = canvas.getContext('2d');
+    var captureButton = document.getElementById('capture');
+
+    captureButton.addEventListener('click', function() {
+        context.drawImage(video, 0, 0, 640, 480);
+        video.style.display = 'none';
+        canvas.style.display = 'block';
+        uploadImage();
+    });
+
+    // Upload the captured image to the Flask endpoint
+    function uploadImage() {
+        canvas.toBlob(function(blob) {
+            var formData = new FormData();
+            formData.append('file', blob, 'capture.jpg');
+            
+            fetch('/upload-image', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }, 'image/jpeg');
+    }
+</script>
+
+</body>
+</html>

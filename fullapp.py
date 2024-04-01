@@ -1275,6 +1275,62 @@ def process_audio():
 
 
 
+@app.route('/upload-image', methods=['POST'])
+def upload_image():
+    # Assume the user's email is sent as part of the form data
+    email = session.get('user_email')
+    
+    
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    
+    if file:
+        filename = secure_filename(file.filename)
+        email_prefix = secure_filename(email.split('@')[0]) # Basic sanitization
+        temp_filename = f"{email_prefix}_{filename}"
+        temp_path = os.path.join(app.config['UPLOAD_FOLDER'], temp_filename)
+        
+        file.save(temp_path)
+        
+        # Now upload to Digital Ocean Space
+        try:
+            response = upload_to_do(temp_path) # Adjust this call based on your function
+            # Optionally, delete the file after upload if you want it to be temporary
+            os.remove(temp_path)
+            return jsonify({'message': 'File uploaded successfully', 'filename': temp_filename}), 200
+        except Exception as e:
+            # Handle exceptions and cleanup if necessary
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+            return jsonify({'error': str(e)}), 500
+
+
+
+@app.route('/image')
+@login_required
+def image():
+    
+    user_email = session.get('user_email')
+    if user_email:
+        models = redis_client.lrange(user_email, 0, -1)  # Get list of models
+        models = [model.decode('utf-8') for model in models]
+        model_credits=get_user_credits(user_email,'model')
+        song_credits=get_user_credits(user_email,'song')
+        video_credits=get_user_credits(user_email,'video')
+        return render_template('image.html', models=models,model_credits=model_credits,song_credits=song_credits,video_credits=video_credits)
+    else:
+        models = []
+        model_credits=get_user_credits(user_email,'model')
+        song_credits=get_user_credits(user_email,'song')
+        video_credits=get_user_credits(user_email,'video')
+        return render_template('image.html', models=models,model_credits=model_credits,song_credits=song_credits,video_credits=video_credits)
+
+
+
 
 
 def start_worker():
