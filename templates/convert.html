@@ -159,21 +159,13 @@
         }
 		
 function checkProgress(jobId) {
-    // Create a new progress container for this job if it doesn't exist
-    let jobProgressContainer = document.getElementById(`progress-container-${jobId}`);
-    if (!jobProgressContainer) {
-        jobProgressContainer = document.createElement('div');
-        jobProgressContainer.id = `progress-container-${jobId}`;
-        jobProgressContainer.innerHTML = `
-            <p>Job ID: ${jobId}</p>
-            <div style="width: 100%; background-color: grey; margin-top: 10px;">
-                <div id="progress-bar-${jobId}" style="width: 0%; height: 20px; background-color: green;"></div>
-            </div>
-        `;
-        document.getElementById('active-jobs-container').appendChild(jobProgressContainer);
+    const progressBarId = `progress-bar-${jobId}`;
+    const progressBar = document.getElementById(progressBarId);
+    if (!progressBar) {
+        console.error(`Progress bar for job ${jobId} not found.`);
+        return; // Exit the function if the progress bar doesn't exist
     }
 
-    const progressBar = document.getElementById(`progress-bar-${jobId}`);
     const progressInterval = setInterval(() => {
         fetch(`/job_progress/${jobId}`)
         .then(response => response.json())
@@ -181,7 +173,7 @@ function checkProgress(jobId) {
             if (data.progress >= 100) {
                 clearInterval(progressInterval);
                 progressBar.style.width = '100%';
-                // Optionally, remove or update the job's progress container
+                // Consider removing the job container or marking it as complete
             } else {
                 progressBar.style.width = `${data.progress}%`;
             }
@@ -310,6 +302,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             activeJobsContainer.innerHTML += '<p>No active jobs found.</p>';
             return;
         }
+
+        // Clear existing progress bars
+        activeJobsContainer.innerHTML = '<h3>Running Jobs</h3>';
 
         activeJobs.forEach(job => {
             // Ensuring each progress bar and its container have unique IDs based on the job ID

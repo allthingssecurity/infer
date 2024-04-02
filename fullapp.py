@@ -1532,8 +1532,8 @@ def get_running_jobs():
         progress = redis_client.get(f'{job_id}:progress')
 
         # Initialize progress as 100 if the job is complete but progress key is missing
-        if job_status in ['complete', 'failed'] and progress is None:
-            progress = 100 if job_status == 'complete' else -1
+        if job_status in ['finished', 'failed'] and progress is None:
+            progress = 100 if job_status == 'finished' else -1
         
         # Append job info including jobs that are not active but have relevant status
         if progress is not None:
