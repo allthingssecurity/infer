@@ -41,6 +41,53 @@
         form input[type="text"], form input[type="file"], form select, form input[type="submit"], .record-controls button {
             max-width: 100%;
         }
+		
+		
+		
+		
+.loader {
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -60px 0 0 -60px; /* Offset to center the spinner */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+#progress-container {
+  width: 100%;
+  background-color: #ddd;
+}
+
+#progress-bar {
+  width: 0%;
+  height: 30px;
+  background-color: #4CAF50;
+  text-align: center;
+  line-height: 30px;
+  color: white; /* For text inside the progress bar, if any */
+}
+
+
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
         @media (max-width: 599px) {
             .left-aligned-container {
                 max-width: none;
