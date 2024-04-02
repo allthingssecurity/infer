@@ -158,29 +158,41 @@
             }
         }
 		
-		function checkProgress(jobId) {
-    // Function to periodically check the progress of the conversion job
+function checkProgress(jobId) {
+    // Create a new progress container for this job if it doesn't exist
+    let jobProgressContainer = document.getElementById(`progress-container-${jobId}`);
+    if (!jobProgressContainer) {
+        jobProgressContainer = document.createElement('div');
+        jobProgressContainer.id = `progress-container-${jobId}`;
+        jobProgressContainer.innerHTML = `
+            <p>Job ID: ${jobId}</p>
+            <div style="width: 100%; background-color: grey; margin-top: 10px;">
+                <div id="progress-bar-${jobId}" style="width: 0%; height: 20px; background-color: green;"></div>
+            </div>
+        `;
+        document.getElementById('active-jobs-container').appendChild(jobProgressContainer);
+    }
+
+    const progressBar = document.getElementById(`progress-bar-${jobId}`);
     const progressInterval = setInterval(() => {
-        fetch(`/job_progress/${jobId}`) // Flask route to get job progress
+        fetch(`/job_progress/${jobId}`)
         .then(response => response.json())
         .then(data => {
             if (data.progress >= 100) {
-                clearInterval(progressInterval); // Stop checking if complete
-                document.getElementById('spinner').style.display = 'none';
-                alert('Conversion complete!');
+                clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+                // Optionally, remove or update the job's progress container
+            } else {
+                progressBar.style.width = `${data.progress}%`;
             }
-            document.getElementById('progress-bar').style.width = `${data.progress}%`;
-			
-			if (data.progress >= 100) {
-            clearInterval(interval);
-            // Show completion link
-            document.getElementById('completion-container').style.display = 'block';
-            document.getElementById('completion-link').href = `/download/${jobId}`; // Set the download link URL
-        }
-			
+        })
+        .catch(error => {
+            console.error('Error fetching job progress:', error);
+            clearInterval(progressInterval);
         });
-    }, 1000); // Check every second
+    }, 1000);
 }
+
 		
 		
     </script>
