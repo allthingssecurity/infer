@@ -75,7 +75,10 @@
             <tr>
                 <td>{{ job['job_id'] }}</td>
                 <td>{{ job.get('filename', 'N/A') }}</td>
-                <td>{{ job.get('submission_time', 'N/A') }}</td>
+				        <td data-submission-time="{{ job.get('submission_time', 'N/A') }}" data-server-timezone="{{ local_timezone }}">
+            {{ job.get('submission_time', 'N/A') }}
+        </td>
+               
                 <td>{{ job['status'] }}</td>
                 <td>
                     {% if job['status'] == 'finished' %}
@@ -112,6 +115,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('td[data-submission-time]').forEach(td => {
+        const serverTime = td.getAttribute('data-submission-time');
+        const serverTimezone = td.getAttribute('data-server-timezone'); // This is actually not used since we're assuming UTC
+        if (serverTime && serverTime !== 'N/A') {
+            // Assuming the server time is in UTC and in a format that Date.parse() can handle
+            const date = new Date(serverTime + ' UTC');
+            td.textContent = date.toLocaleString(); // Converts to client's local timezone and updates the text
+        }
+    });
+});
+
 </script>
 
 

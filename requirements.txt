@@ -17,3 +17,4 @@ noisereduce
 soundfile
 pytube
 moviepy
+tzlocal

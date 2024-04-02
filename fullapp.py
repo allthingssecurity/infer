@@ -37,6 +37,7 @@ import magic
 import subprocess
 from quality import adjust_loudness
 
+from tzlocal import get_localzone # Import tzlocal
 #import librosa
 #import soundfile as sf
 #import pyrubberband as pyrb
@@ -629,8 +630,9 @@ def get_jobs1():
     formatted_video_jobs = {key.decode('utf-8'): value.decode('utf-8') for key, value in video_jobs.items()}
     model_credits=get_user_credits(user_email,'model')
     song_credits=get_user_credits(user_email,'song')
+    local_timezone = str(get_localzone()) # Get the server's timezone
     
-    return render_template('job-tracking.html', training_jobs=formatted_training_jobs, inference_jobs=formatted_inference_jobs,video_jobs=formatted_video_jobs,model_credits=model_credits,song_credits=song_credits)
+    return render_template('job-tracking.html', training_jobs=formatted_training_jobs, inference_jobs=formatted_inference_jobs,video_jobs=formatted_video_jobs,model_credits=model_credits,song_credits=song_credits,local_timezone=local_timezone)
 
 
 @app.route('/recharge_credits', methods=['POST'])
