@@ -17,7 +17,7 @@ from rq import get_current_job
 from credit import get_user_credits,update_user_credits,use_credit
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-from status import set_job_attributes,update_job_status,get_job_attributes
+from status import set_job_attributes,update_job_status,get_job_attributes,add_job_to_user_index,get_user_job_ids,update_job_progress,get_job_progress
 from youtube import download_video_as_mp3
 runpod.api_key =os.getenv("RUNPOD_KEY")
 logging.basicConfig(level=logging.INFO)
@@ -462,6 +462,7 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         
         bucket_name = "sing"
         pod_id = create_pod_and_get_id("infer", "smjain/infer:v6", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
+        update_job_progress(redis_client, job_id, 30)  # Progress updated to 10%
         app.logger.info('After creating pod for training')
 
         if not pod_id:
@@ -470,14 +471,14 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         check_pod_is_ready(pod_id)
         
         app.logger.info('checked that pod is ready now')
-        
+        update_job_progress(redis_client, job_id, 60)  # Progress updated to 10%
         
         
         
         url = f'https://{pod_id}-5000.proxy.runpod.net/convert_voice'
         app.logger.info('before call to upload files for training done')
 
-        time.sleep(20)
+        time.sleep(10)
         
     # Open the file and prepare for the POST request
         with open(file_path, 'rb') as file:
@@ -494,6 +495,9 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         
         
         update_job_status(redis_client,job_id,'finished')
+        update_job_progress(redis_client, job_id, 100)  # Progress updated to 10%
+        redis_client.delete(f'{job_id}:progress')
+
         use_credit(user_email,'song')
         redis_client.decr(WORKER_COUNT_KEY)
         if pod_id:
@@ -511,8 +515,9 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         
         app.logger.info(f'Upload failed: {e}')
         update_job_status(redis_client,job_id,'failed')
+        update_job_progress(redis_client, job_id, 0)  # Progress updated to 10%
         redis_client.decr(WORKER_COUNT_KEY)
-        
+        redis_client.delete(f'{job_id}:progress')
         if pod_id:
             terminate_pod(pod_id)
         return False, str(e)

@@ -26,7 +26,7 @@ import requests
 from pydub import AudioSegment
 import io
 from admin import admin_blueprint
-from status import set_job_attributes,update_job_status,get_job_attributes,add_job_to_user_index,get_user_job_ids
+from status import set_job_attributes,update_job_status,get_job_attributes,add_job_to_user_index,get_user_job_ids,update_job_progress,get_job_progress
 from pydub import AudioSegment
 import io
 from rq.job import Job
@@ -925,7 +925,7 @@ def start_infer():
         app.logger.info("enqueued the job ")
         app.logger.info(f"Job ID: {job.get_id()}")
         app.logger.info(f"Job Status: {job.get_status()}")
-
+        
         type_of_job = "infer"
         job_id = job.id
         add_job_to_user_index(redis_client, user_email, job_id)
@@ -940,12 +940,25 @@ def start_infer():
         
         # Update job status
         update_job_status(redis_client, job_id, 'queued')
+        update_job_progress(redis_client, job_id, 10)  # Progress updated to 10%
         app.logger.info(f"updated redis for job id {job.id}")
 
         return jsonify({'message': 'File uploaded successfully for conversion', 'job_id': job.get_id()})
     else:
         app.logger.info(f"max song conversion exceeded for the user {user_email}. Buy credits")
         return jsonify({'message': 'You have reached max limits for song conversion. Buy credits'})
+
+
+
+
+
+
+@app.route('/job_progress/<job_id>')
+@login_required
+def job_progress(job_id):
+    progress = get_job_progress(redis_client, job_id)  # Implement this based on how you track progress
+    return jsonify({'progress': progress})
+
 
 
 

@@ -81,3 +81,19 @@ def update_job_status(redis_client, job_id, new_status):
     key = f"job:{job_id}"
     redis_client.hset(key, "status", new_status)
 
+
+def update_job_progress(redis_client, job_id, progress):
+    """
+    Update the job progress in Redis.
+
+    :param redis_client: The Redis connection instance.
+    :param job_id: The ID of the job whose progress is being updated.
+    :param progress: The progress percentage to set.
+    """
+    redis_client.set(f'{job_id}:progress', progress)
+
+
+def get_job_progress(redis_client, job_id):
+    # Example: Retrieve progress from Redis. Implement based on your application's logic.
+    progress = redis_client.get(f'{job_id}:progress')
+    return int(progress) if progress else 0

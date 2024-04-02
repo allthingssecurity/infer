@@ -62,6 +62,14 @@
     <script>
         async function uploadFile() {
             // Validate if a file has been selected
+			
+			    document.getElementById('spinner').style.display = 'block';
+
+    // Reset and show the progress bar
+    document.getElementById('progress-bar').style.width = '0%';
+    document.getElementById('progress-container').style.display = 'block';
+
+			
             const link = document.getElementById('youtube_link');
             if (!link.value) {
                 alert('Please input a youtube link');
@@ -87,6 +95,7 @@
                 
                 if (data.job_id) {
                     alert('Your request is submitted. It will take us few minutes to generate the song for you. Keep a check on job status');
+					 checkProgress(data.job_id); 
                 } else {
                     alert(data.message || 'Failed to start the job. Either file format is not proper or file is too big'); // Fallback message if no specific message is provided
                 }
@@ -95,6 +104,24 @@
                 alert('An error occurred while uploading the file.');
             }
         }
+		
+		function checkProgress(jobId) {
+    // Function to periodically check the progress of the conversion job
+    const progressInterval = setInterval(() => {
+        fetch(`/job_progress/${jobId}`) // Flask route to get job progress
+        .then(response => response.json())
+        .then(data => {
+            if (data.progress >= 100) {
+                clearInterval(progressInterval); // Stop checking if complete
+                document.getElementById('spinner').style.display = 'none';
+                alert('Conversion complete!');
+            }
+            document.getElementById('progress-bar').style.width = `${data.progress}%`;
+        });
+    }, 1000); // Check every second
+}
+		
+		
     </script>
 </head>
 <body>
@@ -138,6 +165,21 @@
                 <a href="/logout" class="logout-btn">Logout</a>
             </div>
         </div>
+		
+		<!-- Progress Spiral -->
+<div id="spinner" style="display: none;">
+    <div class="loader"></div>
+</div>
+
+<!-- Progress Bar -->
+<div id="progress-container" style="display: none; width: 100%; background-color: grey;">
+    <div id="progress-bar" style="width: 0%; height: 30px; background-color: green;"></div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+		
+		
     </header>
 <div class="left-aligned-container">
 <h2>Upload YouTube Link and Select Speaker</h2>
