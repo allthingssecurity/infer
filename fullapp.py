@@ -1511,36 +1511,34 @@ def generate_video():
 @login_required
 def get_jobs():
     user_email = session.get('user_email')
-    selected_job_type = request.args.get('job_type')
-    
-    job_ids = get_user_job_ids(redis_client, user_email)
+    selected_job_type = request.args.get('job_type')  # Get the job type from query parameters
     jobs_data = {}
 
-    for job_id in job_ids:
-        job_attributes = get_job_attributes(redis_client, job_id)
-        
-        if job_attributes:
-            job_attributes['job_id'] = job_id
-            job_attributes['submission_time'] = datetime.strptime(job_attributes['submission_time'], '%Y-%m-%d %H:%M:%S')
+    if selected_job_type:  # Only proceed if a job type is selected
+        job_ids = get_user_job_ids(redis_client, user_email)
 
-            job_type = job_attributes.get('type', 'unknown')
+        for job_id in job_ids:
+            job_attributes = get_job_attributes(redis_client, job_id)
             
-            if selected_job_type and selected_job_type != job_type:
-                continue 
-            
-            if job_type not in jobs_data:
-                jobs_data[job_type] = []
-            jobs_data[job_type].append(job_attributes)
+            if job_attributes and job_attributes.get('type') == selected_job_type:
+                job_attributes['job_id'] = job_id
+                job_attributes['submission_time'] = datetime.strptime(job_attributes['submission_time'], '%Y-%m-%d %H:%M:%S')
+
+                if selected_job_type not in jobs_data:
+                    jobs_data[selected_job_type] = []
+                jobs_data[selected_job_type].append(job_attributes)
+
+        for jobs in jobs_data.values():
+            jobs.sort(key=lambda x: x['submission_time'], reverse=True)
+            jobs[:5]  # Keep only the top 5
+
+    model_credits = get_user_credits(user_email, 'model')
+    song_credits = get_user_credits(user_email, 'song')
+    video_credits = get_user_credits(user_email, 'video')
     
-    for job_type, jobs in jobs_data.items():
-        jobs.sort(key=lambda x: x['submission_time'], reverse=True) # Sort by submission time, newest first
-        jobs_data[job_type] = jobs[:5] # Keep only the top 5
-    
-    model_credits=get_user_credits(user_email,'model')
-    song_credits=get_user_credits(user_email,'song')
-    video_credits=get_user_credits(user_email,'video')
-    
-    return render_template('job-tracking.html', jobs_data=jobs_data,model_credits=model_credits,song_credits=song_credits)
+    return render_template('job-tracking.html', jobs_data=jobs_data, selected_job_type=selected_job_type, model_credits=model_credits, song_credits=song_credits, video_credits=video_credits)
+
+
 
 
 @app.route('/get_samples', methods=['GET'])
