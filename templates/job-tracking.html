@@ -4,17 +4,55 @@
     <meta charset="UTF-8">
     <title>Job Tracking</title>
 	<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <script>
-      async function refreshJobs() {
-    const selectedJobType = document.getElementById('jobTypeSelect').value; // Get the selected job type from the dropdown
-    const url = '/get-jobs' + (selectedJobType ? '?job_type=' + selectedJobType : ''); // Construct the URL with the job_type query parameter if a job type is selected
-    
-    const response = await fetch(url);
-    const html = await response.text();
-    document.open();
-    document.write(html);
-    document.close();
+	
+	<!-- Add this style in your <head> section or external CSS file -->
+<style>
+.loader {
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+  margin: auto;
+  position: fixed; /* Fixed to be in the middle of the screen */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999; /* Ensure it's above other content */
 }
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+	
+	
+    <script>
+    async function refreshJobs() {
+    // Show the spinner
+    document.getElementById('spinner').style.display = 'block';
+
+    const selectedJobType = document.getElementById('jobTypeSelect').value;
+    const url = '/get-jobs' + (selectedJobType ? '?job_type=' + selectedJobType : '');
+
+    try {
+        const response = await fetch(url);
+        const html = await response.text();
+        document.open();
+        document.write(html);
+        document.close();
+    } catch (error) {
+        console.error('Error fetching jobs:', error);
+        alert('Failed to refresh jobs.');
+    } finally {
+        // Hide the spinner regardless of the request outcome
+        document.getElementById('spinner').style.display = 'none';
+    }
+}
+
     </script>
 </head>
 <body>
@@ -57,6 +95,10 @@
                 <a href="/logout" class="logout-btn">Logout</a>
             </div>
         </div>
+		
+	<div id="spinner" style="display: none;">
+    <div class="loader"></div>
+</div>
     </header>
     <h2>Job Tracking</h2>
     
