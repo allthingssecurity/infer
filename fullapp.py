@@ -1520,10 +1520,16 @@ def get_jobs():
         
         if job_attributes:
             job_attributes['job_id'] = job_id
+            job_attributes['submission_time'] = datetime.strptime(job_attributes['submission_time'], '%Y-%m-%d %H:%M:%S')
+
             job_type = job_attributes.get('type', 'unknown')
             if job_type not in jobs_data:
                 jobs_data[job_type] = []
             jobs_data[job_type].append(job_attributes)
+    
+    for job_type, jobs in jobs_data.items():
+        jobs.sort(key=lambda x: x['submission_time'], reverse=True) # Sort by submission time, newest first
+        jobs_data[job_type] = jobs[:5] # Keep only the top 5
     
     model_credits=get_user_credits(user_email,'model')
     song_credits=get_user_credits(user_email,'song')
