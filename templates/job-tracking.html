@@ -132,6 +132,19 @@
         </td>
                
                 <td>{{ job['status'] }}</td>
+				
+				  <td>
+            {% if job['status'] not in ['finished', 'failed'] %}
+                <!-- Placeholder for progress bar, to be filled by JavaScript -->
+                <div id="progress-bar-container-{{ job['job_id'] }}">
+                    <div id="progress-bar-{{ job['job_id'] }}" style="width: 0%; height: 20px; background-color: green;"></div>
+                </div>
+                <script>checkProgress('{{ job['job_id'] }}');</script>
+            {% else %}
+                {{ job['status'] | capitalize }}
+            {% endif %}
+        </td>
+				
                 <td>
                     {% if job['status'] == 'finished' %}
                         {% if job_type == 'video' %}
@@ -179,6 +192,38 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+
+function checkProgress(jobId) {
+    const progressBarId = `progress-bar-${jobId}`;
+    const progressBar = document.getElementById(progressBarId);
+	//progressBar.style.width = '1%';
+    if (!progressBar) {
+        console.error(`Progress bar for job ${jobId} not found.`);
+        return; // Exit the function if the progress bar doesn't exist
+    }
+
+    const progressInterval = setInterval(() => {
+        fetch(`/job_progress/${jobId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.progress >= 100 || data.status === 'complete') {
+                clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+				progressBar.style.backgroundColor = '#4CAF50';
+                // Consider removing the job container or marking it as complete
+            } else {
+                progressBar.style.width = `${data.progress}%`;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching job progress:', error);
+            clearInterval(progressInterval);
+        });
+    }, 10000);
+}
+
+
 
 </script>
 

@@ -145,8 +145,8 @@
                 if (data.job_id) {
 				    document.getElementById('spinner').style.display = 'none';
                     alert('Your request is submitted. It will take us few minutes to generate the song for you. Keep a check on job status');
-					document.getElementById('progress-container').style.display = 'block';
-					checkProgress(data.job_id); 
+					//document.getElementById('progress-container').style.display = 'block';
+					//checkProgress(data.job_id); 
                 } else {
 				      document.getElementById('spinner').style.display = 'none';
                     alert(data.message || 'Failed to start the job. Either file format is not proper or file is too big'); // Fallback message if no specific message is provided
@@ -158,34 +158,7 @@
             }
         }
 		
-function checkProgress(jobId) {
-    const progressBarId = `progress-bar-${jobId}`;
-    const progressBar = document.getElementById(progressBarId);
-	progressBar.style.width = '1%';
-    if (!progressBar) {
-        console.error(`Progress bar for job ${jobId} not found.`);
-        return; // Exit the function if the progress bar doesn't exist
-    }
 
-    const progressInterval = setInterval(() => {
-        fetch(`/job_progress/${jobId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.progress >= 100 || data.status === 'complete') {
-                clearInterval(progressInterval);
-                progressBar.style.width = '100%';
-				progressBar.style.backgroundColor = '#4CAF50';
-                // Consider removing the job container or marking it as complete
-            } else {
-                progressBar.style.width = `${data.progress}%`;
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching job progress:', error);
-            clearInterval(progressInterval);
-        });
-    }, 10000);
-}
 
 		
 		
