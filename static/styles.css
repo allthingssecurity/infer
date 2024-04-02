@@ -1,10 +1,15 @@
 body, html {
     margin: 0;
     padding: 0;
-    background-color: black; /* Set background color to black */
-    color: white; /* Ensure text is visible against the dark background */
+    background-image: url('background.jpg'); /* Use the background image */
+    background-color: black; /* Fallback color */
+    background-size: cover; /* Cover the entire page */
+    background-position: center; /* Center the background image */
+    background-attachment: fixed; /* Fix the background image during scroll */
+    color: #333; /* Dark gray text for better visibility */
     font-family: Arial, sans-serif;
 }
+
 
 .navbar {
     display: flex;
