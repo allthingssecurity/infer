@@ -305,22 +305,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         const response = await fetch('/running_jobs');
         const activeJobs = await response.json();
 
+        if (activeJobs.length === 0) {
+            // If there are no active jobs, display a message
+            activeJobsContainer.innerHTML += '<p>No active jobs found.</p>';
+            return;
+        }
+
         activeJobs.forEach(job => {
-            // Create a progress bar for each active job
+            // Ensuring each progress bar and its container have unique IDs based on the job ID
+            const jobContainerId = `job-container-${job.job_id}`;
+            const progressBarId = `progress-bar-${job.job_id}`;
+
             const progressBarContainer = document.createElement('div');
+            progressBarContainer.id = jobContainerId;
             progressBarContainer.innerHTML = `
                 <p>Job ID: ${job.job_id}</p>
                 <div style="width: 100%; background-color: grey;">
-                    <div style="width: ${job.progress}%; height: 20px; background-color: green;"></div>
+                    <div id="${progressBarId}" style="width: ${job.progress}%; height: 20px; background-color: green;"></div>
                 </div>
             `;
             activeJobsContainer.appendChild(progressBarContainer);
             
-            // Optionally, start monitoring progress for these jobs as well
+            // Starting to monitor progress for these jobs
             checkProgress(job.job_id);
         });
     } catch (error) {
         console.error('Failed to fetch active jobs:', error);
+        activeJobsContainer.innerHTML += '<p>Error fetching active jobs.</p>';
     }
 });
 
