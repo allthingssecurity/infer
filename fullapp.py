@@ -1520,6 +1520,22 @@ def generate_video():
 
 
 
+@app.route('/running_jobs')
+@login_required
+def get_running_jobs():
+    user_email = session.get('user_email')
+    job_ids = get_user_job_ids(redis_client, user_email)  # Retrieve all job IDs for the user
+    active_jobs = []
+
+    for job_id in job_ids:
+        progress = redis_client.get(f'{job_id}:progress')
+        if progress and int(progress) < 100:
+            active_jobs.append({'job_id': job_id, 'progress': int(progress)})
+
+    return jsonify(active_jobs)
+
+
+
 @app.route('/get-jobs')
 @login_required
 def get_jobs():

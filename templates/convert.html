@@ -259,6 +259,8 @@
     <div id="completion-container" style="display: none; margin-top: 10px;">
         <a href="#" id="completion-link">Download Result</a>
     </div>
+<!-- Container for Active Job Progress Bars -->
+<div id="active-jobs-container"></div>
 
 </div>
     <div class="left-aligned-container">
@@ -281,6 +283,35 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const activeJobsContainer = document.getElementById('active-jobs-container');
+    
+    try {
+        const response = await fetch('/running_jobs');
+        const activeJobs = await response.json();
+
+        activeJobs.forEach(job => {
+            // Create a progress bar for each active job
+            const progressBarContainer = document.createElement('div');
+            progressBarContainer.innerHTML = `
+                <p>Job ID: ${job.job_id}</p>
+                <div style="width: 100%; background-color: grey;">
+                    <div style="width: ${job.progress}%; height: 20px; background-color: green;"></div>
+                </div>
+            `;
+            activeJobsContainer.appendChild(progressBarContainer);
+            
+            // Optionally, start monitoring progress for these jobs as well
+            checkProgress(job.job_id);
+        });
+    } catch (error) {
+        console.error('Failed to fetch active jobs:', error);
+    }
+});
+
 </script>
 
 </body>
