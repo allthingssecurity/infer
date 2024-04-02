@@ -1,7 +1,7 @@
 body, html {
     margin: 0;
     padding: 0;
-    background-image: url('background.jpg'); /* Use the background image */
+    background-image: url('background.png'); /* Use the background image */
     background-color: black; /* Fallback color */
     background-size: cover; /* Cover the entire page */
     background-position: center; /* Center the background image */
