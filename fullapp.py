@@ -1511,6 +1511,7 @@ def generate_video():
 @login_required
 def get_jobs():
     user_email = session.get('user_email')
+    selected_job_type = request.args.get('job_type')
     
     job_ids = get_user_job_ids(redis_client, user_email)
     jobs_data = {}
@@ -1523,6 +1524,10 @@ def get_jobs():
             job_attributes['submission_time'] = datetime.strptime(job_attributes['submission_time'], '%Y-%m-%d %H:%M:%S')
 
             job_type = job_attributes.get('type', 'unknown')
+            
+            if selected_job_type and selected_job_type != job_type:
+                continue 
+            
             if job_type not in jobs_data:
                 jobs_data[job_type] = []
             jobs_data[job_type].append(job_attributes)
