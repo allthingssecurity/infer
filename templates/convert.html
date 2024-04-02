@@ -114,7 +114,9 @@
 
     // Reset and show the progress bar
     document.getElementById('progress-bar').style.width = '0%';
-    document.getElementById('progress-container').style.display = 'block';
+    //document.getElementById('progress-container').style.display = 'block';
+	    document.getElementById('progress-container').style.display = 'none'; // Hide initially; show only when job starts
+
 
 			
             const link = document.getElementById('youtube_link');
@@ -141,14 +143,18 @@
                 const data = await response.json();
                 
                 if (data.job_id) {
+				    document.getElementById('spinner').style.display = 'none';
                     alert('Your request is submitted. It will take us few minutes to generate the song for you. Keep a check on job status');
+					document.getElementById('progress-container').style.display = 'block';
 					 checkProgress(data.job_id); 
                 } else {
+				      document.getElementById('spinner').style.display = 'none';
                     alert(data.message || 'Failed to start the job. Either file format is not proper or file is too big'); // Fallback message if no specific message is provided
                 }
             } catch (error) {
                 console.error("Error submitting the form: ", error);
                 alert('An error occurred while uploading the file.');
+				 document.getElementById('spinner').style.display = 'none';
             }
         }
 		
@@ -164,6 +170,14 @@
                 alert('Conversion complete!');
             }
             document.getElementById('progress-bar').style.width = `${data.progress}%`;
+			
+			if (progress >= 100) {
+            clearInterval(interval);
+            // Show completion link
+            document.getElementById('completion-container').style.display = 'block';
+            document.getElementById('completion-link').href = `/download/${jobId}`; // Set the download link URL
+        }
+			
         });
     }, 1000); // Check every second
 }
@@ -219,9 +233,6 @@
 </div>
 
 <!-- Progress Bar -->
-<div id="progress-container" style="display: none; width: 100%; background-color: grey;">
-    <div id="progress-bar" style="width: 0%; height: 30px; background-color: green;"></div>
-</div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
@@ -241,6 +252,14 @@
     </select><br><br>
     <button type="button" onclick="uploadFile()">Upload Link</button>
 </form>
+   <div id="progress-container" style="display: none; width: 100%; background-color: grey; margin-top: 10px;">
+        <div id="progress-bar" style="width: 0%; height: 20px; background-color: green;"></div> <!-- Smaller height for a smaller bar -->
+    </div>
+    <!-- Container for Completion Link -->
+    <div id="completion-container" style="display: none; margin-top: 10px;">
+        <a href="#" id="completion-link">Download Result</a>
+    </div>
+
 </div>
     <div class="left-aligned-container">
         <a href="/get-jobs">Go to Job Tracking Page</a>
