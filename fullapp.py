@@ -1511,11 +1511,12 @@ def generate_video():
 @login_required
 def get_jobs():
     user_email = session.get('user_email')
-    selected_job_type = request.args.get('job_type')  # Get the job type from query parameters
+    selected_job_type = request.args.get('job_type', None)  # Get the job type from query parameters, default to None
     jobs_data = {}
 
     if selected_job_type:  # Only proceed if a job type is selected
         job_ids = get_user_job_ids(redis_client, user_email)
+        all_jobs = []
 
         for job_id in job_ids:
             job_attributes = get_job_attributes(redis_client, job_id)
@@ -1523,20 +1524,19 @@ def get_jobs():
             if job_attributes and job_attributes.get('type') == selected_job_type:
                 job_attributes['job_id'] = job_id
                 job_attributes['submission_time'] = datetime.strptime(job_attributes['submission_time'], '%Y-%m-%d %H:%M:%S')
+                all_jobs.append(job_attributes)
 
-                if selected_job_type not in jobs_data:
-                    jobs_data[selected_job_type] = []
-                jobs_data[selected_job_type].append(job_attributes)
-
-        for jobs in jobs_data.values():
-            jobs.sort(key=lambda x: x['submission_time'], reverse=True)
-            jobs[:5]  # Keep only the top 5
+        # Sort all jobs by 'submission_time' and limit to the top 5 for each job type
+        all_jobs.sort(key=lambda x: x['submission_time'], reverse=True)
+        jobs_data[selected_job_type] = all_jobs[:5]
 
     model_credits = get_user_credits(user_email, 'model')
     song_credits = get_user_credits(user_email, 'song')
     video_credits = get_user_credits(user_email, 'video')
     
+    # Pass 'selected_job_type' to the template to conditionally display jobs
     return render_template('job-tracking.html', jobs_data=jobs_data, selected_job_type=selected_job_type, model_credits=model_credits, song_credits=song_credits, video_credits=video_credits)
+
 
 
 
