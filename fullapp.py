@@ -1524,15 +1524,28 @@ def generate_video():
 @login_required
 def get_running_jobs():
     user_email = session.get('user_email')
-    job_ids = get_user_job_ids(redis_client, user_email)  # Retrieve all job IDs for the user
-    active_jobs = []
+    job_ids = get_user_job_ids(redis_client, user_email)  # Assume this retrieves all job IDs for the user
+    jobs_info = []
 
     for job_id in job_ids:
+        job_status = get_job_status(redis_client, job_id)  # Assume this retrieves the job's status ('running', 'complete', 'failed')
         progress = redis_client.get(f'{job_id}:progress')
-        if progress and int(progress) < 100:
-            active_jobs.append({'job_id': job_id, 'progress': int(progress)})
 
-    return jsonify(active_jobs)
+        # Initialize progress as 100 if the job is complete but progress key is missing
+        if job_status in ['complete', 'failed'] and progress is None:
+            progress = 100 if job_status == 'complete' else -1
+        
+        # Append job info including jobs that are not active but have relevant status
+        if progress is not None:
+            progress = int(progress)
+            jobs_info.append({
+                'job_id': job_id,
+                'progress': progress,
+                'status': job_status
+            })
+
+    return jsonify(jobs_info)
+
 
 
 

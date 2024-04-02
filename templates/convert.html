@@ -171,7 +171,7 @@
             }
             document.getElementById('progress-bar').style.width = `${data.progress}%`;
 			
-			if (progress >= 100) {
+			if (data.progress >= 100) {
             clearInterval(interval);
             // Show completion link
             document.getElementById('completion-container').style.display = 'block';
