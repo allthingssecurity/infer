@@ -1569,8 +1569,8 @@ def generate_video():
 def get_jobs():
     user_email = session.get('user_email')
     selected_job_type = request.args.get('job_type', None)  # Get the job type from query parameters, default to None
-    #jobs_data = {}
-    all_jobs = []
+    jobs_data = {}
+
     if selected_job_type:  # Only proceed if a job type is selected
     
         redis_key = f'jobs:submission_times:{user_email}:{selected_job_type}'
@@ -1578,7 +1578,7 @@ def get_jobs():
     # Retrieve top 5 job IDs for the specified user and job type
         job_ids = redis_client.zrevrange(redis_key, 0, 4)
         #job_ids = get_user_job_ids(redis_client, user_email)
-        
+        all_jobs = []
 
         for job_id in job_ids:
             job_attributes = get_job_attributes(redis_client, job_id)
@@ -1596,14 +1596,14 @@ def get_jobs():
 
         # Sort all jobs by 'submission_time' and limit to the top 5 for each job type
         #all_jobs.sort(key=lambda x: x['submission_time'], reverse=True)
-        #jobs_data[selected_job_type] = all_jobs[:5]
+        jobs_data[selected_job_type] = all_jobs[:5]
 
     model_credits = get_user_credits(user_email, 'model')
     song_credits = get_user_credits(user_email, 'song')
     video_credits = get_user_credits(user_email, 'video')
     
     # Pass 'selected_job_type' to the template to conditionally display jobs
-    return render_template('job-tracking.html', jobs_data=all_jobs, selected_job_type=selected_job_type, model_credits=model_credits, song_credits=song_credits, video_credits=video_credits)
+    return render_template('job-tracking.html', jobs_data=jobs_data, selected_job_type=selected_job_type, model_credits=model_credits, song_credits=song_credits, video_credits=video_credits)
 
 
 
