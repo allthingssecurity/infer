@@ -1582,12 +1582,16 @@ def get_jobs():
         all_jobs = []
         app.logger.info(f'job ids={job_ids}')
 
-        for job_id in job_ids:
+        for job_id_bytes in job_ids:
+        
+            job_id = job_id_bytes.decode('utf-8')  # Decode from bytes to string
             job_attributes = get_job_attributes(redis_client, job_id)
+        
+            #job_attributes = get_job_attributes(redis_client, job_id)
             app.logger.info("inside loop")
             
-            for attr, value in job_attributes.items():
-                app.logger.info(f"{attr.decode('utf-8')}: {value.decode('utf-8')}")
+            #for attr, value in job_attributes.items():
+            #    app.logger.info(f"{attr.decode('utf-8')}: {value.decode('utf-8')}")
 
             
             
