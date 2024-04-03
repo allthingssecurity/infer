@@ -1600,9 +1600,9 @@ def get_jobs():
                 job_attributes['job_id'] = job_id
                 job_attributes['submission_time'] = datetime.strptime(job_attributes['submission_time'], '%Y-%m-%d %H:%M:%S')
                 
-                progress = redis_client.get(f'{job_id.decode("utf-8")}:progress')
-                progress = int(progress) if progress is not None else 0
-                job_attributes['progress'] = progress
+                #progress = redis_client.get(f'{job_id.decode("utf-8")}:progress')
+                #progress = int(progress) if progress is not None else 0
+                3job_attributes['progress'] = progress
                 
                 
                 all_jobs.append(job_attributes)
