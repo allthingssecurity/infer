@@ -1587,7 +1587,7 @@ def get_jobs():
             app.logger.info("inside loop")
             
             for attr, value in job_attributes.items():
-                print(f"{attr.decode('utf-8')}: {value.decode('utf-8')}")
+                app.logger.info(f"{attr.decode('utf-8')}: {value.decode('utf-8')}")
 
             
             
