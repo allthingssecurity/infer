@@ -929,10 +929,11 @@ def start_infer():
         type_of_job = "infer"
         job_id = job.id
         add_job_to_user_index(redis_client, user_email, job_id)
+        submission_time=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         attributes = {
             "type": type_of_job,
             "filename": youtube_link,
-            "submission_time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            "submission_time": submission_time,
         }
 
         # Set job attributes
@@ -942,6 +943,14 @@ def start_infer():
         update_job_status(redis_client, job_id, 'queued')
         update_job_progress(redis_client, job_id, 10)  # Progress updated to 10%
         app.logger.info(f"updated redis for job id {job.id}")
+        
+        
+        redis_key = f'jobs:submission_times:{user_email}:{type_of_job}'
+        redis_client.zadd(redis_key, {job_id: submission_time})
+        
+        
+        
+        
 
         return jsonify({'message': 'File uploaded successfully for conversion', 'job_id': job.get_id()})
     else:
@@ -1286,14 +1295,20 @@ def process_audio():
     job = q.enqueue_call(func=train_model, args=(secure_filename, model_name, user_email), timeout=2500)
     job_id = job.get_id()
     add_job_to_user_index(redis_client, user_email, job_id)
-    
+    type_of_job='train'
+    submission_time= datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     attributes = {
-        "type": "train",
+        "type": type_of_job,
         "filename": secure_filename,
-        "submission_time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        "submission_time": submission_time,
     }
     set_job_attributes(redis_client, job_id, attributes)
     update_job_status(redis_client, job_id, 'queued')
+    
+    
+    redis_key = f'jobs:submission_times:{user_email}:{type_of_job}'
+    redis_client.zadd(redis_key, {job_id: submission_time})
+    
 
     # Optionally, start a background worker if not already running.
     # Be cautious with starting processes; ensure it's controlled and necessary.
@@ -1491,10 +1506,11 @@ def generate_video():
                 type_of_job = "video"
                 job_id = job.id
                 add_job_to_user_index(redis_client,user_email,job_id)
+                submission_time=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 attributes = {
                     "type":type_of_job,
                     "user_email": user_email,
-                    "submission_time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    "submission_time":submission_time ,
                     
                 }
 
@@ -1504,8 +1520,14 @@ def generate_video():
                 set_job_attributes(redis_client,job_id, attributes)
                 #update_job_status(type_of_job,user_email,'queued')
                 update_job_status(redis_client,job_id,'queued')
-                p = Process(target=start_worker)
-                p.start()     
+                
+                redis_key = f'jobs:submission_times:{user_email}:{type_of_job}'
+                redis_client.zadd(redis_key, {job_id: submission_time})
+
+                
+                
+                #p = Process(target=start_worker)
+                #p.start()     
                 app.logger.info("enqueed the job ")
                 
                 
@@ -1516,6 +1538,49 @@ def generate_video():
     except Exception as e:
         app.logger.info(f"An error occurred: {e}")
         return jsonify(error=str(e)), 500
+
+
+
+@app.route('/get-jobs')
+@login_required
+def get_jobs():
+    user_email = session.get('user_email')
+    selected_job_type = request.args.get('job_type', None)  # Get the job type from query parameters, default to None
+    jobs_data = {}
+
+    if selected_job_type:  # Only proceed if a job type is selected
+    
+        redis_key = f'jobs:submission_times:{user_email}:{selected_job_type}'
+
+    # Retrieve top 5 job IDs for the specified user and job type
+        job_ids = redis_client.zrevrange(redis_key, 0, 4)
+        #job_ids = get_user_job_ids(redis_client, user_email)
+        all_jobs = []
+
+        for job_id in job_ids:
+            job_attributes = get_job_attributes(redis_client, job_id)
+            
+            if job_attributes and job_attributes.get('type') == selected_job_type:
+                job_attributes['job_id'] = job_id
+                job_attributes['submission_time'] = datetime.strptime(job_attributes['submission_time'], '%Y-%m-%d %H:%M:%S')
+                
+                progress = redis_client.get(f'{job_id.decode("utf-8")}:progress')
+                progress = int(progress) if progress is not None else 0
+                job_attributes['progress'] = progress
+                
+                
+                all_jobs.append(job_attributes)
+
+        # Sort all jobs by 'submission_time' and limit to the top 5 for each job type
+        #all_jobs.sort(key=lambda x: x['submission_time'], reverse=True)
+        #jobs_data[selected_job_type] = all_jobs[:5]
+
+    model_credits = get_user_credits(user_email, 'model')
+    song_credits = get_user_credits(user_email, 'song')
+    video_credits = get_user_credits(user_email, 'video')
+    
+    # Pass 'selected_job_type' to the template to conditionally display jobs
+    return render_template('job-tracking.html', jobs_data=all_jobs, selected_job_type=selected_job_type, model_credits=model_credits, song_credits=song_credits, video_credits=video_credits)
 
 
 
@@ -1545,35 +1610,6 @@ def get_running_jobs():
 
 
 
-@app.route('/get-jobs')
-@login_required
-def get_jobs():
-    user_email = session.get('user_email')
-    selected_job_type = request.args.get('job_type', None)  # Get the job type from query parameters, default to None
-    jobs_data = {}
-
-    if selected_job_type:  # Only proceed if a job type is selected
-        job_ids = get_user_job_ids(redis_client, user_email)
-        all_jobs = []
-
-        for job_id in job_ids:
-            job_attributes = get_job_attributes(redis_client, job_id)
-            
-            if job_attributes and job_attributes.get('type') == selected_job_type:
-                job_attributes['job_id'] = job_id
-                job_attributes['submission_time'] = datetime.strptime(job_attributes['submission_time'], '%Y-%m-%d %H:%M:%S')
-                all_jobs.append(job_attributes)
-
-        # Sort all jobs by 'submission_time' and limit to the top 5 for each job type
-        all_jobs.sort(key=lambda x: x['submission_time'], reverse=True)
-        jobs_data[selected_job_type] = all_jobs[:5]
-
-    model_credits = get_user_credits(user_email, 'model')
-    song_credits = get_user_credits(user_email, 'song')
-    video_credits = get_user_credits(user_email, 'video')
-    
-    # Pass 'selected_job_type' to the template to conditionally display jobs
-    return render_template('job-tracking.html', jobs_data=jobs_data, selected_job_type=selected_job_type, model_credits=model_credits, song_credits=song_credits, video_credits=video_credits)
 
 
 
