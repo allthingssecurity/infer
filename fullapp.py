@@ -1602,7 +1602,7 @@ def get_jobs():
                 
                 #progress = redis_client.get(f'{job_id.decode("utf-8")}:progress')
                 #progress = int(progress) if progress is not None else 0
-                3job_attributes['progress'] = progress
+                #job_attributes['progress'] = progress
                 
                 
                 all_jobs.append(job_attributes)
