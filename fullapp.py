@@ -929,7 +929,17 @@ def start_infer():
         type_of_job = "infer"
         job_id = job.id
         add_job_to_user_index(redis_client, user_email, job_id)
-        submission_time=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        #submission_time=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        submission_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+# Convert the string back to a datetime object
+        submission_datetime = datetime.strptime(submission_time, '%Y-%m-%d %H:%M:%S')
+
+# Convert the datetime object to a Unix timestamp (float)
+        submission_timestamp = submission_datetime.timestamp()
+        
+        
         attributes = {
             "type": type_of_job,
             "filename": youtube_link,
@@ -946,7 +956,7 @@ def start_infer():
         
         
         redis_key = f'jobs:submission_times:{user_email}:{type_of_job}'
-        redis_client.zadd(redis_key, {job_id: submission_time})
+        redis_client.zadd(redis_key, {job_id: submission_timestamp})
         
         
         
@@ -1306,8 +1316,15 @@ def process_audio():
     update_job_status(redis_client, job_id, 'queued')
     
     
+
+# Convert the string back to a datetime object
+    submission_datetime = datetime.strptime(submission_time, '%Y-%m-%d %H:%M:%S')
+
+# Convert the datetime object to a Unix timestamp (float)
+    submission_timestamp = submission_datetime.timestamp()
+
     redis_key = f'jobs:submission_times:{user_email}:{type_of_job}'
-    redis_client.zadd(redis_key, {job_id: submission_time})
+    redis_client.zadd(redis_key, {job_id: submission_timestamp})
     
 
     # Optionally, start a background worker if not already running.
@@ -1520,9 +1537,15 @@ def generate_video():
                 set_job_attributes(redis_client,job_id, attributes)
                 #update_job_status(type_of_job,user_email,'queued')
                 update_job_status(redis_client,job_id,'queued')
+                # Convert the string back to a datetime object
+                submission_datetime = datetime.strptime(submission_time, '%Y-%m-%d %H:%M:%S')
+
+# Convert the datetime object to a Unix timestamp (float)
+                submission_timestamp = submission_datetime.timestamp()
+
                 
                 redis_key = f'jobs:submission_times:{user_email}:{type_of_job}'
-                redis_client.zadd(redis_key, {job_id: submission_time})
+                redis_client.zadd(redis_key, {job_id: submission_timestamp})
 
                 
                 
