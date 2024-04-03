@@ -184,17 +184,26 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Iterate over each table data element with a 'data-submission-time' attribute
     document.querySelectorAll('td[data-submission-time]').forEach(td => {
-        const serverTime = td.getAttribute('data-submission-time');
-        // Ensure serverTime is not 'N/A' and not empty
-        if (serverTime && serverTime !== 'N/A') {
-            // Parse the server time assuming it's in UTC
-            const date = dateFns.parseISO(serverTime);
-            // Format the date to a readable string, converting to local time
-            td.textContent = dateFns.format(date, 'PPpp');
+        // Retrieve the UTC submission time and the local timezone from the data attributes
+        const utcSubmissionTime = td.getAttribute('data-submission-time');
+        
+        // Check if the utcSubmissionTime is not 'N/A'
+        if (utcSubmissionTime && utcSubmissionTime !== 'N/A') {
+            // Parse the UTC submission time (assuming it's in ISO 8601 format or compatible)
+            // 'Z' is appended to indicate that this time is in UTC
+            const date = dateFns.parseISO(utcSubmissionTime + 'Z');
+            
+            // Format the date object to a string that represents the date and time in the local timezone
+            const formattedDate = dateFns.format(date, 'PPPpp', { awareOfUnicodeTokens: true });
+            
+            // Update the text content of the table data element to show the local date and time
+            td.textContent = formattedDate;
         }
     });
 });
+
 
 
 
