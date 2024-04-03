@@ -1585,6 +1585,12 @@ def get_jobs():
         for job_id in job_ids:
             job_attributes = get_job_attributes(redis_client, job_id)
             app.logger.info("inside loop")
+            
+            for attr, value in job_attributes.items():
+                print(f"{attr.decode('utf-8')}: {value.decode('utf-8')}")
+
+            
+            
             if job_attributes and job_attributes.get('type') == selected_job_type:
                 app.logger.info("checking type of job")
                 job_attributes['job_id'] = job_id
