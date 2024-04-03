@@ -54,6 +54,8 @@
 }
 
     </script>
+<script src="https://cdn.jsdelivr.net/npm/date-fns@3.6.0/cdn.min.js"></script>
+
 </head>
 <body>
 <header>
@@ -184,14 +186,16 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('td[data-submission-time]').forEach(td => {
         const serverTime = td.getAttribute('data-submission-time');
-        const serverTimezone = td.getAttribute('data-server-timezone'); // This is actually not used since we're assuming UTC
+        // Ensure serverTime is not 'N/A' and not empty
         if (serverTime && serverTime !== 'N/A') {
-            // Assuming the server time is in UTC and in a format that Date.parse() can handle
-            const date = new Date(serverTime + ' UTC');
-            td.textContent = date.toLocaleString(); // Converts to client's local timezone and updates the text
+            // Parse the server time assuming it's in UTC
+            const date = dateFns.parseISO(serverTime);
+            // Format the date to a readable string, converting to local time
+            td.textContent = dateFns.format(date, 'PPpp');
         }
     });
 });
+
 
 
 function checkProgress(jobId) {
