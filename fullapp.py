@@ -1569,8 +1569,8 @@ def generate_video():
 def get_jobs():
     user_email = session.get('user_email')
     selected_job_type = request.args.get('job_type', None)  # Get the job type from query parameters, default to None
-    jobs_data = {}
-
+    #jobs_data = {}
+    all_jobs = []
     if selected_job_type:  # Only proceed if a job type is selected
     
         redis_key = f'jobs:submission_times:{user_email}:{selected_job_type}'
@@ -1578,7 +1578,7 @@ def get_jobs():
     # Retrieve top 5 job IDs for the specified user and job type
         job_ids = redis_client.zrevrange(redis_key, 0, 4)
         #job_ids = get_user_job_ids(redis_client, user_email)
-        all_jobs = []
+        
 
         for job_id in job_ids:
             job_attributes = get_job_attributes(redis_client, job_id)
