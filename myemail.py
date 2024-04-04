@@ -24,7 +24,8 @@ def load_and_personalize_template(event_type, outcome, email, song_url=None, ver
             # Check if verification_code is provided, and format the template accordingly
             if verification_code:
                 
-                verification_link="https://yourdomain.com/verify_email?token={verification_code}
+                verification_link = f"https://yourdomain.com/verify_email?token={verification_code}"
+
 "
 
             # Use placeholders in formatting the template
