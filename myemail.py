@@ -33,8 +33,6 @@ def load_and_personalize_template(event_type, outcome, email, song_url=None, ver
     except FileNotFoundError:
         return "Template file not found."
 
-# Usage example, where song_url might or might not be provided:
-personalized_content = load_and_personalize_template(event_type, outcome, to_email, song_url=None)
 
 
 
