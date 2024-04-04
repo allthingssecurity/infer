@@ -136,3 +136,46 @@ def get_job_attributes(redis_client, job_id):
         return None  # Return None if the job doesn't exist
     
     return {k.decode('utf-8'): v.decode('utf-8') for k, v in attributes.items()}
+    
+
+@admin_blueprint.route('/admin/add_name_to_user', methods=['POST'])
+@admin_required
+def add_name_to_user():
+    # Extract 'user_email' and 'name' from the POST request's body
+    data = request.get_json()
+    user_email = data.get('user_email')
+    name = data.get('name')
+
+    if not user_email or not name:
+        return jsonify({'error': 'Missing user_email or name'}), 400
+
+    # Use Redis's rpush to add the name to the list associated with the user's email
+    redis_client.rpush(user_email, name)
+
+    return jsonify({'message': f"Name {name} added to {user_email}."}), 200
+
+
+@admin_blueprint.route('/admin/user_jobs_attributes', methods=['GET'])
+@admin_required
+def user_jobs_attributes():
+    user_email = request.args.get('user_email')
+    selected_job_type = request.args.get('job_type')
+    
+    if not user_email or not selected_job_type:
+        return jsonify({'error': 'Missing user_email or job_type parameters'}), 400
+    
+    redis_key = f'jobs:submission_times:{user_email}:{selected_job_type}'
+    # Retrieve top 5 job IDs for the specified user and job type
+    job_ids = redis_client.zrevrange(redis_key, 0, 4)
+
+    if not job_ids:
+        return jsonify({'error': f'No jobs found for {user_email} with job type {selected_job_type}.'}), 404
+    
+    jobs_data = {}
+    for job_id_bytes in job_ids:
+        job_id = job_id_bytes.decode('utf-8')
+        job_attributes = get_job_attributes(redis_client, job_id)
+        if job_attributes:
+            jobs_data[job_id] = job_attributes
+    
+    return jsonify({'jobs': jobs_data}), 200
