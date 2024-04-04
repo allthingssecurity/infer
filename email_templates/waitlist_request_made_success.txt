@@ -1,14 +1,9 @@
-<html>
-<head>
-    <title>Waitlist Verification</title>
-</head>
-<body>
-    <h1>Verify Your Email to Join Our Waitlist</h1>
-    <p>Thank you for your interest in joining our waitlist. Please verify your email address to complete the process.</p>
-    
-    <p>Click the link below to verify your email:</p>
-    <a href="{{ verification_link }}">Verify Email</a>
-    <p>If the link does not work, please copy and paste the following URL into your web browser:</p>
-    <p>{{ verification_link }}</p>
-</body>
-</html>
+Dear {username},
+
+Thank you for your interest in joining our waitlist. Please verify your email address to complete the process.
+
+Click the link below to verify your email:
+{ verification_link }
+
+If the link does not work, please copy and paste the following URL into your web browser:
+{ verification_link }
