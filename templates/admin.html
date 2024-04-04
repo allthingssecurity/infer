@@ -1,53 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel</title>
+<meta charset="UTF-8">
+<title>Admin Panel</title>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function(){
+    // Function to handle the GET request for checking the waitlist
+    $("#checkWaitlistBtn").click(function(e){
+        e.preventDefault();
+        $.ajax({
+            url: '/admin/check_waitlist',
+            type: 'GET',
+            success: function(response) {
+                alert('Waitlisted Users: ' + JSON.stringify(response.waitlisted_users));
+            },
+            error: function(response) {
+                alert('Error occurred');
+            }
+        });
+    });
+
+    // General form submission handler
+    $("form").submit(function(e){
+        e.preventDefault();
+        var form = $(this);
+        $.ajax({
+            url: form.attr("action"),
+            type: form.attr("method"),
+            data: form.serialize(),
+            success: function(response) {
+                alert(JSON.stringify(response));
+            },
+            error: function(xhr) {
+                alert('Error: ' + xhr.responseText);
+            }
+        });
+    });
+});
+</script>
 </head>
 <body>
-    <h1>Admin Panel</h1>
 
-    <h2>Delete Job</h2>
-    <form action="/admin/delete_job" method="POST">
-        User Key: <input type="text" name="user_key"><br>
-        Job ID: <input type="text" name="job_id"><br>
-        <input type="submit" value="Delete Job">
-    </form>
+<h2>Admin Functions</h2>
 
-    <h2>Check Waitlist</h2>
-    <button onclick="checkWaitlist()">Check Waitlist</button>
-    <p id="waitlistUsers"></p>
+<h3>Add Credits</h3>
+<form action="/admin/add_credits" method="POST">
+    <input type="email" name="user_email" placeholder="User Email" required><br>
+    <input type="text" name="activity" placeholder="Activity" required><br>
+    <input type="number" name="credits" placeholder="Credits" required><br>
+    <button type="submit">Add Credits</button>
+</form>
 
-    <h2>Add Credits</h2>
-    <form action="/admin/add_credits" method="POST">
-        User Email: <input type="text" name="user_email"><br>
-        Activity: <input type="text" name="activity"><br>
-        Credits: <input type="text" name="credits"><br>
-        <input type="submit" value="Add Credits">
-    </form>
+<h3>Delete Job</h3>
+<form action="/admin/delete_job" method="POST">
+    <input type="text" name="user_key" placeholder="User Key" required><br>
+    <input type="text" name="job_id" placeholder="Job ID" required><br>
+    <button type="submit">Delete Job</button>
+</form>
 
-    <h2>Delete All Jobs for User</h2>
-    <form action="/admin/delete_all_jobs" method="POST">
-        User Key: <input type="text" name="user_key"><br>
-        <input type="submit" value="Delete All Jobs">
-    </form>
+<h3>Delete All Jobs for a User</h3>
+<form action="/admin/delete_user_jobs" method="POST">
+    <input type="email" name="user_email" placeholder="User Email" required><br>
+    <button type="submit">Delete All Jobs</button>
+</form>
 
-    <h2>Move User from Waitlist to Approved</h2>
-    <form action="/admin/move_to_approved" method="POST">
-        User Email: <input type="text" name="user_email"><br>
-        <input type="submit" value="Move to Approved">
-    </form>
+<h3>Add Name to User</h3>
+<form action="/admin/add_name_to_user" method="POST">
+    <input type="email" name="user_email" placeholder="User Email" required><br>
+    <input type="text" name="name" placeholder="Name" required><br>
+    <button type="submit">Add Name</button>
+</form>
 
-    <script>
-        function checkWaitlist() {
-            fetch('/admin/check_waitlist')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('waitlistUsers').innerHTML = data.waitlisted_users.join(', ');
-                });
-        }
-    </script>
+<h3>Remove Name from User</h3>
+<form action="/admin/remove_name_from_user" method="POST">
+    <input type="email" name="user_email" placeholder="User Email" required><br>
+    <input type="text" name="name" placeholder="Name" required><br>
+    <button type="submit">Remove Name</button>
+</form>
+
+<button id="checkWaitlistBtn">Check Waitlist</button>
 
 </body>
 </html>

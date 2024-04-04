@@ -155,6 +155,26 @@ def add_name_to_user():
     return jsonify({'message': f"Name {name} added to {user_email}."}), 200
 
 
+@admin_blueprint.route('/admin/remove_name_from_user', methods=['POST'])
+@admin_required
+def remove_name_from_user():
+    # Extract 'user_email' and 'name' from the POST request's body
+    data = request.get_json()
+    user_email = data.get('user_email')
+    name = data.get('name')
+
+    if not user_email or not name:
+        return jsonify({'error': 'Missing user_email or name'}), 400
+
+    # Use Redis's LREM to remove the name from the list associated with the user's email
+    removed_count = redis_client.lrem(user_email, 0, name)
+
+    if removed_count > 0:
+        return jsonify({'message': f"Name {name} removed from {user_email}."}), 200
+    else:
+        return jsonify({'error': f"Name {name} not found in {user_email}."}), 404
+
+
 @admin_blueprint.route('/admin/user_jobs_attributes', methods=['GET'])
 @admin_required
 def user_jobs_attributes():
