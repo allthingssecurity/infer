@@ -19,7 +19,14 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from status import set_job_attributes,update_job_status,get_job_attributes,add_job_to_user_index,get_user_job_ids,update_job_progress,get_job_progress
 from youtube import download_video_as_mp3
-from myemail import send_email
+#from myemail import send_email
+
+
+
+import os
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 runpod.api_key =os.getenv("RUNPOD_KEY")
 logging.basicConfig(level=logging.INFO)
 #logger = logging.getLogger(__name__)
@@ -126,6 +133,73 @@ def update_model_count(user_email,redis_client):
     
     redis_client.hincrby(f"user:{user_email}", "models_trained", 1)
     app.logger.info("update of model train done in queue")
+    
+    
+
+def load_and_personalize_template(event_type, outcome, email):
+    """Load and personalize the email template based on event type and outcome."""
+    filename = f'email_templates/{event_type}_{outcome}.txt'
+    try:
+        with open(filename, 'r', encoding='utf-8') as file:
+            template = file.read()
+            username = email.split('@')[0]  # Extract username from email
+            personalized_content = template.format(username=username)
+            return personalized_content
+    except FileNotFoundError:
+        return "Template file not found."
+
+
+
+def send_email(to_email, event_type, outcome):
+    # Load and personalize the email content
+    app.logger.info("inside send email") 
+    personalized_content = load_and_personalize_template(event_type, outcome, to_email)
+    app.logger.info(f"content : {personalized_content}")
+    
+    # Define email subjects for each event type and outcome
+    subject_lines = {
+        "model_training": {
+            "success": "🌟 Model Training Succeeded!",
+            "failure": "🔴 Model Training Failed",
+        },
+        "song_conversion": {
+            "success": "🎶 Song Conversion Succeeded!",
+            "failure": "🔴 Song Conversion Failed",
+        },
+        "video_conversion": {
+            "success": "🎥 Video Conversion Succeeded!",
+            "failure": "🔴 Video Conversion Failed",
+        }
+    }
+    
+    # Select subject line based on event type and outcome
+    app.logger.info("get subject")
+    subject = subject_lines.get(event_type, {}).get(outcome, "Notification from MaiBhiSinger")
+    app.logger.info(f"got subject: {subject}")
+    # SMTP settings (as before)
+    smtp_server = os.getenv('SMTP_SERVER', 'smtp.mandrillapp.com')
+    smtp_user = os.getenv('SMTP_USER', 'info@maibhisinger.com')
+    smtp_pass = os.getenv('SMTP_PASSWORD', '')
+    smtp_port = int(os.getenv('SMTP_PORT', 587))
+
+    # Create and send the email (as before)
+    msg = MIMEMultipart()
+    msg['From'] = smtp_user
+    msg['To'] = to_email
+    msg['Subject'] = subject
+    msg.attach(MIMEText(personalized_content, 'plain'))
+
+    try:
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
+            app.logger.info("Email sent successfully!")
+    except Exception as e:
+        app.logger.info(f"Failed to send email: {e}")
+
+
+
     
 def terminate_pod(pod_id) :
     try:
@@ -503,7 +577,9 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         redis_client.decr(WORKER_COUNT_KEY)
         if pod_id:
             terminate_pod(pod_id)
+            app.logger.info("email to be sent  for successful completion")
             send_email(user_email, 'song_conversion', 'success')
+            app.logger.info("email sent for successful completion")
             
         return True, "File uploaded successfully."
 
