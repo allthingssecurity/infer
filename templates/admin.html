@@ -127,7 +127,7 @@
     ajaxPost('/admin/move_to_approved', JSON.stringify(getFormData($(this))), 'application/json');
 });
 
-		$('#removeFromWaitList').submit(function(e) {
+		$('#removeFromWaitListForm').submit(function(e) {
     e.preventDefault();
     ajaxPost('/admin/remove_from_waitlist', JSON.stringify(getFormData($(this))), 'application/json');
 });
