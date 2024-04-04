@@ -3,6 +3,8 @@ from functools import wraps
 from redis import Redis
 import os
 
+from datetime import datetime, timedelta
+import time
 
 
 admin_blueprint = Blueprint('admin', __name__)
@@ -12,6 +14,40 @@ redis_port = int(os.getenv('REDIS_PORT', 25061))  # Default Redis port
 redis_username = os.getenv('REDIS_USERNAME', 'default')
 redis_password = os.getenv('REDIS_PASSWORD', '')
 redis_client = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
+
+
+
+
+@admin_blueprint.route('/admin/list_long_queued_jobs', methods=['GET'])
+@admin_required
+def list_long_queued_jobs():
+    user_email = request.args.get('user_email')
+
+    if not user_email:
+        return jsonify({'error': 'User email is required'}), 400
+
+    # Calculate the timestamp for 30 minutes ago
+    thirty_minutes_ago_timestamp = (datetime.now() - timedelta(minutes=30)).timestamp()
+
+    # Assuming job_types are known and static, if dynamic you'll need to adjust this
+    job_types = ['infer', 'train', 'video']
+    long_queued_jobs = []
+
+    for job_type in job_types:
+        redis_key = f'jobs:submission_times:{user_email}:{job_type}'
+        # Retrieve job IDs queued before the timestamp for 30 minutes ago
+        job_ids = redis_client.zrangebyscore(redis_key, '-inf', thirty_minutes_ago_timestamp)
+
+        for job_id_bytes in job_ids:
+            job_id = job_id_bytes.decode('utf-8')
+            job_status = redis_client.hget(f"job:{job_id}", "status").decode('utf-8')
+
+            if job_status == "queued":
+                job_attributes = get_job_attributes(redis_client, job_id)  # Assumes this function exists
+                long_queued_jobs.append(job_attributes)
+
+    return jsonify({'long_queued_jobs': long_queued_jobs}), 200
+
 
 # Custom decorator to check admin role
 def admin_required(f):
@@ -58,16 +94,16 @@ def add_credits():
     redis_client.hset(f"user:{user_email}", f"{activity}_credits", credits)
     return jsonify({"message": f"Credits added to {user_email}'s account."}), 200
 
-@admin_blueprint.route('/admin/delete_all_jobs', methods=['POST'])
-@admin_required
-def delete_all_jobs():
-    user_key = request.json.get('user_key')
-    fields = redis_client.hkeys(user_key)
-    if fields:
-        redis_client.hdel(user_key, *fields)
-        return jsonify({"message": f"All jobs for the user deleted successfully."}), 200
-    else:
-        return jsonify({"message": f"No jobs found for the user."}), 404
+#@admin_blueprint.route('/admin/delete_all_jobs', methods=['POST'])
+#@admin_required
+#def delete_all_jobs():
+ #   user_key = request.json.get('user_key')
+  #  fields = redis_client.hkeys(user_key)
+   # if fields:
+    #    redis_client.hdel(user_key, *fields)
+     #   return jsonify({"message": f"All jobs for the user deleted successfully."}), 200
+    #else:
+     #   return jsonify({"message": f"No jobs found for the user."}), 404
 
 @admin_blueprint.route('/admin/move_to_approved', methods=['POST'])
 @admin_required
@@ -76,6 +112,17 @@ def move_to_approved():
     redis_client.srem("waitlist_users", user_email)
     redis_client.sadd("authorized_users", user_email)
     return jsonify({"message": f"User {user_email} moved from waitlist to approved."}), 200
+
+
+
+@admin_blueprint.route('/admin/move_to_waitlist_from_approved', methods=['POST'])
+@admin_required
+def move_to_waitlist_from_approved():
+    user_email = request.json.get('user_email')
+    redis_client.srem("authorized_users", user_email)
+    redis_client.sadd("waitlist_users", user_email)
+    
+    return jsonify({"message": f"User {user_email} moved from approved to waitlist."}), 200
 
 
 
@@ -102,9 +149,9 @@ def get_user_jobs():
     return jsonify({'jobs': jobs_data}), 200
 
 
-@admin_blueprint.route('/admin/delete_user_jobs', methods=['POST'])
+@admin_blueprint.route('/admin/delete_user_jobs1', methods=['POST'])
 @admin_required
-def delete_user_jobs():
+def delete_user_jobs1():
     user_email = request.json.get('user_email')
     if not user_email:
         return jsonify({'error': 'User email is required'}), 400
@@ -123,6 +170,60 @@ def delete_user_jobs():
     redis_client.delete(key)
 
     return jsonify({'message': f"All jobs for {user_email} deleted successfully."}), 200
+    
+    
+@admin_blueprint.route('/admin/delete_user_jobs', methods=['POST'])
+@admin_required
+def delete_user_jobs():
+    user_email = request.json.get('user_email')
+    if not user_email:
+        return jsonify({'error': 'User email is required'}), 400
+
+    # Assume job types are predefined or retrieved from somewhere
+    # If you have a set or list in Redis containing all job types for a user, fetch it here
+    # For demonstration, using a static list of job types
+    job_types = ['infer', 'train', 'video']  # Example job types
+
+    key = f"user_jobs:{user_email}"
+    job_ids = redis_client.smembers(key)
+    if not job_ids:
+        return jsonify({'message': f"No jobs found for {user_email}"}), 404
+
+    for job_id_bytes in job_ids:
+        job_id = job_id_bytes.decode('utf-8')
+        # Delete the job attributes
+        redis_client.delete(f"job:{job_id}")
+
+        # Additional step: Remove job ID from each job type's sorted set
+        for job_type in job_types:
+            submission_times_key = f'jobs:submission_times:{user_email}:{job_type}'
+            redis_client.zrem(submission_times_key, job_id)
+    
+    # After deleting the jobs and removing them from the sorted sets, clear the user's set of job IDs
+    redis_client.delete(key)
+
+    return jsonify({'message': f"All jobs for {user_email} deleted successfully."}), 200
+
+@admin_blueprint.route('/admin/delete_specific_job', methods=['POST'])
+@admin_required
+def delete_specific_job():
+    # Extract the job ID from the POST request's JSON payload
+    data = request.get_json()
+    job_id = data.get('job_id')
+    
+    if not job_id:
+        return jsonify({'error': 'Job ID is required'}), 400
+
+    # Attempt to delete the job by its ID
+    deleted_count = redis_client.delete(f"job:{job_id}")
+    
+    if deleted_count == 0:
+        return jsonify({'error': f"Job {job_id} not found."}), 404
+
+    return jsonify({'message': f"Job {job_id} deleted successfully."}), 200
+
+
+
 
 def get_job_attributes(redis_client, job_id):
     """
@@ -175,6 +276,8 @@ def remove_name_from_user():
         return jsonify({'message': f"Name {name} removed from {user_email}."}), 200
     else:
         return jsonify({'error': f"Name {name} not found in {user_email}."}), 404
+
+
 
 
 @admin_blueprint.route('/admin/user_jobs_attributes', methods=['GET'])
