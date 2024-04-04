@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify, session,render_template,flash,jso
 from functools import wraps
 from redis import Redis
 import os
-
+from status import get_job_attributes
 admin_blueprint = Blueprint('admin', __name__)
 
 redis_host = os.getenv('REDIS_HOST', 'default_host')
