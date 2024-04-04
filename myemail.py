@@ -65,4 +65,4 @@ def send_email(to_email, event_type, outcome,object_name):
             server.send_message(msg)
             print("Email sent successfully!")
     except Exception as e:
-        #app.logger.info(f"Failed to send email: {e}")
+        print(f"Failed to send email: {e}")
