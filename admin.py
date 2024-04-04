@@ -74,3 +74,49 @@ def move_to_approved():
     redis_client.srem("waitlist_users", user_email)
     redis_client.sadd("approved_users", user_email)
     return jsonify({"message": f"User {user_email} moved from waitlist to approved."}), 200
+
+
+@admin_blueprint.route('/admin/user_jobs', methods=['GET'])
+@admin_required
+def get_user_jobs():
+    user_email = request.args.get('user_email')
+    if not user_email:
+        return jsonify({'error': 'User email is required'}), 400
+
+    key = f"user_jobs:{user_email}"
+    job_ids = redis_client.smembers(key)
+    if not job_ids:
+        return jsonify({'message': f"No jobs found for {user_email}"}), 404
+
+    jobs_data = {}
+    for job_id_bytes in job_ids:
+        job_id = job_id_bytes.decode('utf-8')
+        job_attributes = get_job_attributes(redis_client, job_id)
+        if job_attributes:
+            jobs_data[job_id] = job_attributes
+
+    return jsonify({'jobs': jobs_data}), 200
+
+
+@admin_blueprint.route('/admin/delete_user_jobs', methods=['POST'])
+@admin_required
+def delete_user_jobs():
+    user_email = request.json.get('user_email')
+    if not user_email:
+        return jsonify({'error': 'User email is required'}), 400
+
+    key = f"user_jobs:{user_email}"
+    job_ids = redis_client.smembers(key)
+    if not job_ids:
+        return jsonify({'message': f"No jobs found for {user_email}"}), 404
+
+    for job_id_bytes in job_ids:
+        job_id = job_id_bytes.decode('utf-8')
+        # Delete the job attributes
+        redis_client.delete(f"job:{job_id}")
+    
+    # After deleting the jobs, clear the user's set of job IDs
+    redis_client.delete(key)
+
+    return jsonify({'message': f"All jobs for {user_email} deleted successfully."}), 200
+

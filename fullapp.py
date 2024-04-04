@@ -338,7 +338,7 @@ def load_and_personalize_template(event_type, outcome, email, song_url=None, ver
             # Check if verification_code is provided, and format the template accordingly
             if verification_code:
                 
-                verification_link = f"https://yourdomain.com/verify_email?token={verification_code}"
+                verification_link = f"https://www.maibhisinger.com/verify_email?token={verification_code}"
 
             # Use placeholders in formatting the template
             personalized_content = template.format(username=username, link=link_placeholder, verification_link=verification_link)
@@ -499,6 +499,7 @@ def verify_email():
         # Add the user to the waitlist and clear the verification code
         redis_client.sadd("waitlist_users", user_email)
         redis_client.delete(f"waitlist_verification:{user_email}")
+        
         return jsonify({'message': 'Email verified and added to waitlist. We will get back to you. Till that time you can check samples'}), 200
     else:
         return jsonify({'error': 'Incorrect verification code'}), 400
