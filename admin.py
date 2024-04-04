@@ -2,7 +2,9 @@ from flask import Blueprint, request, jsonify, session,render_template,flash,jso
 from functools import wraps
 from redis import Redis
 import os
-from status import get_job_attributes
+
+
+
 admin_blueprint = Blueprint('admin', __name__)
 
 redis_host = os.getenv('REDIS_HOST', 'default_host')
@@ -120,3 +122,17 @@ def delete_user_jobs():
 
     return jsonify({'message': f"All jobs for {user_email} deleted successfully."}), 200
 
+def get_job_attributes(redis_client, job_id):
+    """
+    Retrieves job attributes from Redis using the job_id.
+    
+    :param redis_client: Redis connection object.
+    :param job_id: The unique ID of the job.
+    :return: Dictionary of the job attributes, or None if not found.
+    """
+    key = f"job:{job_id}"
+    attributes = redis_client.hgetall(key)
+    if not attributes:
+        return None  # Return None if the job doesn't exist
+    
+    return {k.decode('utf-8'): v.decode('utf-8') for k, v in attributes.items()}
