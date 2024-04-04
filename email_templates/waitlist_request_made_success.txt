@@ -3,7 +3,7 @@ Dear {username},
 Thank you for your interest in joining our waitlist. Please verify your email address to complete the process.
 
 Click the link below to verify your email:
-{ verification_link }
+{verification_link}
 
 If the link does not work, please copy and paste the following URL into your web browser:
-{ verification_link }
+{verification_link}
