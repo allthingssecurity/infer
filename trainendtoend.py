@@ -152,7 +152,7 @@ def load_and_personalize_template(event_type, outcome, email):
 
 def send_email(to_email, event_type, outcome):
     # Load and personalize the email content
-    app.logger.info("inside send email") 
+    app.logger.info(f"inside send email. to send email to {to_email}") 
     personalized_content = load_and_personalize_template(event_type, outcome, to_email)
     app.logger.info(f"content : {personalized_content}")
     
@@ -577,7 +577,8 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         redis_client.decr(WORKER_COUNT_KEY)
         if pod_id:
             terminate_pod(pod_id)
-            app.logger.info("email to be sent  for successful completion")
+            app.logger.info(f"email to be sent  for successful completion to {user_email}")
+            
             send_email(user_email, 'song_conversion', 'success')
             app.logger.info("email sent for successful completion")
             
