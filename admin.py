@@ -74,8 +74,10 @@ def delete_all_jobs():
 def move_to_approved():
     user_email = request.json.get('user_email')
     redis_client.srem("waitlist_users", user_email)
-    redis_client.sadd("approved_users", user_email)
+    redis_client.sadd("authorized_users", user_email)
     return jsonify({"message": f"User {user_email} moved from waitlist to approved."}), 200
+
+
 
 
 @admin_blueprint.route('/admin/user_jobs', methods=['GET'])
