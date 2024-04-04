@@ -98,7 +98,7 @@ def move_to_approved():
     user_email = request.json.get('user_email')
     redis_client.srem("waitlist_users", user_email)
     redis_client.sadd("authorized_users", user_email)
-    send_email(user_email, 'added_to_approved', 'success', verification_code=verification_code)
+    send_email(user_email, 'added_to_approved', 'success')
     return jsonify({"message": f"User {user_email} moved from waitlist to approved."}), 200
 
 
