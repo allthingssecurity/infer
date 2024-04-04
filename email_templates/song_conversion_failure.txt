@@ -1,0 +1,15 @@
+Dear {username},
+
+We regret to inform you that your recent song conversion attempt did not go as planned. Despite our best efforts, some tunes are a bit trickier than others and might not convert successfully on the first try.
+
+Here’s what you can do:
+- Try converting a different song.
+- Review our song conversion guidelines [Link to guidelines].
+- Contact our support team for personalized assistance at support@maibhisinger.com.
+
+We understand this might be disappointing, but please don't lose heart. Our team is here to support you, and we're eager to help you succeed with your next attempt.
+
+Thank you for your understanding and patience.
+
+Warm regards,
+The MaiBhiSinger Team

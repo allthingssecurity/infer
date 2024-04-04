@@ -19,6 +19,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from status import set_job_attributes,update_job_status,get_job_attributes,add_job_to_user_index,get_user_job_ids,update_job_progress,get_job_progress
 from youtube import download_video_as_mp3
+from myemail import send_email
 runpod.api_key =os.getenv("RUNPOD_KEY")
 logging.basicConfig(level=logging.INFO)
 #logger = logging.getLogger(__name__)
@@ -502,6 +503,8 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         redis_client.decr(WORKER_COUNT_KEY)
         if pod_id:
             terminate_pod(pod_id)
+            send_email(user_email, 'song_conversion', 'success')
+            
         return True, "File uploaded successfully."
 
     except requests.exceptions.RequestException as e:
@@ -520,6 +523,7 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         redis_client.delete(f'{job_id}:progress')
         if pod_id:
             terminate_pod(pod_id)
+            send_email(user_email, 'song_conversion', 'failure')
         return False, str(e)
 
     except Exception as e:
@@ -534,6 +538,7 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         redis_client.decr(WORKER_COUNT_KEY)
         if pod_id:
             terminate_pod(pod_id)
+            send_email(user_email, 'song_conversion', 'failure')
         return False, str(e)
 
 
