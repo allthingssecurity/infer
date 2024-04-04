@@ -136,6 +136,19 @@ def update_model_count(user_email,redis_client):
     
     
 
+def load_and_personalize_template(event_type, outcome, email,link):
+    """Load and personalize the email template based on event type and outcome."""
+    filename = f'email_templates/{event_type}_{outcome}.txt'
+    try:
+        with open(filename, 'r', encoding='utf-8') as file:
+            template = file.read()
+            username = email.split('@')[0]  # Extract username from email
+            personalized_content = template.format(username=username,link=link)
+            return personalized_content
+    except FileNotFoundError:
+        return "Template file not found."
+
+
 
 
 
@@ -518,7 +531,7 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
             terminate_pod(pod_id)
             app.logger.info(f"email to be sent  for successful completion to {user_email}")
             
-            send_email(user_email, 'song_conversion', 'success',new_filename)
+            send_email(user_email, 'song_conversion', 'success',object_name=new_filename)
             app.logger.info("email sent for successful completion")
             
         return True, "File uploaded successfully."
@@ -539,7 +552,7 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         redis_client.delete(f'{job_id}:progress')
         if pod_id:
             terminate_pod(pod_id)
-            send_email(user_email, 'song_conversion', 'failure','')
+            send_email(user_email, 'song_conversion', 'failure',object_name='')
         return False, str(e)
 
     except Exception as e:
@@ -554,7 +567,7 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         redis_client.decr(WORKER_COUNT_KEY)
         if pod_id:
             terminate_pod(pod_id)
-            send_email(user_email, 'song_conversion', 'failure','')
+            send_email(user_email, 'song_conversion', 'failure',object_name='')
         return False, str(e)
 
 

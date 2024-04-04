@@ -36,6 +36,7 @@ from flask.cli import with_appcontext
 import magic
 import subprocess
 from quality import adjust_loudness
+from myemail import send_email
 
 from tzlocal import get_localzone # Import tzlocal
 #import librosa
@@ -382,9 +383,49 @@ def add_to_waitlist():
     
     if is_user_in_waitlist(user_email):
         return jsonify({'message': 'Already in waitlist'}), 200
+        
+    verification_code = random.randint(1000, 9999)
+    
+    # Store the code in Redis with a 24-hour expiration
+    redis_client.setex(f"waitlist_verification:{user_email}", 86400, verification_code)
+    
+    # Send the verification email to the user
+    send_email(user_email, 'waitlist_request_made', 'success', verification_code=verification_code)
+    
+    
 
-    redis_client.sadd("waitlist_users", user_email)
-    return jsonify({'message': 'Added to waitlist. We will get back to you. Till that time you can check samples'}), 200
+    #redis_client.sadd("waitlist_users", user_email)
+    return jsonify({'message': 'Please check your email and verify'}), 200
+
+
+@app.route('/verify_email', methods=['GET'])
+def verify_email():
+    user_email = session.get('user_email')
+    if not user_email:
+        return jsonify({'error': 'User not signed in'}), 401
+
+    # The 'token' here is the verification code submitted by the user
+    submitted_code = request.args.get('token')
+
+    # Retrieve the stored verification code for the user
+    stored_code = redis_client.get(f"waitlist_verification:{user_email}")
+
+    if stored_code is None:
+        return jsonify({'error': 'Verification code expired or invalid'}), 400
+
+    # Compare the submitted code with the stored code
+    if submitted_code == stored_code.decode('utf-8'):
+        # Add the user to the waitlist and clear the verification code
+        redis_client.sadd("waitlist_users", user_email)
+        redis_client.delete(f"waitlist_verification:{user_email}")
+        return jsonify({'message': 'Email verified and added to waitlist. We will get back to you. Till that time you can check samples'}), 200
+    else:
+        return jsonify({'error': 'Incorrect verification code'}), 400
+
+
+
+
+
 
 
 @app.route('/authorize_users', methods=['POST'])
