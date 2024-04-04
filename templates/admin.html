@@ -15,6 +15,7 @@
     <option value="">Select an Action</option>
     <option value="addCredits">Add Credits</option>
     <option value="checkWaitlist">Check Waitlist</option>
+	<option value="checkApprovedlist">Check Approved list</option>
     <option value="deleteUserJobs">Delete User Jobs</option>
 	<option value="moveToApproved">Move to Approved</option>
 	<option value="moveBackToWaitList">Move from Approved to WaitList</option>
@@ -51,6 +52,11 @@
 <div id="checkWaitlist" class="formContainer hidden">
     <h3>Check Waitlist</h3>
     <button id="checkWaitlistBtn">Check Waitlist</button>
+</div>
+
+<div id="checkApprovedlist" class="formContainer hidden">
+    <h3>Check Approved List</h3>
+    <button id="checkApprovedlistBtn">Check Approved List</button>
 </div>
 
 <div id="deleteUserJobs" class="formContainer hidden">
@@ -134,6 +140,8 @@
 
 
 
+
+
 $('#moveBackToWaitListForm').submit(function(e) {
     e.preventDefault();
     ajaxPost('/admin/move_to_waitlist_from_approved', JSON.stringify(getFormData($(this))), 'application/json');
@@ -151,6 +159,21 @@ $('#moveBackToWaitListForm').submit(function(e) {
                 }
             });
         });
+		
+		$('#checkApprovedlistBtn').click(function() {
+            $.ajax({
+                url: '/admin/list_approved_users',
+                type: 'GET',
+                success: function(response) {
+                    alert(JSON.stringify(response));
+                },
+                error: function(xhr) {
+                    alert('Error: ' + xhr.responseText);
+                }
+            });
+        });
+		
+		
 		
 $('#deleteSpecificJobForm').submit(function(e) {
     e.preventDefault();

@@ -102,6 +102,17 @@ def move_to_approved():
     return jsonify({"message": f"User {user_email} moved from waitlist to approved."}), 200
 
 
+@admin_blueprint.route('/admin/list_approved_users', methods=['GET'])
+@admin_required
+def list_approved_users():
+    # Retrieve all members of the 'authorized_users' set from Redis
+    approved_users = redis_client.smembers("authorized_users")
+
+    # Convert the result from bytes to string if necessary
+    approved_users = [user.decode('utf-8') for user in approved_users]
+
+    return jsonify({"approved_users": approved_users}), 200
+
 
 @admin_blueprint.route('/admin/move_to_waitlist_from_approved', methods=['POST'])
 @admin_required
