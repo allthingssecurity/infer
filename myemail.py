@@ -51,7 +51,9 @@ def send_email(to_email, event_type, outcome, object_name=None, verification_cod
     subject_lines = {
         "model_training": {"success": "🌟 Model Training Succeeded!", "failure": "🔴 Model Training Failed"},
         "song_conversion": {"success": "🎶 Song Conversion Succeeded!", "failure": "🔴 Song Conversion Failed"},
-        "video_conversion": {"success": "🎥 Video Conversion Succeeded!", "failure": "🔴 Video Conversion Failed"}
+        "video_conversion": {"success": "🎥 Video Conversion Succeeded!", "failure": "🔴 Video Conversion Failed"},
+        "waitlist_request_made":{"success": "🎥 You are added to waitlist", "failure": "🔴 Sorry we could'nt add you to waitlist for now"},        
+        "added_to_approved":{"success": "🎥 You are approved user for trial access.", "failure": "🔴 Sorry we could'nt approve you"}
     }
 
     # Select subject line based on event type and outcome

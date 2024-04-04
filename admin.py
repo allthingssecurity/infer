@@ -5,7 +5,7 @@ import os
 
 from datetime import datetime, timedelta
 import time
-
+from myemail import send_email
 
 admin_blueprint = Blueprint('admin', __name__)
 
@@ -56,14 +56,30 @@ def check_waitlist():
     waitlist_users = [user.decode('utf-8') for user in waitlist_users]
     return jsonify({"waitlisted_users": waitlist_users}), 200
 
+
 @admin_blueprint.route('/admin/add_credits', methods=['POST'])
 @admin_required
 def add_credits():
     user_email = request.json.get('user_email')
     activity = request.json.get('activity')
-    credits = request.json.get('credits')
-    redis_client.hset(f"user:{user_email}", f"{activity}_credits", credits)
-    return jsonify({"message": f"Credits added to {user_email}'s account."}), 200
+    new_credits = int(request.json.get('credits', 0))  # Ensure it's an int and provide a default
+
+    # Key and field for Redis
+    user_key = f"user:{user_email}"
+    credits_field = f"{activity}_credits"
+
+    # Fetch existing credits, if any
+    existing_credits = redis_client.hget(user_key, credits_field)
+    existing_credits = int(existing_credits) if existing_credits else 0
+
+    # Calculate the total credits by adding new credits to existing ones
+    total_credits = existing_credits + new_credits
+
+    # Update the credits for the user and activity in Redis
+    redis_client.hset(user_key, credits_field, total_credits)
+
+    return jsonify({"message": f"Credits added to {user_email}'s account. Total {activity} credits: {total_credits}"}), 200
+
 
 #@admin_blueprint.route('/admin/delete_all_jobs', methods=['POST'])
 #@admin_required
@@ -82,6 +98,7 @@ def move_to_approved():
     user_email = request.json.get('user_email')
     redis_client.srem("waitlist_users", user_email)
     redis_client.sadd("authorized_users", user_email)
+    send_email(user_email, 'added_to_approved', 'success', verification_code=verification_code)
     return jsonify({"message": f"User {user_email} moved from waitlist to approved."}), 200
 
 
@@ -94,6 +111,18 @@ def move_to_waitlist_from_approved():
     redis_client.sadd("waitlist_users", user_email)
     
     return jsonify({"message": f"User {user_email} moved from approved to waitlist."}), 200
+
+
+@admin_blueprint.route('/admin/remove_from_waitlist', methods=['POST'])
+@admin_required
+def remove_from_waitlist():
+    user_email = request.json.get('user_email')
+    redis_client.srem("waitlist_users", user_email)
+    
+    
+    return jsonify({"message": f"User {user_email} moved from waitlist to removed."}), 200
+
+
 
 
 @admin_blueprint.route('/admin/list_long_queued_jobs', methods=['GET'])
