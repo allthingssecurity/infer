@@ -3,6 +3,8 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+from upload import generate_presigned_url
+
 def load_and_personalize_template(event_type, outcome, email):
     """Load and personalize the email template based on event type and outcome."""
     filename = f'email_templates/{event_type}_{outcome}.txt'
