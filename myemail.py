@@ -26,8 +26,6 @@ def load_and_personalize_template(event_type, outcome, email, song_url=None, ver
                 
                 verification_link = f"https://yourdomain.com/verify_email?token={verification_code}"
 
-"
-
             # Use placeholders in formatting the template
             personalized_content = template.format(username=username, link=link_placeholder, verification_link=verification_link)
             
