@@ -17,9 +17,13 @@ def load_and_personalize_template(event_type, outcome, email):
 
 
 
-def send_email(to_email, event_type, outcome):
+def send_email(to_email, event_type, outcome,object_name):
     # Load and personalize the email content
-    personalized_content = load_and_personalize_template(event_type, outcome, to_email)
+    #app.logger.info(f"inside send email. to send email to {to_email}") 
+    bucket_name='sing'
+    song_url = generate_presigned_url(bucket_name, object_name, expiration=3600)  # 1 hour validity
+    personalized_content = load_and_personalize_template(event_type, outcome, to_email,song_url)
+    #app.logger.info(f"content : {personalized_content}")
     
     # Define email subjects for each event type and outcome
     subject_lines = {
@@ -38,8 +42,9 @@ def send_email(to_email, event_type, outcome):
     }
     
     # Select subject line based on event type and outcome
+    #app.logger.info("get subject")
     subject = subject_lines.get(event_type, {}).get(outcome, "Notification from MaiBhiSinger")
-
+    #app.logger.info(f"got subject: {subject}")
     # SMTP settings (as before)
     smtp_server = os.getenv('SMTP_SERVER', 'smtp.mandrillapp.com')
     smtp_user = os.getenv('SMTP_USER', 'info@maibhisinger.com')
@@ -60,5 +65,6 @@ def send_email(to_email, event_type, outcome):
             server.send_message(msg)
             print("Email sent successfully!")
     except Exception as e:
-        print(f"Failed to send email: {e}")
+        #app.logger.info(f"Failed to send email: {e}")
+
 
