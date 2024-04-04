@@ -8,7 +8,7 @@ import boto3
 import os
 from botocore.exceptions import ClientError
 import logging
-from upload import download_from_do,upload_to_do,download_for_video
+from upload import download_from_do,upload_to_do,download_for_video,generate_presigned_url
 import redis
 from redis import Redis
 from logging.handlers import RotatingFileHandler
@@ -136,24 +136,26 @@ def update_model_count(user_email,redis_client):
     
     
 
-def load_and_personalize_template(event_type, outcome, email):
+def load_and_personalize_template(event_type, outcome, email,link):
     """Load and personalize the email template based on event type and outcome."""
     filename = f'email_templates/{event_type}_{outcome}.txt'
     try:
         with open(filename, 'r', encoding='utf-8') as file:
             template = file.read()
             username = email.split('@')[0]  # Extract username from email
-            personalized_content = template.format(username=username)
+            personalized_content = template.format(username=username,link=link)
             return personalized_content
     except FileNotFoundError:
         return "Template file not found."
 
 
 
-def send_email(to_email, event_type, outcome):
+def send_email(to_email, event_type, outcome,object_name):
     # Load and personalize the email content
     app.logger.info(f"inside send email. to send email to {to_email}") 
-    personalized_content = load_and_personalize_template(event_type, outcome, to_email)
+    bucket_name='sing'
+    song_url = generate_presigned_url(bucket_name, object_name, expiration=3600)  # 1 hour validity
+    personalized_content = load_and_personalize_template(event_type, outcome, to_email,song_url)
     app.logger.info(f"content : {personalized_content}")
     
     # Define email subjects for each event type and outcome
@@ -579,7 +581,7 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
             terminate_pod(pod_id)
             app.logger.info(f"email to be sent  for successful completion to {user_email}")
             
-            send_email(user_email, 'song_conversion', 'success')
+            send_email(user_email, 'song_conversion', 'success',new_filename)
             app.logger.info("email sent for successful completion")
             
         return True, "File uploaded successfully."
@@ -600,7 +602,7 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         redis_client.delete(f'{job_id}:progress')
         if pod_id:
             terminate_pod(pod_id)
-            send_email(user_email, 'song_conversion', 'failure')
+            send_email(user_email, 'song_conversion', 'failure','')
         return False, str(e)
 
     except Exception as e:
@@ -615,7 +617,7 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         redis_client.decr(WORKER_COUNT_KEY)
         if pod_id:
             terminate_pod(pod_id)
-            send_email(user_email, 'song_conversion', 'failure')
+            send_email(user_email, 'song_conversion', 'failure','')
         return False, str(e)
 
 

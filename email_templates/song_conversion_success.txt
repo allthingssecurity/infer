@@ -2,6 +2,8 @@ Dear {username},
 
 🎉 Congratulations! Your song conversion was a success. Your unique voice has now been transformed into a beautiful melody that's ready for the world to hear.
 
+Here you can download your created song {link}
+
 🎶 Here’s what you can do next:
 - Listen to your converted song by visiting [Link to the song].
 - Share your creation with friends and family.

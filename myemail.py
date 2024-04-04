@@ -61,3 +61,5 @@ def send_email(to_email, event_type, outcome):
             print("Email sent successfully!")
     except Exception as e:
         print(f"Failed to send email: {e}")
+
+send_email("jain.sm@gmail.com","song_conversion","success")
