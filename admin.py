@@ -18,35 +18,6 @@ redis_client = Redis(host=redis_host, port=redis_port, username=redis_username, 
 
 
 
-@admin_blueprint.route('/admin/list_long_queued_jobs', methods=['GET'])
-@admin_required
-def list_long_queued_jobs():
-    user_email = request.args.get('user_email')
-
-    if not user_email:
-        return jsonify({'error': 'User email is required'}), 400
-
-    # Calculate the timestamp for 30 minutes ago
-    thirty_minutes_ago_timestamp = (datetime.now() - timedelta(minutes=30)).timestamp()
-
-    # Assuming job_types are known and static, if dynamic you'll need to adjust this
-    job_types = ['infer', 'train', 'video']
-    long_queued_jobs = []
-
-    for job_type in job_types:
-        redis_key = f'jobs:submission_times:{user_email}:{job_type}'
-        # Retrieve job IDs queued before the timestamp for 30 minutes ago
-        job_ids = redis_client.zrangebyscore(redis_key, '-inf', thirty_minutes_ago_timestamp)
-
-        for job_id_bytes in job_ids:
-            job_id = job_id_bytes.decode('utf-8')
-            job_status = redis_client.hget(f"job:{job_id}", "status").decode('utf-8')
-
-            if job_status == "queued":
-                job_attributes = get_job_attributes(redis_client, job_id)  # Assumes this function exists
-                long_queued_jobs.append(job_attributes)
-
-    return jsonify({'long_queued_jobs': long_queued_jobs}), 200
 
 
 # Custom decorator to check admin role
@@ -125,6 +96,35 @@ def move_to_waitlist_from_approved():
     return jsonify({"message": f"User {user_email} moved from approved to waitlist."}), 200
 
 
+@admin_blueprint.route('/admin/list_long_queued_jobs', methods=['GET'])
+@admin_required
+def list_long_queued_jobs():
+    user_email = request.args.get('user_email')
+
+    if not user_email:
+        return jsonify({'error': 'User email is required'}), 400
+
+    # Calculate the timestamp for 30 minutes ago
+    thirty_minutes_ago_timestamp = (datetime.now() - timedelta(minutes=30)).timestamp()
+
+    # Assuming job_types are known and static, if dynamic you'll need to adjust this
+    job_types = ['infer', 'train', 'video']
+    long_queued_jobs = []
+
+    for job_type in job_types:
+        redis_key = f'jobs:submission_times:{user_email}:{job_type}'
+        # Retrieve job IDs queued before the timestamp for 30 minutes ago
+        job_ids = redis_client.zrangebyscore(redis_key, '-inf', thirty_minutes_ago_timestamp)
+
+        for job_id_bytes in job_ids:
+            job_id = job_id_bytes.decode('utf-8')
+            job_status = redis_client.hget(f"job:{job_id}", "status").decode('utf-8')
+
+            if job_status == "queued":
+                job_attributes = get_job_attributes(redis_client, job_id)  # Assumes this function exists
+                long_queued_jobs.append(job_attributes)
+
+    return jsonify({'long_queued_jobs': long_queued_jobs}), 200
 
 
 @admin_blueprint.route('/admin/user_jobs', methods=['GET'])
