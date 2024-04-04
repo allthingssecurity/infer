@@ -5,14 +5,14 @@ from email.mime.text import MIMEText
 
 from upload import generate_presigned_url
 
-def load_and_personalize_template(event_type, outcome, email):
+def load_and_personalize_template(event_type, outcome, email,song_url):
     """Load and personalize the email template based on event type and outcome."""
     filename = f'email_templates/{event_type}_{outcome}.txt'
     try:
         with open(filename, 'r', encoding='utf-8') as file:
             template = file.read()
             username = email.split('@')[0]  # Extract username from email
-            personalized_content = template.format(username=username)
+            personalized_content = template.format(username=username,link=song_url)
             return personalized_content
     except FileNotFoundError:
         return "Template file not found."
