@@ -26,7 +26,7 @@ import requests
 from pydub import AudioSegment
 import io
 from admin import admin_blueprint
-from status import set_job_attributes,update_job_status,get_job_attributes,add_job_to_user_index,get_user_job_ids,update_job_progress,get_job_progress,get_job_status
+from status import set_job_attributes,update_job_status,get_job_attributes,add_job_to_user_index,get_user_job_ids,update_job_progress,get_job_progress,get_job_status,check_existing_jobs
 from pydub import AudioSegment
 import io
 from rq.job import Job
@@ -1352,9 +1352,25 @@ def process_audio_bak():
 
 
 
+def check_for_existing_job(job_type):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            user_email = session.get('user_email')
+            if not user_email:
+                return jsonify({"error": "User not authenticated"}), 403
+
+            if check_existing_jobs(redis_client, user_email, job_type):
+                return jsonify({"error": "you are alreading running one job of same type already"}), 409
+
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
 
 
 @app.route('/process_audio', methods=['POST'])
+@check_for_existing_job(job_type='train')  # Example usage with a job type of 'train'
 def process_audio():
     user_email = session.get('user_email')
     

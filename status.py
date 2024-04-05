@@ -3,7 +3,7 @@ from redis import Redis
 import os
 import time
 import json
-
+from datetime import datetime
 
 def add_job_to_user_index(redis_client, user_email, job_id):
     """
@@ -80,6 +80,35 @@ def update_job_status(redis_client, job_id, new_status):
     """
     key = f"job:{job_id}"
     redis_client.hset(key, "status", new_status)
+
+
+
+
+
+
+def check_existing_jobs(redis_client, user_email, type_of_job):
+    """
+    Checks if the user already has a job of the same type in 'queued' or 'started' status.
+    
+    :param redis_client: Redis connection object.
+    :param user_email: The email of the user submitting the job.
+    :param type_of_job: The type of the job being submitted.
+    :return: True if an existing job is found, False otherwise.
+    """
+    user_jobs_key = f"user_jobs:{user_email}"
+    job_ids = redis_client.smembers(user_jobs_key)  # Retrieve all job IDs associated with the user
+    
+    for job_id in job_ids:
+        job_key = f"job:{job_id.decode('utf-8')}"  # Decode the job_id from bytes to string if necessary
+        job_type = redis_client.hget(job_key, "type").decode('utf-8')  # Decode from bytes to string
+        job_status = redis_client.hget(job_key, "status").decode('utf-8')  # Decode from bytes to string
+        
+        if job_type == type_of_job and job_status in ["queued", "started"]:
+            return True  # An existing job of the same type is in 'queued' or 'started' state
+    
+    return False  # No existing job of the same type is in 'queued' or 'started' state
+
+
 
 
 def update_job_progress(redis_client, job_id, progress):
