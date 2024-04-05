@@ -100,6 +100,18 @@ def check_existing_jobs(redis_client, user_email, type_of_job):
     
     for job_id in job_ids:
         job_key = f"job:{job_id.decode('utf-8')}"  # Decode the job_id from bytes to string if necessary
+        
+                # Attempt to retrieve the job type from Redis
+        job_type_bytes = redis_client.hget(job_key, "type")
+
+        # Check if the result is not None before decoding
+        if job_type_bytes is not None:
+            job_type = job_type_bytes.decode('utf-8')
+        else:
+            # Handle the case where the job type is not set or the job does not exist
+            job_type = None  # or set a default value, or handle the error as appropriate
+
+        
         job_type = redis_client.hget(job_key, "type").decode('utf-8')  # Decode from bytes to string
         job_status = redis_client.hget(job_key, "status").decode('utf-8')  # Decode from bytes to string
         
