@@ -535,6 +535,10 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         #file_path1 = download_from_do(filename)
         #directory, filename1 = os.path.split(file_path1)
         app.logger.info(f'Before downloading audio from youtube to filepath={file_path}')
+        
+        
+        
+        
         download_video_as_mp3(youtube_link,file_path)
         app.logger.info(f'After downloading audio from youtube to filepath={file_path}')
         
@@ -590,7 +594,7 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
             terminate_pod(pod_id)
             app.logger.info(f"email to be sent  for successful completion to {user_email}")
             
-            send_email(user_email,job_id, 'song_conversion', 'success',object_name=new_filename,job_id=job_id)
+            send_email(user_email, 'song_conversion', 'success',object_name=new_filename,job_id=job_id)
             app.logger.info("email sent for successful completion")
             
         return True, "File uploaded successfully."
@@ -612,7 +616,7 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         errorMessage=str(e)
         if pod_id:
             terminate_pod(pod_id)
-            send_email(user_email,job_id, 'song_conversion', 'failure',object_name='',job_id=job_id,errorMessage=errorMessage)
+            send_email(user_email, 'song_conversion', 'failure',object_name='',job_id=job_id,errorMessage=errorMessage)
         return False, str(e)
 
     except Exception as e:
@@ -627,7 +631,7 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         redis_client.decr(WORKER_COUNT_KEY)
         if pod_id:
             terminate_pod(pod_id)
-            send_email(user_email, job_id,'song_conversion', 'failure',object_name='',job_id=job_id,errorMessage=errorMessage)
+            send_email(user_email,'song_conversion', 'failure',object_name='',job_id=job_id,errorMessage=errorMessage)
         return False, str(e)
 
 
@@ -874,7 +878,7 @@ def train_model(file_name, model_name, user_email):
             
             update_job_status(redis_client,job_id,'failed')
             redis_client.decr(WORKER_COUNT_KEY)
-            send_email(user_email, job_id,'model_training', 'failure',job_id=job_id)
+            send_email(user_email,'model_training', 'failure',job_id=job_id)
             if pod_id:
                 terminate_pod(pod_id)
                 
