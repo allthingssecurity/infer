@@ -305,6 +305,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
+document.addEventListener('DOMContentLoaded', function() {
+    const modelNameInput = document.getElementById('model_name');
+    const uploadButton = document.getElementById('upload');
+
+    modelNameInput.addEventListener('input', function() {
+        // Remove spaces and special characters, and convert to lowercase
+        this.value = this.value.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+        // Check length restriction
+        if (this.value.length > 8) {
+            this.value = this.value.substring(0, 8); // Trim to 8 characters
+            alert('Model name must be at most 8 characters long.');
+        }
+
+        // Enable or disable the upload button based on validation
+        uploadButton.disabled = !isValidModelName(this.value);
+    });
+
+    function isValidModelName(modelName) {
+        // Check if modelName is lowercase, no special characters, and 1-8 characters long
+        return /^[a-z0-9]{1,8}$/.test(modelName);
+    }
+});
+
+
+
+
+
 
 </script>
 </body>
