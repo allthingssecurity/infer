@@ -1066,6 +1066,7 @@ def start_infer():
         attributes = {
             "type": type_of_job,
             "filename": youtube_link,
+            "user_email": user_email,
             "submission_time": submission_time,
         }
 
@@ -1327,6 +1328,7 @@ def process_audio_bak():
         "type": type_of_job,
         "filename": secure_filename,
         "submission_time": submission_time,
+        
     }
     set_job_attributes(redis_client, job_id, attributes)
     update_job_status(redis_client, job_id, 'queued')
@@ -1410,6 +1412,8 @@ def process_audio():
     attributes = {
         "type": type_of_job,
         "filename": secure_filename,
+        "model_name": model_name,
+        "user_email": user_email,
         "submission_time": submission_time,
     }
     set_job_attributes(redis_client, job_id, attributes)

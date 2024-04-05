@@ -5,7 +5,7 @@ from email.mime.text import MIMEText
 
 from upload import generate_presigned_url
 
-def load_and_personalize_template(event_type, outcome, email, song_url=None, verification_code=None):
+def load_and_personalize_template(event_type, outcome, email, song_url=None, verification_code=None,job_id=None,errorMessage=None):
     """Load and personalize the email template based on event type, outcome, and optional song URL or verification code."""
     filename = f'email_templates/{event_type}_{outcome}.txt'
     try:
@@ -16,6 +16,8 @@ def load_and_personalize_template(event_type, outcome, email, song_url=None, ver
             # Initialize placeholders in case they're not used
             link_placeholder = ""
             verification_link = ""
+            error=""
+            job_identity= ""
           
             # Check if song_url is provided, and format the template accordingly
             if song_url:
@@ -25,9 +27,15 @@ def load_and_personalize_template(event_type, outcome, email, song_url=None, ver
             if verification_code:
                 
                 verification_link = f"https://yourdomain.com/verify_email?token={verification_code}"
+            
+            if errorMessage:
+                error=errorMessage
+                
+            if job_id:
+                job_identity=job_id
 
             # Use placeholders in formatting the template
-            personalized_content = template.format(username=username, link=link_placeholder, verification_link=verification_link)
+            personalized_content = template.format(username=username, link=link_placeholder, verification_link=verification_link,error=error,job_identity=job_identity)
             
             return personalized_content
     except FileNotFoundError:
@@ -37,7 +45,7 @@ def load_and_personalize_template(event_type, outcome, email, song_url=None, ver
 
 
 
-def send_email(to_email, event_type, outcome, object_name=None, verification_code=None):
+def send_email(to_email,event_type, outcome,job_id=None, object_name=None, verification_code=None,errorMessage=None):
     # Generate a presigned URL for the object, if an object name is provided
     bucket_name = 'sing'
     song_url = None
@@ -45,7 +53,7 @@ def send_email(to_email, event_type, outcome, object_name=None, verification_cod
         song_url = generate_presigned_url(bucket_name, object_name, expiration=3600)  # 1 hour validity
 
     # Load and personalize the email content based on provided parameters
-    personalized_content = load_and_personalize_template(event_type, outcome, to_email, song_url=song_url, verification_code=verification_code)
+    personalized_content = load_and_personalize_template(event_type, outcome, to_email, song_url=song_url, verification_code=verification_code,job_id=job_id,errorMessage=errorMessage)
 
     # Define email subjects for each event type and outcome
     subject_lines = {

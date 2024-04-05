@@ -1,1 +1,23 @@
-model_training_failure
+Dear {username},
+
+We regret to inform you that your recent model training attempt for your voice samples did not go as planned. 
+But dont worry we will give our best attempt to get you back on track.
+
+Here is your job id {job_identity} and possible error is {error}
+
+
+Here’s what you can do:
+- From the job tracking page , copy the job id and filename along with error if any.
+- Send an email to info@maibhisinger.com with both job id and file name mentioned in subject
+
+We will try our best to get your model ready. In case its not possible for us to do the same, we will request you to try again.
+
+
+
+
+We understand this might be disappointing, but please don't lose heart. Our team is here to support you. 
+
+Thank you for your understanding and patience.
+
+Warm regards,
+The MaiBhiSinger Team

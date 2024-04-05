@@ -590,7 +590,7 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
             terminate_pod(pod_id)
             app.logger.info(f"email to be sent  for successful completion to {user_email}")
             
-            send_email(user_email, 'song_conversion', 'success',object_name=new_filename)
+            send_email(user_email,job_id, 'song_conversion', 'success',object_name=new_filename,job_id=job_id)
             app.logger.info("email sent for successful completion")
             
         return True, "File uploaded successfully."
@@ -609,9 +609,10 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         update_job_progress(redis_client, job_id, 0)  # Progress updated to 10%
         redis_client.decr(WORKER_COUNT_KEY)
         redis_client.delete(f'{job_id}:progress')
+        errorMessage=str(e)
         if pod_id:
             terminate_pod(pod_id)
-            send_email(user_email, 'song_conversion', 'failure',object_name='')
+            send_email(user_email,job_id, 'song_conversion', 'failure',object_name='',job_id=job_id,errorMessage=errorMessage)
         return False, str(e)
 
     except Exception as e:
@@ -621,12 +622,12 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         app.logger.info(f'file ={file_key}')
         
         app.logger.error(f'Conversion failed: {e}')
-        
+        errorMessage=str(e)
         update_job_status(redis_client,job_id,'failed')
         redis_client.decr(WORKER_COUNT_KEY)
         if pod_id:
             terminate_pod(pod_id)
-            send_email(user_email, 'song_conversion', 'failure',object_name='')
+            send_email(user_email, job_id,'song_conversion', 'failure',object_name='',job_id=job_id,errorMessage=errorMessage)
         return False, str(e)
 
 
@@ -791,6 +792,16 @@ def train_model(file_name, model_name, user_email):
     job_id=job.id
     update_job_status(redis_client,job_id,'started')
     
+    gpu_models = [
+    "NVIDIA RTX A4500",
+    "NVIDIA RTX A5000",
+    "NVIDIA RTX A6000",
+    "NVIDIA RTX A4000",
+    "NVIDIA RTX A3090",
+    # Add more GPU models here as needed.
+]
+
+    
     pod_id=''
     try:
         
@@ -811,7 +822,9 @@ def train_model(file_name, model_name, user_email):
         
         bucket_name = "sing"
         #pod_id = create_pod_and_get_id("train", "smjain/train:v7", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
-        pod_id = create_pod_and_get_id("train", "smjain/train:v7", "NVIDIA RTX A4500", "5000/http", 20, env_vars,"SECURE")
+        pod_id = create_pod_and_get_id1(name="train", image_name="smjain/train:v7", gpu_models=gpu_models, ports="5000/http", container_disk_in_gb=20, env_vars=env_vars)
+        
+        #pod_id = create_pod_and_get_id("train", "smjain/train:v7", "NVIDIA RTX A4500", "5000/http", 20, env_vars,"SECURE")
         app.logger.info('After creating pod for training')
 
         if not pod_id:
@@ -854,14 +867,14 @@ def train_model(file_name, model_name, user_email):
             #push_model_to_infer(final_model_name)
             app.logger.info('pushed model to infer engine')
             redis_client.decr(WORKER_COUNT_KEY)
-            send_email(user_email, 'model_training', 'success')
+            send_email(user_email, 'model_training', 'success',job_id=job_id)
         # Proceed with additional job steps as needed
         else:
             app.logger.info('got false return from upload_files so setting job status fail')
             
             update_job_status(redis_client,job_id,'failed')
             redis_client.decr(WORKER_COUNT_KEY)
-            send_email(user_email, 'model_training', 'failure')
+            send_email(user_email, job_id,'model_training', 'failure',job_id=job_id)
             if pod_id:
                 terminate_pod(pod_id)
                 
@@ -869,11 +882,11 @@ def train_model(file_name, model_name, user_email):
         
     except Exception as e:
         app.logger.error(f'Error during model training: {e}')
-        
+        errorMessage = str(e)
         update_job_status(redis_client,job_id,'failed')
         print(f"Operation failed: {e}")
         redis_client.decr(WORKER_COUNT_KEY)
-        send_email(user_email, 'model_training', 'failure')
+        send_email(user_email, 'model_training', 'failure',job_id=job_id,errorMessage=errorMessage)
         if pod_id:
             terminate_pod(pod_id)
             

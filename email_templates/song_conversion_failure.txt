@@ -4,8 +4,12 @@ We regret to inform you that your recent song conversion attempt did not go as p
 
 Here’s what you can do:
 - Try converting a different song.
-- Review our song conversion guidelines [Link to guidelines].
+- Review our song conversion guidelines
 - Contact our support team for personalized assistance at support@maibhisinger.com.
+
+Here is your job id {job_identity} and possible error is {error}
+
+Can you please send us these details at info@maibhisinger.com
 
 We understand this might be disappointing, but please don't lose heart. Our team is here to support you, and we're eager to help you succeed with your next attempt.
 
