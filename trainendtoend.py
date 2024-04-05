@@ -488,7 +488,8 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         app.logger.info(f'After downloading audio from youtube to filepath={file_path}')
         
         bucket_name = "sing"
-        pod_id = create_pod_and_get_id("infer", "smjain/infer:v6", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
+        pod_id = create_pod_and_get_id("infer", "smjain/infer:v6", "NVIDIA RTX A4500", "5000/http", 20, env_vars,"SECURE")
+        #pod_id = create_pod_and_get_id("infer", "smjain/infer:v6", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
         update_job_progress(redis_client, job_id, 30)  # Progress updated to 10%
         app.logger.info('After creating pod for training')
 
