@@ -188,7 +188,7 @@ def create_pod_and_get_id1(name, image_name, gpu_models, ports, container_disk_i
                     return pod['id']
                 else:
                     logging.error(f"Pod creation failed for {gpu_model} on {cloud_type} cloud. No ID returned.")
-            except runpod.error.QueryError as err:
+            except (ValueError, runpod.error.QueryError) as err:
                 logging.error(f"Error creating pod with {gpu_model} on {cloud_type} cloud: {err}")
                 # This exception block catches failures and logs them. The loop then continues to the next GPU model.
         
