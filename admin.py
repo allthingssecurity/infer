@@ -3,6 +3,24 @@ from functools import wraps
 from redis import Redis
 import os
 
+import uuid
+from rq import Worker, Queue, Connection
+from redis import Redis
+from upload import upload_to_do,download_from_do,download_from_do_with_job_id,download_for_video,generate_presigned_url
+from werkzeug.utils import secure_filename
+from multiprocessing import Process
+from credit import get_user_credits,update_user_credits,use_credit,add_credits
+from datetime import datetime
+import requests
+from pydub import AudioSegment
+import io
+from admin import admin_blueprint
+from status import set_job_attributes,update_job_status,get_job_attributes,add_job_to_user_index,get_user_job_ids,update_job_progress,get_job_progress,get_job_status,check_existing_jobs
+from pydub import AudioSegment
+import io
+from rq.job import Job
+
+
 from datetime import datetime, timedelta
 import time
 from myemail import send_email
@@ -15,7 +33,7 @@ redis_username = os.getenv('REDIS_USERNAME', 'default')
 redis_password = os.getenv('REDIS_PASSWORD', '')
 redis_client = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
 
-
+q = Queue(connection=redis_client)
 
 
 
