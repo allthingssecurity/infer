@@ -160,9 +160,51 @@ def terminate_pod(pod_id) :
     except Exception as e:
         app.logger.info("unable to delete pod with id:{pod_id}")
 
-# Create a pod
+
+def create_pod_and_get_id1(name, image_name, gpu_models, ports, container_disk_in_gb, env_vars):
+    """
+    Attempts to create a pod with specified configurations, retrying with different GPU types. 
+    If all attempts fail in 'SECURE' cloud type, retries with 'COMMUNITY' cloud type.
+
+    :param name: Name of the pod.
+    :param image_name: Name of the Docker image.
+    :param gpu_models: List of GPU model names to try.
+    :param ports: Port mappings.
+    :param container_disk_in_gb: Disk size for the container.
+    :param env_vars: Environment variables for the pod.
+    :return: Pod ID if creation succeeds, None otherwise.
+    """
+    cloud_types = ["SECURE", "COMMUNITY"]
+    
+    for cloud_type in cloud_types:
+        for gpu_model in gpu_models:
+            try:
+                logging.info(f"Attempting to create pod with {gpu_model} on {cloud_type} cloud.")
+                pod = runpod.create_pod(name=name, image_name=image_name, gpu_type_id=gpu_model, cloud_type=cloud_type,
+                                        ports=ports, container_disk_in_gb=container_disk_in_gb, env=env_vars)
+                
+                if pod and 'id' in pod:
+                    logging.info(f"Pod created successfully: {pod['id']}")
+                    return pod['id']
+                else:
+                    logging.error(f"Pod creation failed for {gpu_model} on {cloud_type} cloud. No ID returned.")
+            except runpod.error.QueryError as err:
+                logging.error(f"Error creating pod with {gpu_model} on {cloud_type} cloud: {err}")
+                # This exception block catches failures and logs them. The loop then continues to the next GPU model.
+        
+        logging.info(f"All GPU models tried in {cloud_type} cloud. Switching to next cloud type if available.")
+
+    logging.error("Failed to create pod with any GPU model or cloud type.")
+    return None
+
+
+
+
+
+#Create a pod
 def create_pod_and_get_id(name, image_name, gpu_type_id, ports, container_disk_in_gb, env_vars, cloud_type):
     try:
+        
         pod = runpod.create_pod(name=name, image_name=image_name, gpu_type_id=gpu_type_id, cloud_type=cloud_type,
                                 ports=ports, container_disk_in_gb=container_disk_in_gb, env=env_vars)
         
@@ -475,6 +517,15 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
     #os.rename(file_path1, file_path)
     #app.logger.error(f'new file path=: {file_path}')
     
+    gpu_models = [
+    "NVIDIA RTX A4500",
+    "NVIDIA RTX A5000",
+    "NVIDIA RTX A6000",
+    "NVIDIA RTX A4000",
+    "NVIDIA RTX A3090",
+    # Add more GPU models here as needed.
+]
+    
 
     try:
         
@@ -487,8 +538,15 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         download_video_as_mp3(youtube_link,file_path)
         app.logger.info(f'After downloading audio from youtube to filepath={file_path}')
         
+        
+        
+        
+        
+        
         bucket_name = "sing"
-        pod_id = create_pod_and_get_id("infer", "smjain/infer:v6", "NVIDIA RTX A4500", "5000/http", 20, env_vars,"SECURE")
+        #def create_pod_and_get_id1(name, image_name, gpu_models, ports, container_disk_in_gb, env_vars):
+        
+        pod_id = create_pod_and_get_id1(name="infer", image_name="smjain/infer:v6", gpu_models="NVIDIA RTX A4500", ports="5000/http", container_disk_in_gb=20, env_vars=env_vars)
         #pod_id = create_pod_and_get_id("infer", "smjain/infer:v6", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
         update_job_progress(redis_client, job_id, 30)  # Progress updated to 10%
         app.logger.info('After creating pod for training')
