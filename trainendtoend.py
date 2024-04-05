@@ -803,9 +803,10 @@ def train_model(file_name, model_name, user_email):
             
             update_job_status(redis_client,job_id,'failed')
             redis_client.decr(WORKER_COUNT_KEY)
+            send_email(user_email, 'model_training', 'failure')
             if pod_id:
                 terminate_pod(pod_id)
-                send_email(user_email, 'model_training', 'failure')
+                
         
         
     except Exception as e:
@@ -814,9 +815,10 @@ def train_model(file_name, model_name, user_email):
         update_job_status(redis_client,job_id,'failed')
         print(f"Operation failed: {e}")
         redis_client.decr(WORKER_COUNT_KEY)
+        send_email(user_email, 'model_training', 'failure')
         if pod_id:
             terminate_pod(pod_id)
-            send_email(user_email, 'model_training', 'failure')
+            
 
 
 def generate_video_call(image_file_path, audio_file_path,audio_job_id, key,url):
