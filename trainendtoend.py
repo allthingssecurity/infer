@@ -161,9 +161,9 @@ def terminate_pod(pod_id) :
         app.logger.info("unable to delete pod with id:{pod_id}")
 
 # Create a pod
-def create_pod_and_get_id(name, image_name, gpu_type_id, ports, container_disk_in_gb, env_vars):
+def create_pod_and_get_id(name, image_name, gpu_type_id, ports, container_disk_in_gb, env_vars, cloud_type):
     try:
-        pod = runpod.create_pod(name=name, image_name=image_name, gpu_type_id=gpu_type_id,
+        pod = runpod.create_pod(name=name, image_name=image_name, gpu_type_id=gpu_type_id, cloud_type=cloud_type,
                                 ports=ports, container_disk_in_gb=container_disk_in_gb, env=env_vars)
         
         pod_id = pod['id']
@@ -367,7 +367,7 @@ def convert_voice(filename, spk_id, user_email):
         app.logger.error(f'new file path=: {file_path}')
         
         bucket_name = "sing"
-        pod_id = create_pod_and_get_id("infer", "smjain/infer:v6", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
+        pod_id = create_pod_and_get_id("infer", "smjain/infer:v6", "NVIDIA RTX A4500", "5000/http", 20, env_vars,"SECURE")
         app.logger.info('After creating pod for training')
 
         if not pod_id:
