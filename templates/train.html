@@ -47,6 +47,26 @@
         form input[type="text"], form input[type="file"], form select, form input[type="submit"], .record-controls button {
             max-width: 100%;
         }
+		
+		.loader {
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -60px 0 0 -60px; /* Offset to center the spinner */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+		
         @media (max-width: 599px) {
             .left-aligned-container {
                 max-width: none;
@@ -103,6 +123,9 @@
         </div>
     </div>
 </header>
+<div id="spinner" style="display: none;">
+    <div class="loader"></div>
+</div>
 
 <div class="left-aligned-container">
     <h2>Record Audio</h2>
@@ -225,6 +248,7 @@ const hindiScript = ` कल्पना कीजिए कि आप एक �
 	    });
 
 	    document.getElementById("upload").addEventListener("click", function() {
+		    document.getElementById('spinner').style.display = 'block';
 	        const modelName = document.getElementById("model_name").value.replace(/\s+/g, ''); // Removes spaces
 	        const uniqueId = Math.random().toString(36).substring(2, 10); // Generates an 8-character unique ID
 	        const formData = new FormData();
@@ -237,15 +261,18 @@ const hindiScript = ` कल्पना कीजिए कि आप एक �
 	        })
 	        .then(response => {
 	            if (!response.ok) {
+				     document.getElementById('spinner').style.display = 'none';
 	                throw new Error('Network response was not ok');
 	            }
 	            return response.json();
 	        })
 	        .then(data => {
+			    document.getElementById('spinner').style.display = 'none';
 	            console.log(data);
-	            alert('Upload successful!');
+	            alert('Your audio sample has been uploaded successfuly. Once processing is over we will notify you via email');
 	        })
 	        .catch(error => {
+			     document.getElementById('spinner').style.display = 'none';
 	            console.error('Error during the upload:', error);
 	            alert('Upload failed.');
 	        });

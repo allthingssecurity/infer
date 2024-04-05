@@ -50,7 +50,7 @@ from tzlocal import get_localzone # Import tzlocal
 #import razorpay
 #client = razorpay.Client(auth=("YOUR_API_KEY", "YOUR_API_SECRET"))
 
-# Now you can use datetime in your code
+# Now you can use  in your code
 
 
 
@@ -1282,115 +1282,8 @@ def user_job_key(user_email,type_of_job):
     return f"user_jobs_{type_of_job}:{user_email}"
 
 
-@app.route('/process_audio1', methods=['POST'])
-def process_audio1():
-    user_email = session.get('user_email')
-    
-    if is_feature_waitlist_enabled():
-        if not is_user_authorized(user_email):
-            if is_user_in_waitlist(user_email):
-                return jsonify({'error': 'You are on the waitlist but not yet authorized. Please wait for authorization.'}), 403
-            else:
-                return jsonify({'error': 'You must join the waitlist to access this feature.'}), 403
-
-    #if has_active_jobs(user_email,'train'):
-    #    app.logger.info(f"job already running for this user {user_email} ")
-    #    return jsonify({'message': 'Cannot submit new job. A job is already queued or started'})
-    
-    
-    
-    
-    credit_count=get_user_credits(user_email,'song')
-    app.logger.info(f"credits for {user_email}={credit_count}")
-    if (credit_count >0):
-    
-        
-    
-    
-        app.logger.info("enough credits")
-        if 'file' not in request.files:
-            return jsonify({'error': 'No file part'})
-        file = request.files['file']
-        model_name = request.form.get('model_name', '')
-        #converted_path = convert_audio_to_mp3(file)
-        
-        app.logger.info(f"model for {user_email}={model_name}")
-        
-        if file and file.filename == '':
-        # If no filename is detected, assign a default or generated filename
-            filename = 'default_filename.mp3'
-        else:
-        # Use the actual filename from the upload
-            filename = file.filename
-        
-        #if file.filename == '':
-        #    app.logger.info(f"no file name")
-        #    return jsonify({'error': 'No selected file'})
-        app.logger.info(f"before analysing audio")
-        analysis_results = analyze_audio_file(file)
-        app.logger.info(f"after analysing audio")
-        if not analysis_results['success']:
-            return jsonify({"error": analysis_results['error']}), 400    
-        
-        if file:
-        
-            #validation_response, status_code = validate_audio_file(file)
-            #if validation_response:
-            #    return validation_response, status_code
-            file.seek(0)
-            filename = uuid.uuid4().hex + '_' + file.filename
-            filepath = os.path.join(UPLOAD_FOLDER, filename)
-            file.save(filepath)
-            
-            print(filepath)
-            app.logger.info(f"filepath={filepath}")
-            response = upload_to_do(filepath)
-            user_email = session.get('user_email')
-            print(user_email)
-            # Adjusted to pass filepath and speaker_name to the main function
-            job = q.enqueue_call(
-                func=train_model, 
-                args=(filename, model_name,user_email),  # Positional arguments for my_function
-                
-                timeout=2500  # Job-specific parameters like timeout
-            )
-            
-                        
-            type_of_job='train'
-            job_id = job.id
-            add_job_to_user_index(redis_client,user_email,job_id)
-            attributes = {
-                "type": type_of_job,
-                "filename": filename,
-                "type":type_of_job,
-                
-                "submission_time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                
-            }
-
-                    # Set job attributes
-                    
-            set_job_attributes(redis_client,job_id, attributes)
-                
-            if user_email:
-                # Update Redis with the new job ID and its initial status
-                #user_key = user_job_key(user_email,'train')
-                #redis_client.hset(user_key, job.id, "queued")  # Initial status is "queued"
-                update_job_status(redis_client,job_id,'queued')
-                #job = q.enqueue(main, filename, model_name)
-                p = Process(target=start_worker)
-                p.start()     
-                return jsonify({'message': 'Model Training Job Started with ', 'job_id': job.get_id()})
-    else:
-        app.logger.info(f"max train jobs exceeded for the user {user_email} ")
-        return jsonify({'message': 'You have reached max limits '})
-
-
-
-
-
-@app.route('/process_audio', methods=['POST'])
-def process_audio():
+@app.route('/process_audio_bak', methods=['POST'])
+def process_audio_bak():
     user_email = session.get('user_email')
     
     # Insert your feature waitlist and credit checks here.
@@ -1456,6 +1349,72 @@ def process_audio():
     # p.start()
 
     return jsonify({'message': 'Model Training Job Started', 'job_id': job_id})
+
+
+
+
+
+@app.route('/process_audio', methods=['POST'])
+def process_audio():
+    user_email = session.get('user_email')
+    
+    # Insert your feature waitlist and credit checks here.
+    
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    
+    file = request.files['file']
+    model_name = request.form.get('model_name', '')
+
+    # Convert the audio file to MP3 if necessary and get the path.
+    original_filename = file.filename
+    secure_filename = uuid.uuid4().hex + '_' + original_filename
+    filepath = os.path.join(UPLOAD_FOLDER, secure_filename)
+    response = upload_to_do(filepath)
+    
+    
+    
+    #app.logger.info("Before adjusting loudness of audio")
+    #filepath=adjust_loudness(filepath)
+    #app.logger.info("After adjusting loudness of audio")
+    # File has been analyzed; now move it to a permanent location.
+    
+    
+    # Example of further processing: queue a job for model training.
+    job = q.enqueue_call(func=train_model, args=(secure_filename, model_name, user_email), timeout=2500)
+    job_id = job.get_id()
+    add_job_to_user_index(redis_client, user_email, job_id)
+    type_of_job='train'
+    submission_time= datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    attributes = {
+        "type": type_of_job,
+        "filename": secure_filename,
+        "submission_time": submission_time,
+    }
+    set_job_attributes(redis_client, job_id, attributes)
+    update_job_status(redis_client, job_id, 'queued')
+    
+    
+
+# Convert the string back to a datetime object
+    submission_datetime = datetime.strptime(submission_time, '%Y-%m-%d %H:%M:%S')
+
+# Convert the datetime object to a Unix timestamp (float)
+    submission_timestamp = submission_datetime.timestamp()
+
+    redis_key = f'jobs:submission_times:{user_email}:{type_of_job}'
+    redis_client.zadd(redis_key, {job_id: submission_timestamp})
+    
+
+    # Optionally, start a background worker if not already running.
+    # Be cautious with starting processes; ensure it's controlled and necessary.
+    # p = Process(target=start_worker)
+    # p.start()
+
+    return jsonify({'message': 'Model Training Job Started', 'job_id': job_id})
+
+
+
 
 
 

@@ -601,6 +601,77 @@ def download_and_save_mp3(url,audio_id, save_path):
 
 
 
+
+
+
+
+import os
+import subprocess
+import magic
+import uuid
+from werkzeug.utils import secure_filename
+import logging
+
+def convert_audio_to_mp3(filepath, upload_folder='/tmp'):
+    """
+    Checks the MIME type of the uploaded file and converts it to MP3 if necessary.
+    Assumes the file is already downloaded from DigitalOcean Spaces to a local path.
+
+    Args:
+        filepath (str): The path to the file downloaded from DigitalOcean Spaces.
+        upload_folder (str): The directory where the converted file will be saved.
+
+    Returns:
+        str: Path to the MP3 file or the original file.
+    """
+    # Ensure the upload folder exists
+    os.makedirs(upload_folder, exist_ok=True)
+
+    # Extract the filename from the filepath
+    original_filename = os.path.basename(filepath)
+    logging.info(f"Processing file: {original_filename}")
+
+    # Use python-magic to identify the MIME type of the file
+    mime_type = magic.from_file(filepath, mime=True)
+    logging.info(f"File MIME type: {mime_type}")
+
+    # Define the output path
+    output_filename = original_filename.rsplit('.', 1)[0] + '.mp3'
+    output_path = os.path.join(upload_folder, output_filename)
+
+    # Check if the file is already in MP3 format or if it's a supported audio format for conversion
+    if mime_type == 'audio/mpeg':
+        logging.info("File is already an MP3, so no conversion needed.")
+        return filepath
+    elif mime_type in ['audio/wav', 'audio/webm', 'audio/ogg', 'video/webm', 'video/mp4']:
+        logging.info("Converting to MP3...")
+        # Convert to MP3 using FFmpeg
+        command = ['ffmpeg', '-i', filepath, '-vn', '-ar', '44100', '-ac', '2', '-b:a', '192k', output_path]
+        logging.info(f"Executing command: {' '.join(command)}")
+        subprocess.run(command, check=True)
+        
+        # Cleanup the temporary original file if conversion was successful and if it's different from the output
+        if filepath != output_path:
+            os.remove(filepath)
+        return output_path
+    else:
+        # Unsupported format, return the original file or handle accordingly
+        logging.info("Unsupported file format for conversion.")
+        return filepath
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def train_model(file_name, model_name, user_email):
     job = get_current_job()
     job_id=job.id
@@ -619,12 +690,32 @@ def train_model(file_name, model_name, user_email):
         check_pod_is_ready(pod_id)
         app.logger.info('checked that pod is ready now')
         file_path = download_from_do(file_name)
+        
+        
+        
+        converted_path = convert_audio_to_mp3(file_path)
+        
+        app.logger.info(f"converted path={converted_path}")
+        
+        
+        analysis_results = analyze_audio_file1(converted_path)
+        app.logger.info("After analysing audio")
+        if not analysis_results['success']:
+            return jsonify({"error": analysis_results['error']}), 400
+   
+        
+        
+        
+        
+        
+        
+        
         app.logger.info('downloaded file from do')
         final_model_name = f"{user_email}_{model_name}"
         
         url = f'https://{pod_id}--5000.proxy.runpod.net/process_audio'
         app.logger.info('before call to upload files for training done')
-        success, message = upload_files(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, file_path)
+        success, message = upload_files(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, converted_path)
         #success, message = asyncio.run(upload_files_async(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, file_path))
         if success:
             
@@ -646,6 +737,7 @@ def train_model(file_name, model_name, user_email):
             #push_model_to_infer(final_model_name)
             app.logger.info('pushed model to infer engine')
             redis_client.decr(WORKER_COUNT_KEY)
+            send_email(user_email, 'model_training', 'success')
         # Proceed with additional job steps as needed
         else:
             app.logger.info('got false return from upload_files so setting job status fail')
@@ -654,6 +746,7 @@ def train_model(file_name, model_name, user_email):
             redis_client.decr(WORKER_COUNT_KEY)
             if pod_id:
                 terminate_pod(pod_id)
+                send_email(user_email, 'model_training', 'failure')
         
         
     except Exception as e:
@@ -664,6 +757,7 @@ def train_model(file_name, model_name, user_email):
         redis_client.decr(WORKER_COUNT_KEY)
         if pod_id:
             terminate_pod(pod_id)
+            send_email(user_email, 'model_training', 'failure')
 
 
 def generate_video_call(image_file_path, audio_file_path,audio_job_id, key,url):
