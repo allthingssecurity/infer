@@ -748,7 +748,7 @@ def train_model(file_name, model_name, user_email):
         analysis_results = analyze_audio_file1(converted_path)
         app.logger.info("After analysing audio")
         if not analysis_results['success']:
-            return jsonify({"error": analysis_results['error']}), 400
+            raise Exception("Audio analysis failed. either audio is too short in length or too large.")
     
         
         bucket_name = "sing"
