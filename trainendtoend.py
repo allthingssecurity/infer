@@ -612,6 +612,52 @@ import uuid
 from werkzeug.utils import secure_filename
 import logging
 
+from pydub import AudioSegment
+import os
+import tempfile
+
+def analyze_audio_file1(file_path, max_size_bytes=10*1024*1024, max_duration_minutes=6):
+    """
+    Analyzes an uploaded audio file for size, format, and duration.
+
+    :param file_path: Path to the audio file.
+    :param max_size_bytes: Maximum allowed file size in bytes.
+    :param max_duration_minutes: Maximum allowed audio duration in minutes.
+    :return: A dictionary with success status, an error message if applicable, the audio duration in minutes, and a format check.
+    """
+    print("entered analyse audio")
+    app.logger.info("entered audio analysis")
+    
+    # Check if the file extension is .mp3
+    if not file_path.lower().endswith('.mp3'):
+        return {'success': False, 'error': 'Only MP3 files are allowed.', 'duration': None}
+    app.logger.info("file check succeeded")
+    
+    try:
+        # Check file size
+        app.logger.info("entered try block")
+        file_size = os.path.getsize(file_path)
+        if file_size > max_size_bytes:
+            return {'success': False, 'error': 'File size exceeds the allowed limit.', 'duration': None}
+        
+        # Load the audio file for processing
+        app.logger.info("before reading")
+        audio = AudioSegment.from_file(file_path)
+        
+        # Calculate audio length in minutes
+        audio_length_minutes = len(audio) / 60000.0
+        app.logger.info(f"audio length={audio_length_minutes}")
+        if audio_length_minutes > max_duration_minutes:
+            return {'success': False, 'error': 'Audio length exceeds the allowed duration.', 'duration': audio_length_minutes}
+    
+    except Exception as e:
+        app.logger.error(f"error in file analysis={str(e)}")
+        return {'success': False, 'error': f'Failed to process the audio file: {str(e)}', 'duration': None}
+    
+    # If all checks pass
+    return {'success': True, 'error': None, 'duration': audio_length_minutes}
+
+
 def convert_audio_to_mp3(filepath, upload_folder='/tmp'):
     """
     Checks the MIME type of the uploaded file and converts it to MP3 if necessary.
@@ -679,16 +725,7 @@ def train_model(file_name, model_name, user_email):
     
 
     try:
-        bucket_name = "sing"
-        #pod_id = create_pod_and_get_id("train", "smjain/train:v7", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
-        pod_id = create_pod_and_get_id("train", "smjain/train:v7", "NVIDIA RTX A4500", "5000/http", 20, env_vars,"SECURE")
-        app.logger.info('After creating pod for training')
-
-        if not pod_id:
-            raise Exception("Failed to create the pod or retrieve the pod ID.")
-
-        check_pod_is_ready(pod_id)
-        app.logger.info('checked that pod is ready now')
+        
         file_path = download_from_do(file_name)
         
         
@@ -704,13 +741,25 @@ def train_model(file_name, model_name, user_email):
             return jsonify({"error": analysis_results['error']}), 400
    
         
+        bucket_name = "sing"
+        #pod_id = create_pod_and_get_id("train", "smjain/train:v7", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
+        pod_id = create_pod_and_get_id("train", "smjain/train:v7", "NVIDIA RTX A4500", "5000/http", 20, env_vars,"SECURE")
+        app.logger.info('After creating pod for training')
+
+        if not pod_id:
+            raise Exception("Failed to create the pod or retrieve the pod ID.")
+
+        check_pod_is_ready(pod_id)
+        app.logger.info('checked that pod is ready now')
         
         
         
         
         
         
-        app.logger.info('downloaded file from do')
+        
+        
+        
         final_model_name = f"{user_email}_{model_name}"
         
         url = f'https://{pod_id}--5000.proxy.runpod.net/process_audio'
