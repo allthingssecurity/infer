@@ -525,7 +525,7 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
     "NVIDIA RTX A3090",
     # Add more GPU models here as needed.
 ]
-    
+    pod_id=''
 
     try:
         
