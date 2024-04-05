@@ -609,7 +609,8 @@ def train_model(file_name, model_name, user_email):
 
     try:
         bucket_name = "sing"
-        pod_id = create_pod_and_get_id("train", "smjain/train:v7", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
+        #pod_id = create_pod_and_get_id("train", "smjain/train:v7", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
+        pod_id = create_pod_and_get_id("train", "smjain/train:v7", "NVIDIA RTX A4500", "5000/http", 20, env_vars,"SECURE")
         app.logger.info('After creating pod for training')
 
         if not pod_id:
@@ -724,6 +725,7 @@ def generate_video_job(source_image_path, job_id1,ref_video_path, audio_job_id,k
     try:
         bucket_name = "sing"
         pod_id = create_pod_and_get_id("video", "smjain/talker:v5", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
+        
         app.logger.info('After creating pod for training')
 
         if not pod_id:
