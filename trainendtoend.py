@@ -733,7 +733,7 @@ def train_model(file_name, model_name, user_email):
     job_id=job.id
     update_job_status(redis_client,job_id,'started')
     
-
+    pod_id=''
     try:
         
         file_path = download_from_do(file_name)
