@@ -115,7 +115,8 @@
 
         $('#addCreditsForm').submit(function(e) {
             e.preventDefault();
-            ajaxPost('/admin/add_credits', $(this).serialize());
+            
+			ajaxPost('/admin/add_credits', JSON.stringify(getFormData($(this))), 'application/json');
         });
 
         $('#deleteJobForm').submit(function(e) {
