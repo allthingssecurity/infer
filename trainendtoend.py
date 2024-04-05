@@ -631,7 +631,7 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         redis_client.decr(WORKER_COUNT_KEY)
         if pod_id:
             terminate_pod(pod_id)
-            send_email(user_email,'song_conversion', 'failure',object_name='',job_id=job_id,errorMessage=errorMessage)
+        send_email(user_email,'song_conversion', 'failure',object_name='',job_id=job_id,errorMessage=errorMessage)
         return False, str(e)
 
 
