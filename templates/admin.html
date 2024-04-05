@@ -22,6 +22,8 @@
 	<option value="removeFromWaitList">Remove From WaitList</option>
 	<option value="deleteSpecificJob">Delete Specific Job</option>
 	<option value="listLongQueuedJobs">List Long Queued Jobs</option>
+	<option value="retriggerJob">Retrigger Job</option>
+
 
 
 
@@ -102,6 +104,19 @@
         <button type="submit">Delete Job</button>
     </form>
 </div>
+
+<div id="retriggerJob" class="formContainer hidden">
+    <h3>Retrigger Job</h3>
+    <form id="retriggerJobForm">
+        <input type="email" name="user_email" placeholder="User Email" required><br>
+        <input type="text" name="filename" placeholder="Filename" required><br>
+        <input type="text" name="model_name" placeholder="Model Name" required><br>
+        <button type="submit">Retrigger Job</button>
+    </form>
+</div>
+
+
+
 <div id="resultsContainer"></div>
 
 
@@ -147,6 +162,12 @@ $('#moveBackToWaitListForm').submit(function(e) {
     e.preventDefault();
     ajaxPost('/admin/move_to_waitlist_from_approved', JSON.stringify(getFormData($(this))), 'application/json');
 });
+
+$('#retriggerJobForm').submit(function(e) {
+    e.preventDefault();
+    ajaxPost('/admin/retrigger_job', JSON.stringify(getFormData($(this))), 'application/json');
+});
+
 
         $('#checkWaitlistBtn').click(function() {
             $.ajax({

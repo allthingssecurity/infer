@@ -344,3 +344,52 @@ def user_jobs_attributes():
             jobs_data[job_id] = job_attributes
     
     return jsonify({'jobs': jobs_data}), 200
+
+
+
+@admin_blueprint.route('/admin/retrigger_job', methods=['POST'])
+@admin_required
+def admin_retrigger_job():
+    # Admin authentication (adjust according to your auth system)
+
+    # Extracting user email and filename from the request
+ 
+    data = request.get_json()  # Get data as JSON
+    user_email = data.get('user_email')
+    filename = data.get('filename')
+    model_name = data.get('model_name', 'default_model')
+
+ 
+    if not user_email or not filename:
+        return jsonify({'error': 'Missing user email or filename'}), 400
+
+    # Construct the ` for the existing file in Digital Ocean Spaces
+    # Assuming files are named after the secure_filename and stored in a known UPLOAD_FOLDER
+    secure_filename = filename  # If filename is already the secure filename
+    #filepath = os.path.join(UPLOAD_FOLDER, secure_filename)
+
+    # Here, instead of saving and uploading the file again, use the existing file's path
+    # since the file is already in Digital Ocean Spaces
+
+    # Enqueue the job for processing with the provided details
+    job = q.enqueue_call(func=train_model, args=(secure_filename, model_name, user_email), timeout=2500)
+    job_id = job.get_id()
+
+    # Log the job submission for the user
+    submission_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    attributes = {
+        "type": 'train',  # Assuming the job type
+        "filename": secure_filename,
+        "submission_time": submission_time,
+    }
+    set_job_attributes(redis_client, job_id, attributes)
+    update_job_status(redis_client, job_id, 'queued')
+    add_job_to_user_index(redis_client, user_email, job_id)
+
+    # Optionally, if your system tracks job submissions by timestamp
+    submission_datetime = datetime.strptime(submission_time, '%Y-%m-%d %H:%M:%S')
+    submission_timestamp = submission_datetime.timestamp()
+    redis_key = f'jobs:submission_times:{user_email}:train'
+    redis_client.zadd(redis_key, {job_id: submission_timestamp})
+
+    return jsonify({'message': 'Job re-triggered for user.', 'job_id': job_id}), 200
