@@ -1369,7 +1369,12 @@ def process_audio():
     # Convert the audio file to MP3 if necessary and get the path.
     original_filename = file.filename
     secure_filename = uuid.uuid4().hex + '_' + original_filename
+    
     filepath = os.path.join(UPLOAD_FOLDER, secure_filename)
+    file.save(filepath)
+    
+    
+    
     response = upload_to_do(filepath)
     
     
