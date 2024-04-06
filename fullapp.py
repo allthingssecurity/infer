@@ -92,10 +92,10 @@ razorpay_key = os.getenv('RAZORPAY_KEY', '')
 razorpay_secret = os.getenv('RAZORPAY_SECRET', '')
 
 
-Cashfree.XClientId = os.getenv('CASHFREE_CLIENT_ID','')
-Cashfree.XClientSecret = os.getenv('CASHFREE_CLIENT_SECRET','')
-Cashfree.XEnvironment = os.getenv('CASHFREE_ENVIRONMENT','Cashfree.XSandbox')
-x_api_version = "2023-08-01"
+#Cashfree.XClientId = os.getenv('CASHFREE_CLIENT_ID','')
+#Cashfree.XClientSecret = os.getenv('CASHFREE_CLIENT_SECRET','')
+#Cashfree.XEnvironment = os.getenv('CASHFREE_ENVIRONMENT','Cashfree.XSandbox')
+#x_api_version = "2023-08-01"
 
 
 
@@ -2038,7 +2038,7 @@ def create_order():
         app.logger.info(f"before calling order creation with client id {Cashfree.XClientId}")
         app.logger.info(f"before calling order creation with client se {Cashfree.XClientSecret}")
         app.logger.info(f"before calling order creation with env {Cashfree.XEnvironment}")
-        x_api_version = "2023-08-01"
+        #x_api_version = "2023-08-01"
 
         customerDetails = CustomerDetails(customer_id="walterwNrcMi", customer_phone="9999999999")
 
