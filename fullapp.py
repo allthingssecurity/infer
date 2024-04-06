@@ -2109,7 +2109,7 @@ def submit_order_confirmation():
         payment_message = additional_info.get('paymentDetails', {}).get('paymentMessage')
 
         # Log the received data to the console
-        print(f"Order ID: {order_id}, Status: {status}, Payment Message: {payment_message}")
+        app.logger.info(f"Order ID: {order_id}, Status: {status}, Payment Message: {payment_message}")
         
         
         existing_order_data_str = redis_client.hget(user_email, order_id)
