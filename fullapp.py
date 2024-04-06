@@ -2011,7 +2011,7 @@ def create_order():
         return redirect(url_for('login'))
     
     order_id = generate_order_id()
-    item_type= request.json['type']
+    item_type= request.json['orderType']
     amount = request.json['amount']
 
     customer_details = CustomerDetails(customer_id=user_email, customer_phone="9999999999")
