@@ -449,6 +449,20 @@ def analyze_audio_file(file, max_size_bytes=10*1024*1024, max_duration_minutes=6
     # If all checks pass
     return {'success': True, 'error': None, 'duration': audio_length_minutes}
 
+def check_for_existing_job(job_type):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            user_email = session.get('user_email')
+            if not user_email:
+                return jsonify({"error": "User not authenticated"}), 403
+
+            if check_existing_jobs(redis_client, user_email, job_type):
+                return jsonify({"error": "you are alreading running one job of same type already"}), 409
+
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
 
     
 
@@ -499,6 +513,10 @@ def verify_email():
         # Add the user to the waitlist and clear the verification code
         redis_client.sadd("waitlist_users", user_email)
         redis_client.delete(f"waitlist_verification:{user_email}")
+        
+        #send email to myself
+        #send_email(to_email,event_type, outcome,job_id=None, object_name=None, verification_code=None,errorMessage=None):
+        
         
         return jsonify({'message': 'Email verified and added to waitlist. We will get back to you. Till that time you can check samples'}), 200
     else:
@@ -1356,20 +1374,6 @@ def process_audio_bak():
 
 
 
-def check_for_existing_job(job_type):
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            user_email = session.get('user_email')
-            if not user_email:
-                return jsonify({"error": "User not authenticated"}), 403
-
-            if check_existing_jobs(redis_client, user_email, job_type):
-                return jsonify({"error": "you are alreading running one job of same type already"}), 409
-
-            return f(*args, **kwargs)
-        return decorated_function
-    return decorator
 
 
 
