@@ -2054,8 +2054,8 @@ def create_order():
         #api_response = Cashfree().PGCreateOrder(x_api_version, create_order_request, None, None)
         #app.logger.info(f"after calling order creation with order{api_response}")
         # Save response in Redis
-        redis_client.hset(user_email, order_id, json.dumps(api_response.data))
-        return jsonify({'paymentSessionId': api_response.data['payment_session_id'], 'orderId': order_id}), 200
+        #redis_client.hset(user_email, order_id, json.dumps(api_response.data))
+        return jsonify({'paymentSessionId': api_response.data.payment_session_id, 'orderId': order_id}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
