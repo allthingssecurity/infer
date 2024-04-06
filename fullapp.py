@@ -1067,6 +1067,7 @@ def start_infer():
             "type": type_of_job,
             "filename": youtube_link,
             "user_email": user_email,
+            "spk_id": speaker_name ,
             "submission_time": submission_time,
         }
 
