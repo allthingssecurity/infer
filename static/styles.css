@@ -192,7 +192,9 @@ body, html {
     display: block;
 }
 
-
+main {
+    padding-top: 70px; /* Adjust this value based on the actual height of your navbar */
+}
 .main-container {
     display: flex;
     justify-content: space-between;
