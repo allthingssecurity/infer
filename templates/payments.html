@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Order and Checkout</title>
+    <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>" type="text/javascript"></script> <!-- Include the Cashfree SDK for checkout -->
+    <style>
+        body {
+            font-family: Arial, sans-serif; /* Makes the text readable */
+            margin: 20px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input, select, button {
+            margin-top: 8px;
+            width: 200px;
+            height: 30px;
+            display: block;
+        }
+        button {
+            background-color: #4CAF50; /* Green */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Order and Checkout</h1>
+    <form id="orderForm">
+        <input type="number" id="amount" placeholder="Enter amount" required>
+        <select id="orderType" required>
+            <option value="">Choose an order type</option>
+            <option value="songs">Songs</option>
+            <option value="model">Model</option>
+            <option value="video">Video</option>
+        </select>
+        <button type="submit">Create Order</button>
+    </form>
+
+    <script>
+        document.getElementById('orderForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const amount = document.getElementById('amount').value;
+            const orderType = document.getElementById('orderType').value;
+
+            fetch('/create_order', {  // Endpoint to create an order
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    amount: amount,
+                    orderType: orderType
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.paymentSessionId) {
+                    // Use Cashfree's SDK to handle the checkout
+                    const checkoutOptions = {
+                        "paymentSessionId": data.paymentSessionId,
+                        "redirectTarget": "_modal"
+                    };
+
+                    const checkout = new Cashfree.Checkout(checkoutOptions);
+                    checkout.init().then(response => {
+                        console.log("Checkout response:", response);
+                        // Potentially handle further after checkout
+                    }).catch(error => {
+                        console.error("Checkout error:", error);
+                    });
+                } else {
+                    console.error('Failed to create order:', data);
+                }
+            })
+            .catch(error => {
+                console.error('Error creating order:', error);
+            });
+        });
+    </script>
+</body>
+</html>

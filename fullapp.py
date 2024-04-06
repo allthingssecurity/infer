@@ -43,6 +43,12 @@ from email.mime.text import MIMEText
 import os
 import smtplib
 
+from cashfree_pg.models.create_order_request import CreateOrderRequest
+from cashfree_pg.api_client import Cashfree
+from cashfree_pg.models.customer_details import CustomerDetails
+import json
+import string
+
 from tzlocal import get_localzone # Import tzlocal
 #import librosa
 #import soundfile as sf
@@ -82,6 +88,14 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 razorpay_key = os.getenv('RAZORPAY_KEY', '')
 razorpay_secret = os.getenv('RAZORPAY_SECRET', '')
+
+
+Cashfree.XClientId = os.getenv('CASHFREE_CLIENT_ID','')
+Cashfree.XClientSecret = os.getenv('CASHFREE_CLIENT_SECRET','')
+Cashfree.XEnvironment = os.getenv('CASHFREE_ENVIRONMENT','Cashfree.XSandbox')
+x_api_version = "2023-08-01"
+
+
 
 redis_host = os.getenv('REDIS_HOST', 'default_host')
 redis_port = int(os.getenv('REDIS_PORT', 25061))  # Default Redis port
@@ -787,6 +801,20 @@ def get_jobs1():
     local_timezone = str(get_localzone()) # Get the server's timezone
     
     return render_template('job-tracking.html', training_jobs=formatted_training_jobs, inference_jobs=formatted_inference_jobs,video_jobs=formatted_video_jobs,model_credits=model_credits,song_credits=song_credits,local_timezone=local_timezone)
+
+
+@app.route('/payments')
+@login_required
+def payments():
+    
+    user_email = session['user_email']
+    
+    model_credits=get_user_credits(user_email,'model')
+    song_credits=get_user_credits(user_email,'song')
+    video_credits=get_user_credits(user_email,'video')
+    local_timezone = str(get_localzone()) # Get the server's timezone
+    
+    return render_template('payments.html', model_credits=model_credits,song_credits=song_credits,video_credits=video_credits)
 
 
 
@@ -1969,25 +1997,53 @@ def check_status(job_id):
     # The function returns True if the signature is valid, False otherwise
     #return client.utility.verify_payment_signature(params_dict)
 
+
+def generate_order_id(length=8):
+    """Generate a random order ID."""
+    letters = string.ascii_letters + string.digits
+    return ''.join(random.choice(letters) for i in range(length))
+
 @app.route('/create_order', methods=['POST'])
 def create_order():
-    app.logger.info("create order invoked ")
-    #credit_type = request.json.get('creditType')
-    data = {
-        'amount': request.json.get('amount', 10000),
-        'currency': 'INR',
-        'receipt': 'order_rcptid_11',
-        'payment_capture': 1
-       }
-        
+
+    user_email = session.get('user_email')  # Assuming current_user has an email attribute
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
     
+    order_id = generate_order_id()
+    item_type= request.json['type']
+    amount = request.json['amount']
+
+    customer_details = CustomerDetails(customer_id=user_email, customer_phone="9999999999")
+    create_order_request = CreateOrderRequest(order_amount=amount, order_currency="INR", customer_details=customer_details)
     
-    response = requests.post('https://api.razorpay.com/v1/orders', auth=(razorpay_key, razorpay_secret), json=data)
-    
-    if response.status_code == 200:
-        return jsonify(response.json()), 200
-    else:
-        return jsonify(response.text), response.status_code
+    try:
+        app.logger.info("before calling order creation")
+        api_response = Cashfree().PGCreateOrder(x_api_version, create_order_request, None, None)
+        app.logger.info(f"after calling order creation with order{api_response}")
+        # Save response in Redis
+        redis_client.hset(user_email, order_id, json.dumps(api_response.data))
+        return jsonify({'paymentSessionId': api_response.data['paymentSessionId'], 'orderId': order_id}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/record_payment', methods=['POST'])
+def record_payment():
+    user_email = session.get('user_email')  # Assuming current_user has an email attribute
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    payment_details = request.json
+    order_id = payment_details['orderId']
+    #user_email = payment_details['userEmail']  # This needs to be sent from the client side
+
+    # Assume you want to store the complete response in Redis
+    redis_client.hset(user_email, order_id, json.dumps(payment_details))
+    app.logger.info(f"after calling record payment")
+    # Notify user or perform other actions here
+    # Sending email or notifications can be handled here
+
+    return jsonify({'status': 'Payment recorded successfully'}), 200
 
 
 
