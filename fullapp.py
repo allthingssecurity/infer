@@ -2119,7 +2119,7 @@ def submit_order_confirmation():
         #    app.logger.info(existing_order_data)
         #else:
             # If there is no data for this order_id, initialize an empty dictionary
-            existing_order_data = {}
+        existing_order_data = {}
 
         # Update the existing order data with the new order confirmation details
         existing_order_data.update({
