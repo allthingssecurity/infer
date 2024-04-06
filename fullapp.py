@@ -2029,8 +2029,24 @@ def create_order():
     
     try:
         app.logger.info(f"before calling order creation with client id {Cashfree.XClientId}")
-        api_response = Cashfree().PGCreateOrder(x_api_version, create_order_request, None, None)
-        app.logger.info(f"after calling order creation with order{api_response}")
+        
+        Cashfree.XClientId = "TEST1016565790ca723c2011279f86b675656101"
+        Cashfree.XClientSecret = "cfsk_ma_test_4a1483ac9dc8c9ea788df2640a79ddce_a6f81f4e"
+        Cashfree.XEnvironment = Cashfree.SANDBOX
+        x_api_version = "2023-08-01"
+
+        customerDetails = CustomerDetails(customer_id="walterwNrcMi", customer_phone="9999999999")
+
+        createOrderRequest = CreateOrderRequest(order_amount=10, order_currency="INR", customer_details=customerDetails)
+        try:
+            api_response = Cashfree().PGCreateOrder(x_api_version, createOrderRequest, None, None)
+            print(api_response.data)
+        except Exception as e:
+            print(e)
+        
+        
+        #api_response = Cashfree().PGCreateOrder(x_api_version, create_order_request, None, None)
+        #app.logger.info(f"after calling order creation with order{api_response}")
         # Save response in Redis
         redis_client.hset(user_email, order_id, json.dumps(api_response.data))
         return jsonify({'paymentSessionId': api_response.data['paymentSessionId'], 'orderId': order_id}), 200
