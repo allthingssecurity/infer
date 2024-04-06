@@ -2085,6 +2085,11 @@ def create_order():
 
 @app.route('/submit_order_confirmation', methods=['POST'])
 def submit_order_confirmation():
+    
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+   
+    user_email = session.get('user_email')  # Assuming current_user has an email attribute
     if request.is_json:
         data = request.get_json()  # Get the JSON data sent from the frontend
 
