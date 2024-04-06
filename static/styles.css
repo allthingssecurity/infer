@@ -83,45 +83,48 @@ body, html {
 }
 
 
-/* Dropdown Content (Hidden by Default) */
-/* Dropdown Content (Visible with contrasting background) */
+/* General styles for the navbar */
+.navbar {
+    position: relative; /* Ensures dropdowns are positioned relative to the navbar */
+    background-color: #234567; /* Dark blue for the navbar background for contrast */
+    color: white; /* White text for visibility */
+}
+
+/* Styles for the dropdown containers */
+.dropdown {
+    position: relative; /* Position relative to align dropdown content */
+    display: inline-block; /* Inline-block for proper alignment of list items */
+}
+
+/* Hidden by default, visible on hover */
 .dropdown-content {
-    display: none;
+    display: none; /* Keeps the dropdown hidden by default */
     position: absolute;
-    background-color: #123456; /* Make background match navbar for consistency */
+    background-color: #123456; /* Dark blue background for contrast */
     min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); /* Shadow for a subtle 3D effect */
     z-index: 1;
-    color: white; /* Ensuring text is white for visibility */
+    color: white; /* White text for readability */
 }
 
-/* Change dropdown link colors for visibility */
+/* Style for links within the dropdown to make them full-width and interactive */
 .dropdown-content a {
-    color: white; /* Make text color white for visibility against the dropdown background */
+    color: white; /* Consistent with the dropdown content for visibility */
     padding: 12px 16px;
     text-decoration: none;
-    display: block;
+    display: block; /* Ensures links use the full block space, easier to click */
 }
 
-/* Style for dropdown links on hover to increase visibility and interactivity */
+/* Styling for hover state to increase visibility and interactivity */
 .dropdown-content a:hover {
-    background-color: #f1f1f1; /*
-
-/* Change dropdown link colors */
-.dropdown-content a {
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
+    background-color: #f1f1f1; /* Light grey for contrast on hover */
+    color: black; /* Text color changes to black for visibility */
 }
 
-/* Show the dropdown menu on hover */
+/* Display the dropdown menu when the parent list item is hovered */
 .navbar nav ul li:hover .dropdown-content {
     display: block;
 }
-
-/* Dropdown links hover */
-.dropdown-content a:hover {background-color: #f1f1f1}
 
 .user-info {
     display: flex;
