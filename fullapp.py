@@ -43,9 +43,11 @@ from email.mime.text import MIMEText
 import os
 import smtplib
 
+
 from cashfree_pg.models.create_order_request import CreateOrderRequest
 from cashfree_pg.api_client import Cashfree
 from cashfree_pg.models.customer_details import CustomerDetails
+
 import json
 import string
 
@@ -2026,7 +2028,7 @@ def create_order():
     create_order_request = CreateOrderRequest(order_amount=amount, order_currency="INR", customer_details=customer_details)
     
     try:
-        app.logger.info("before calling order creation")
+        app.logger.info(f"before calling order creation with client id {Cashfree.XClientId}")
         api_response = Cashfree().PGCreateOrder(x_api_version, create_order_request, None, None)
         app.logger.info(f"after calling order creation with order{api_response}")
         # Save response in Redis
