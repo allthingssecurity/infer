@@ -2034,7 +2034,7 @@ def create_order():
         Cashfree.XClientSecret = os.getenv('CASHFREE_CLIENT_SECRET','')
         Cashfree.XEnvironment = os.getenv('CASHFREE_ENVIRONMENT','Cashfree.Sandbox')
         app.logger.info(f"before calling order creation with client id {Cashfree.XClientId}")
-        app.logger.info(f"before calling order creation with client sec {Cashfree.XClientSecret}")
+        
         app.logger.info(f"before calling order creation with env {Cashfree.XEnvironment}")
         x_api_version = "2023-08-01"
 
