@@ -2012,7 +2012,15 @@ def create_order():
     
     order_id = generate_order_id()
     item_type= request.json['orderType']
-    amount = request.json['amount']
+    
+    try:
+        # Attempt to extract and convert amount to float
+        amount = float(request.json.get('amount', 0))  # Default to 0 if amount is not provided
+    except ValueError:
+        # Handle case where amount is not a valid number
+        return jsonify({"error": "Invalid amount provided"}), 400
+    
+    
 
     customer_details = CustomerDetails(customer_id=user_email, customer_phone="9999999999")
     create_order_request = CreateOrderRequest(order_amount=amount, order_currency="INR", customer_details=customer_details)
