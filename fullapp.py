@@ -2045,6 +2045,7 @@ def create_order():
             api_response = Cashfree().PGCreateOrder(x_api_version, createOrderRequest, None, None)
             app.logger.info(api_response.data)
         except Exception as e:
+            app.logger.info(str(e))
             print(e)
         
         
