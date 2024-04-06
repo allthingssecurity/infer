@@ -11,33 +11,42 @@ body, html {
 }
 
 
+/* General styles for the navbar */
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #123456;
+    position: relative; /* Ensures proper dropdown positioning */
+    background-color: #234567; /* Consistent dark blue background */
     color: white;
     padding: 10px 20px;
 }
 
+/* Logo styling */
 .logo {
-    height: 50px;
+    height: 50px; /* Set the height of your logo */
 }
 
+/* Navigation list styling */
 .navbar nav ul {
-    list-style-type: none;
+    list-style-type: none; /* Removes default list styling */
     padding: 0;
+    display: flex; /* Ensures that list items are laid out horizontally */
+    margin: 0; /* Removes default margin */
 }
 
+/* Individual list item styling */
 .navbar nav ul li {
-    display: inline;
-    margin-right: 20px;
-    position: relative; /* Added for dropdown positioning */
+    position: relative; /* Establishes a positioning context for dropdowns */
+    margin-right: 20px; /* Spacing between menu items */
+    padding: 10px 0; /* Vertical padding for larger click areas */
 }
 
+/* Styling for links in the navbar */
 .navbar nav ul li a {
     color: white;
     text-decoration: none;
+    padding: 10px 15px; /* Padding for clickable area */
 }
 
 .content-container {
@@ -83,12 +92,6 @@ body, html {
 }
 
 
-/* General styles for the navbar */
-.navbar {
-    position: relative; /* Ensures dropdowns are positioned relative to the navbar */
-    background-color: #234567; /* Dark blue for the navbar background for contrast */
-    color: white; /* White text for visibility */
-}
 
 /* Styles for the dropdown containers */
 .dropdown {
