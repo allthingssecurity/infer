@@ -2112,12 +2112,12 @@ def submit_order_confirmation():
         app.logger.info(f"Order ID: {order_id}, Status: {status}, Payment Message: {payment_message}")
         
         
-        existing_order_data_str = redis_client.hget(user_email, order_id)
-        if existing_order_data_str:
+        #existing_order_data_str = redis_client.hget(user_email, order_id)
+        #if existing_order_data_str:
             # Deserialize the data from JSON string to a Python dictionary
-            existing_order_data = json.loads(existing_order_data_str)
-            app.logger.info(existing_order_data)
-        else:
+        #    existing_order_data = json.loads(existing_order_data_str)
+        #    app.logger.info(existing_order_data)
+        #else:
             # If there is no data for this order_id, initialize an empty dictionary
             existing_order_data = {}
 
@@ -2132,7 +2132,7 @@ def submit_order_confirmation():
         app.logger.info("before updating redis with updated info")
         # Store the updated order data in Redis
         
-        key = f"{user_email}_orders"
+        key = f"{user_email}_orders_payment"
         
         redis_client.hset(key, order_id, updated_order_data_str)
         app.logger.info("after updating redis with updated info")
