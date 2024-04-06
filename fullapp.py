@@ -2042,10 +2042,32 @@ def create_order():
 
         customerDetails = CustomerDetails(customer_id="walterwNrcMi", customer_phone="9999999999")
 
-        createOrderRequest = CreateOrderRequest(order_amount=10, order_currency="INR", customer_details=customerDetails)
+        createOrderRequest = CreateOrderRequest(order_amount=amount, order_currency="INR", customer_details=customerDetails)
         try:
             api_response = Cashfree().PGCreateOrder(x_api_version, createOrderRequest, None, None)
             app.logger.info(api_response.data)
+            
+            data_to_store = {
+                'payment_session_id': api_response.data.payment_session_id,
+                'cf_order_id': api_response.data.cf_order_id,
+                'order_id': api_response.data.order_id,
+                'order_amount': api_response.data.order_amount,
+                'order_currency': api_response.data.order_currency,
+                'created_at': api_response.data.created_at.isoformat() if api_response.data.created_at else None,
+                # Add any other fields you need
+            }
+
+    # Convert the dictionary to a JSON string
+            json_data_to_store = json.dumps(data_to_store)
+
+    # Use the user_email and order_id as the key for the Redis hash
+            redis_client.hset(user_email, order_id, json_data_to_store)
+            app.logger.info("added to redis")
+
+            
+            
+            
+            
         except Exception as e:
             app.logger.info(str(e))
             print(e)
@@ -2054,28 +2076,66 @@ def create_order():
         #api_response = Cashfree().PGCreateOrder(x_api_version, create_order_request, None, None)
         #app.logger.info(f"after calling order creation with order{api_response}")
         # Save response in Redis
-        #redis_client.hset(user_email, order_id, json.dumps(api_response.data))
+        
         return jsonify({'paymentSessionId': api_response.data.payment_session_id, 'orderId': order_id}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/record_payment', methods=['POST'])
-def record_payment():
-    user_email = session.get('user_email')  # Assuming current_user has an email attribute
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
 
-    payment_details = request.json
-    order_id = payment_details['orderId']
-    #user_email = payment_details['userEmail']  # This needs to be sent from the client side
 
-    # Assume you want to store the complete response in Redis
-    redis_client.hset(user_email, order_id, json.dumps(payment_details))
-    app.logger.info(f"after calling record payment")
-    # Notify user or perform other actions here
-    # Sending email or notifications can be handled here
+@app.route('/submit_order_confirmation', methods=['POST'])
+def submit_order_confirmation():
+    if request.is_json:
+        data = request.get_json()  # Get the JSON data sent from the frontend
 
-    return jsonify({'status': 'Payment recorded successfully'}), 200
+        # Extract order_id and status from the top level of the data
+        order_id = data.get('order_id')
+        status = data.get('status')
+
+        # The additional_info is a JSON string, so parse it into a Python dictionary
+        additional_info_str = data.get('additional_info', '{}')  # Default to empty JSON object
+        additional_info = json.loads(additional_info_str)  # Parse the JSON string
+
+        # Now you can extract the paymentMessage from the nested additional_info
+        payment_message = additional_info.get('paymentDetails', {}).get('paymentMessage')
+
+        # Log the received data to the console
+        print(f"Order ID: {order_id}, Status: {status}, Payment Message: {payment_message}")
+        
+        
+        existing_order_data_str = redis_client.hget(user_email, order_id)
+        if existing_order_data_str:
+            # Deserialize the data from JSON string to a Python dictionary
+            existing_order_data = json.loads(existing_order_data_str)
+            app.logger.info(existing_order_data)
+        else:
+            # If there is no data for this order_id, initialize an empty dictionary
+            existing_order_data = {}
+
+        # Update the existing order data with the new order confirmation details
+        existing_order_data.update({
+            'status': data.get('status'),
+            'additional_info': data.get('additional_info', '{}')  # This should be a JSON string
+        })
+
+        # Serialize the updated order data back to a JSON string
+        updated_order_data_str = json.dumps(existing_order_data)
+        app.logger.info("before updating redis with updated info")
+        # Store the updated order data in Redis
+        redis_client.hset(user_email, order_id, updated_order_data_str)
+        app.logger.info("after updating redis with updated info")
+        
+        
+        
+        
+
+        # Here, insert additional logic to handle the order confirmation details
+        # such as updating a database or initiating other business processes
+
+        # Assume processing is successful and send a response back
+        return jsonify({"message": "Order confirmation received and processed successfully", "status": "success"}), 200
+    else:
+        return jsonify({"error": "Request must be JSON"}), 400
 
 
 

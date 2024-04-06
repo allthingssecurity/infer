@@ -45,45 +45,84 @@
     </form>
 
     <script>
-        document.getElementById('orderForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const amount = document.getElementById('amount').value;
-            const orderType = document.getElementById('orderType').value;
+  document.getElementById('orderForm').addEventListener('submit', function(event) {
+    event.preventDefault();
 
-            fetch('/create_order', {  // Endpoint to create an order
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    amount: amount,
-                    orderType: orderType
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.paymentSessionId) {
-                    // Use Cashfree's SDK to handle the checkout
-                    const checkoutOptions = {
-                        "paymentSessionId": data.paymentSessionId,
-                        "redirectTarget": "_modal"
-                    };
+    const amount = document.getElementById('amount').value;
+    const orderType = document.getElementById('orderType').value;
 
-                    const checkout = new Cashfree.Checkout(checkoutOptions);
-                    checkout.init().then(response => {
-                        console.log("Checkout response:", response);
-                        // Potentially handle further after checkout
-                    }).catch(error => {
-                        console.error("Checkout error:", error);
-                    });
-                } else {
-                    console.error('Failed to create order:', data);
-                }
-            })
-            .catch(error => {
-                console.error('Error creating order:', error);
+    fetch('/create_order', {  // Endpoint to create an order
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            amount: amount,
+            orderType: orderType
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.paymentSessionId) {
+            // Store orderId for later use
+            const orderId = data.orderId; // Capture orderId from the initial API response
+
+            // Use Cashfree's SDK to handle the checkout
+            const cashfree = new Cashfree({
+                mode: "sandbox" // Or "production"
             });
-        });
+
+            const checkoutOptions = {
+                "paymentSessionId": data.paymentSessionId,
+                "redirectTarget": "_modal"
+            };
+
+            // Initiating checkout
+            cashfree.checkout(checkoutOptions)
+            .then(checkoutResponse => {
+                // Attach orderId to checkoutResponse for submission
+                checkoutResponse.orderId = orderId;
+
+                alert("Checkout response: " + JSON.stringify(checkoutResponse, null, 2));
+
+                // Send order confirmation details along with orderId to the server
+                submitOrderConfirmation(checkoutResponse);
+            }).catch(checkoutError => {
+                console.error("Checkout error:", checkoutError);
+            });
+        } else {
+            console.error('Failed to create order:', data);
+        }
+    })
+    .catch(error => {
+        console.error('Error creating order:', error);
+    });
+});
+
+function submitOrderConfirmation(checkoutResponse) {
+    // Send orderId and other confirmation details to the server
+    fetch('/submit_order_confirmation', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            order_id: checkoutResponse.orderId,  // Send orderId back to the server
+            status: "Completed", // Assume checkout was successful for this example
+            additional_info: JSON.stringify(checkoutResponse) // Optional: send entire checkoutResponse
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Order confirmation response:", data);
+        // Handle additional client-side logic based on the server's response
+    })
+    .catch(error => {
+        console.error("Error submitting order confirmation:", error);
+    });
+}
+
+
     </script>
 </body>
 </html>
