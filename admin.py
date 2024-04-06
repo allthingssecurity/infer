@@ -430,7 +430,7 @@ def admin_retry_infer():
     if not all([user_email, speaker_name, youtube_link]):
         return jsonify({'error': 'Missing required parameters (user_email, spk_id, youtube_link)'}), 400
 
-    app.logger.info("Admin re-entered infer")
+    
 
     credit_count = get_user_credits(user_email, 'song')
     if credit_count > 0:
@@ -448,9 +448,7 @@ def admin_retry_infer():
             args=(youtube_link, final_speaker_name, user_email),
             timeout=2500
         )
-        app.logger.info("Enqueued the job by admin")
-        app.logger.info(f"Job ID: {job.get_id()}")
-        app.logger.info(f"Job Status: {job.get_status()}")
+       
 
         submission_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         submission_timestamp = datetime.strptime(submission_time, '%Y-%m-%d %H:%M:%S').timestamp()
@@ -474,9 +472,9 @@ def admin_retry_infer():
         redis_key = f'jobs:submission_times:{user_email}:infer'
         redis_client.zadd(redis_key, {job.get_id(): submission_timestamp})
         
-        app.logger.info(f"Updated Redis for job ID {job.get_id()}")
+        
 
         return jsonify({'message': 'Job submitted successfully by admin', 'job_id': job.get_id()})
     else:
-        app.logger.info(f"Credit limit exceeded for user {user_email}")
+        
         return jsonify({'message': 'User has reached the limit for song conversions. Buy more credits.'})
