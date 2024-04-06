@@ -2012,7 +2012,7 @@ def create_order():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     
-    order_id = generate_order_id()
+    #order_id = generate_order_id()
     item_type= request.json['orderType']
     
     try:
@@ -2024,7 +2024,7 @@ def create_order():
     
     
 
-    
+    order_id=''
     
     try:
         Cashfree.XClientId = "TEST1016565790ca723c2011279f86b675656101"
@@ -2046,7 +2046,7 @@ def create_order():
         try:
             api_response = Cashfree().PGCreateOrder(x_api_version, createOrderRequest, None, None)
             app.logger.info(api_response.data)
-            
+            order_id= api_response.data.order_id
             data_to_store = {
                 'payment_session_id': api_response.data.payment_session_id,
                 'cf_order_id': api_response.data.cf_order_id,
@@ -2056,12 +2056,16 @@ def create_order():
                 'created_at': api_response.data.created_at.isoformat() if api_response.data.created_at else None,
                 # Add any other fields you need
             }
-
+            
+            
+            key = f"{user_email}_orders"
+            
     # Convert the dictionary to a JSON string
             json_data_to_store = json.dumps(data_to_store)
+            
 
     # Use the user_email and order_id as the key for the Redis hash
-            redis_client.hset(user_email, order_id, json_data_to_store)
+            redis_client.hset(key, order_id, json_data_to_store)
             app.logger.info("added to redis")
 
             
@@ -2127,7 +2131,10 @@ def submit_order_confirmation():
         updated_order_data_str = json.dumps(existing_order_data)
         app.logger.info("before updating redis with updated info")
         # Store the updated order data in Redis
-        redis_client.hset(user_email, order_id, updated_order_data_str)
+        
+        key = f"{user_email}_orders"
+        
+        redis_client.hset(key, order_id, updated_order_data_str)
         app.logger.info("after updating redis with updated info")
         
         
