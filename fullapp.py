@@ -789,6 +789,22 @@ def get_jobs1():
     return render_template('job-tracking.html', training_jobs=formatted_training_jobs, inference_jobs=formatted_inference_jobs,video_jobs=formatted_video_jobs,model_credits=model_credits,song_credits=song_credits,local_timezone=local_timezone)
 
 
+
+@app.route('/contact')
+@login_required
+def get_jobs1():
+    
+    user_email = session['user_email']
+    
+    model_credits=get_user_credits(user_email,'model')
+    song_credits=get_user_credits(user_email,'song')
+    video_credits=get_user_credits(user_email,'video')
+    local_timezone = str(get_localzone()) # Get the server's timezone
+    
+    return render_template('contactus.html', model_credits=model_credits,song_credits=song_credits,video_credits=video_credits)
+
+
+
 @app.route('/recharge_credits', methods=['POST'])
 def recharge_credits():
     data = request.get_json()
