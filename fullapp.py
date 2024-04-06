@@ -2043,7 +2043,7 @@ def create_order():
         createOrderRequest = CreateOrderRequest(order_amount=10, order_currency="INR", customer_details=customerDetails)
         try:
             api_response = Cashfree().PGCreateOrder(x_api_version, createOrderRequest, None, None)
-            print(api_response.data)
+            app.logger.info(api_response.data)
         except Exception as e:
             print(e)
         
