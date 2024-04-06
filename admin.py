@@ -411,3 +411,72 @@ def admin_retrigger_job():
     redis_client.zadd(redis_key, {job_id: submission_timestamp})
 
     return jsonify({'message': 'Job re-triggered for user.', 'job_id': job_id}), 200
+    
+
+
+@admin_blueprint.route('/admin/retry_infer', methods=['POST'])
+@admin_required  # Assuming this decorator checks for admin privileges as well
+def admin_retry_infer():
+    
+    # Extracting parameters from JSON request
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
+
+    user_email = data.get('user_email')
+    speaker_name = data.get('spk_id', '')
+    youtube_link = data.get('youtube_link', '')
+
+    if not all([user_email, speaker_name, youtube_link]):
+        return jsonify({'error': 'Missing required parameters (user_email, spk_id, youtube_link)'}), 400
+
+    app.logger.info("Admin re-entered infer")
+
+    credit_count = get_user_credits(user_email, 'song')
+    if credit_count > 0:
+        final_speaker_name = f'{user_email}_{speaker_name}'
+        trained_model_key = f"{user_email}:trained"
+        
+        if not redis_client.exists(trained_model_key):
+            return jsonify({'error': 'Model is not yet trained for the specified speaker'})
+
+        if not youtube_link.strip():
+            return jsonify({'error': 'YouTube link is required'}), 400
+
+        job = q.enqueue_call(
+            func=convert_voice_youtube,
+            args=(youtube_link, final_speaker_name, user_email),
+            timeout=2500
+        )
+        app.logger.info("Enqueued the job by admin")
+        app.logger.info(f"Job ID: {job.get_id()}")
+        app.logger.info(f"Job Status: {job.get_status()}")
+
+        submission_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        submission_timestamp = datetime.strptime(submission_time, '%Y-%m-%d %H:%M:%S').timestamp()
+        
+        attributes = {
+            "type": "infer",
+            "filename": youtube_link,
+            "user_email": user_email,
+            "spk_id": speaker_name ,
+            "submission_time": submission_time,
+        }
+
+        # Set job attributes in Redis
+        set_job_attributes(redis_client, job.get_id(), attributes)
+
+        # Update job status and initial progress
+        update_job_status(redis_client, job.get_id(), 'queued')
+        update_job_progress(redis_client, job.get_id(), 10)  # Progress updated to 10%
+
+        # Log and store the submission timestamp in a sorted set
+        redis_key = f'jobs:submission_times:{user_email}:infer'
+        redis_client.zadd(redis_key, {job.get_id(): submission_timestamp})
+        
+        app.logger.info(f"Updated Redis for job ID {job.get_id()}")
+
+        return jsonify({'message': 'Job submitted successfully by admin', 'job_id': job.get_id()})
+    else:
+        app.logger.info(f"Credit limit exceeded for user {user_email}")
+        return jsonify({'message': 'User has reached the limit for song conversions. Buy more credits.'})
