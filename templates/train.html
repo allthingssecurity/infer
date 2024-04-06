@@ -164,6 +164,7 @@
 <div class="left-aligned-container">
     <a href="/get-jobs">Go to Job Tracking Page</a>
 </div>
+<div id="timer">00:00:00</div>
 
 
 <script>
@@ -194,6 +195,9 @@ const hindiScript = ` कल्पना कीजिए कि आप एक �
 
 यह साहसिक यात्रा आपको दोस्ती, जिज्ञासा, और प्रकृति के आश्चर्यों की खोज के आनंद की शक्ति की याद दिलाती है। और जैसे ही आप जादुई जंगल छोड़ते हैं, आप जानते हैं कि आपका एक हिस्सा हमेशा के लिए इस मोहक दुनिया का हिस्सा बना रहेगा।
 `;
+
+
+
     document.addEventListener('DOMContentLoaded', function() {
 	    const scripts = {
 	        English: englishScript,
@@ -210,21 +214,45 @@ const hindiScript = ` कल्पना कीजिए कि आप एक �
 	    let mediaRecorder;
 	    let audioChunks = [];
 	    let audioBlob;
+let recordingStartTime;
+let updateTimerInterval;
+const MAX_DURATION_MS = 360000;  // 6 minutes in milliseconds
+function updateTimer() {
+    const elapsed = new Date(Date.now() - recordingStartTime);
+    const hours = elapsed.getUTCHours().toString().padStart(2, '0');
+    const minutes = elapsed.getUTCMinutes().toString().padStart(2, '0');
+    const seconds = elapsed.getUTCSeconds().toString().padStart(2, '0');
+    document.getElementById("timer").textContent = `${hours}:${minutes}:${seconds}`;
+}
 
+       
 	    document.getElementById("startRecording").addEventListener("click", function() {
 	        navigator.mediaDevices.getUserMedia({ audio: true })
 	            .then(stream => {
 	                mediaRecorder = new MediaRecorder(stream);
+					recordingStartTime = Date.now();
+                    updateTimerInterval = setInterval(updateTimer, 1000);
+					
+					const stopRecordingTimeout = setTimeout(() => {
+                if (mediaRecorder.state === "recording") {
+                    mediaRecorder.stop();
+                }
+            }, MAX_DURATION_MS);
+					
+					
 	                mediaRecorder.ondataavailable = event => {
 	                    audioChunks.push(event.data);
 	                };
 	                mediaRecorder.onstop = () => {
+					    clearInterval(updateTimerInterval);
+						clearTimeout(stopRecordingTimeout);
 	                    audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
 	                    const audioUrl = URL.createObjectURL(audioBlob);
 	                    document.getElementById("audioPlayback").src = audioUrl;
 	                    document.getElementById("audioPlayback").hidden = false;
 	                    document.getElementById("upload").disabled = false;
 	                    audioChunks = [];
+						recordingStartTime = null;
 	                };
 	                mediaRecorder.start();
 	                document.getElementById("startRecording").disabled = true;
@@ -235,11 +263,16 @@ const hindiScript = ` कल्पना कीजिए कि आप एक �
 
 	    document.getElementById("stopRecording").addEventListener("click", function() {
 	        mediaRecorder.stop();
+			clearInterval(updateTimerInterval);
+            document.getElementById("timer").textContent = "00:00:00";  // Reset timer display
+
 	        document.getElementById("startRecording").disabled = false;
 	        document.getElementById("stopRecording").disabled = true;
 	    });
 
 	    document.getElementById("cancelRecording").addEventListener("click", function() {
+		    clearInterval(updateTimerInterval);
+            document.getElementById("timer").textContent = "00:00:00";
 	        document.getElementById("audioPlayback").hidden = true;
 	        document.getElementById("upload").disabled = true;
 	        document.getElementById("startRecording").disabled = false;
