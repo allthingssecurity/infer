@@ -792,7 +792,7 @@ def get_jobs1():
 
 @app.route('/contact')
 @login_required
-def get_jobs1():
+def contact():
     
     user_email = session['user_email']
     
@@ -803,6 +803,32 @@ def get_jobs1():
     
     return render_template('contactus.html', model_credits=model_credits,song_credits=song_credits,video_credits=video_credits)
 
+
+@app.route('/terms')
+@login_required
+def terms():
+    
+    user_email = session['user_email']
+    
+    model_credits=get_user_credits(user_email,'model')
+    song_credits=get_user_credits(user_email,'song')
+    video_credits=get_user_credits(user_email,'video')
+    local_timezone = str(get_localzone()) # Get the server's timezone
+    
+    return render_template('terms.html', model_credits=model_credits,song_credits=song_credits,video_credits=video_credits)
+
+@app.route('/privacy')
+@login_required
+def privacy():
+    
+    user_email = session['user_email']
+    
+    model_credits=get_user_credits(user_email,'model')
+    song_credits=get_user_credits(user_email,'song')
+    video_credits=get_user_credits(user_email,'video')
+    local_timezone = str(get_localzone()) # Get the server's timezone
+    
+    return render_template('privacy.html', model_credits=model_credits,song_credits=song_credits,video_credits=video_credits)
 
 
 @app.route('/recharge_credits', methods=['POST'])

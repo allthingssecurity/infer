@@ -84,8 +84,7 @@
                     </li>
 
             <li><a href="/get_samples">Samples</a></li>
-			<li><a href="/contact">Contact Us</a></li>
-			
+			<li><a href="/get-jobs">Tracking</a></li>
         </ul>
     </nav>
             <div class="user-info">
@@ -95,7 +94,6 @@
             <!-- Dropdown Trigger -->
 
                 <a href="/logout" class="logout-btn">Logout</a>
-				
             </div>
         </div>
     </header>
@@ -104,31 +102,32 @@
     <!-- Welcome Section -->
     <section class="welcome-section">
         <h1>Welcome to Mai Bhi Singer</h1>
-        <p>Explore our features and enjoy the stay.</p>
+       
     </section>
 
     <!-- Container for images and video -->
-    <div class="content-container">
-       <!-- <img src="{{ url_for('static', filename='image1.png') }}" alt="Transformation Image" class="side-image left-image">-->
-            <div class="instructional-content">
-			    <h2>Let's Start Your Singing Journey!</h2>
-			    <p>Hello, Future Star! 🌟 Ready to let your voice soar and captivate hearts? If it’s your first time with us, let’s get your voice shining like never before! It’s super simple and fun - think of it as warming up your vocals in our cozy virtual studio to make sure you sound stunning. <a href="/train">Click here to get started.</a></p>
-			    <p>Have you warmed up with us before? Awesome! You’re all set to take your music to the next level. Jump right in and let's turn your vocals into breathtaking songs. <a href="/song_conversion">Start your musical transformation here.</a></p>
-				
-				<p>Please read our Terms and Conditions before starting <a href="/terms">Terms and Conditions</a></p>
-				<p>Please read our Privacy Policy <a href="/privacy">Privacy Policy</a></p>
-			</div>
+<div class="content-container">
+    <ul>
+        <li>These Terms constitute a binding agreement between MANISHA JAIN ("Website Owner") and the user ("you"), covering the use of the website and services offered.</li>
+        <li>By using the website and services, you acknowledge having read and accepted these Terms, including the Privacy Policy.</li>
+        <li>The Website Owner reserves the right to modify these Terms at any time without prior notice.</li>
+        <li>You are required to provide true, accurate, and complete registration information and are responsible for all activities conducted through your account.</li>
+        <li>The website and services are provided "as is" without any warranty regarding accuracy, timeliness, or suitability for a specific purpose. The Website Owner disclaims all liability for inaccuracies or errors.</li>
+        <li>The content of the website and services are proprietary. You have no rights to claim any intellectual property of the website content.</li>
+        <li>Unauthorized use of the website or services may result in legal action as per these Terms or applicable laws.</li>
+        <li>You agree to pay any charges associated with the services provided.</li>
+        <li>The use of the website and services for unlawful or illegal activities is prohibited.</li>
+        <li>Third-party websites linked from this website have their own terms and policies.</li>
+        <li>Transactions for services are binding contracts, and you may be eligible for a refund if services are not provided, subject to specific conditions and time limits.</li>
+        <li>Liability for failure to perform obligations due to force majeure events is not assumed by either party.</li>
+        <li>These Terms are governed by the laws of India, and any disputes will be subject to the exclusive jurisdiction of the courts in Bangalore, Karnataka.</li>
+        <li>For issues or communications regarding these Terms, contact information provided on the website should be used.</li>
+    </ul>
+</div>
 
-        <!-- Video Embed -->
-        <div class="video-container">
-            <video controls class="embedded-video">
-                <source src="{{ url_for('static', filename='demo.mp4') }}" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
-        </div>
 
         <!--<img src="{{ url_for('static', filename='image2.png') }}" alt="Triumph Image" class="side-image right-image">-->
-    </div>
+
 </main>
 
 	<script>
