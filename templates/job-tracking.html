@@ -27,6 +27,29 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+	      .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    position: fixed; /* Fix navbar at the top */
+    top: 0; /* Align to the top */
+    left: 0; /* Align to the left */
+    width: 100%; /* Ensure it spans the full width */
+    background-color: #000; /* Add a background color to ensure text is visible */
+    z-index: 1000; /* Ensure navbar is above other content */
+}
+
+		
+        @media (max-width: 599px) {
+            .left-aligned-container {
+                max-width: none;
+            }
+        }
+
+
+
 </style>
 	
 	

@@ -1007,6 +1007,7 @@ def infer():
 
 @app.route('/start_infer', methods=['POST'])
 @login_required
+@check_for_existing_job(job_type='infer')  # Example usage with a job type of 'train'
 def start_infer():
     print("entered infer")
     user_email = session.get('user_email')
@@ -1373,6 +1374,7 @@ def check_for_existing_job(job_type):
 
 
 @app.route('/process_audio', methods=['POST'])
+@login_required
 @check_for_existing_job(job_type='train')  # Example usage with a job type of 'train'
 def process_audio():
     user_email = session.get('user_email')

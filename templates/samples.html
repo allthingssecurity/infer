@@ -17,9 +17,22 @@
             padding: 0;
         }
 
-        .navbar img, .user-info img {
-            max-width: 100px;
-        }
+      	      .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    position: fixed; /* Fix navbar at the top */
+    top: 0; /* Align to the top */
+    left: 0; /* Align to the left */
+    width: 100%; /* Ensure it spans the full width */
+    background-color: #000; /* Add a background color to ensure text is visible */
+    z-index: 1000; /* Ensure navbar is above other content */
+}
+
+		
+       
+
 
         table {
             width: 100%;
@@ -76,6 +89,7 @@
                         </div>
                     </li>
             <li><a href="/get_samples">Samples</a></li>
+			<li><a href="/get-jobs">Tracking</a></li>
         </ul>
     </nav>
              <div class="user-info">
