@@ -2027,11 +2027,14 @@ def create_order():
     
     
     try:
+        Cashfree.XClientId = "TEST1016565790ca723c2011279f86b675656101"
+        Cashfree.XClientSecret = "cfsk_ma_test_4a1483ac9dc8c9ea788df2640a79ddce_a6f81f4e"
+        Cashfree.XEnvironment = Cashfree.SANDBOX
+        x_api_version = "2023-08-01"
+
         
         
-        Cashfree.XClientId = os.getenv('CASHFREE_CLIENT_ID','')
-        Cashfree.XClientSecret = os.getenv('CASHFREE_CLIENT_SECRET','')
-        Cashfree.XEnvironment = os.getenv('CASHFREE_ENVIRONMENT','Cashfree.Sandbox')
+    
         app.logger.info(f"before calling order creation with client id {Cashfree.XClientId}")
         app.logger.info(f"before calling order creation with client se {Cashfree.XClientSecret}")
         app.logger.info(f"before calling order creation with env {Cashfree.XEnvironment}")
