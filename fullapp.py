@@ -2131,7 +2131,7 @@ def submit_order_confirmation():
         
         app.logger.info(f"order data reetieved ={order_data}")
         
-        if order_data['order_id'] == order_id and order_data.get('status', '') == 'completed':
+        if order_data['order_id'] == order_id and status == 'Completed':
         # Assume a function add_credits(user_email, item_type) that adds credits based on item_type
             item_type = order_data['item_type']
             add_credits(app,user_email,item_type,5)
