@@ -2177,9 +2177,9 @@ def submit_order_confirmation():
             add_credits(app,user_email,item_type,credits)
             app.logger.info(f"{credits} credits added for type {item_type}")
             #add_credits(user_email, item_type)
-            return jsonify({"success": True, "message": "Credits added successfully"}), 200
+            #return jsonify({"success": True, "message": "Credits added successfully"}), 200
         else:
-            return jsonify({"success": False, "message": "Order not completed or ID mismatch"}), 400
+            return render_template('index.html',model_credits=model_credits,song_credits=song_credits,video_credits=video_credits,order_id=order_id,payment="failure")
 
         
         
