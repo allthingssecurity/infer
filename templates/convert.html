@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 
     <style>
+	:root {
+    --navbar-height: 50px; /* Initial fallback height */
+}
         body {
             margin: 0;
             padding: 10px;
@@ -85,15 +88,7 @@
 }
 
 
-		
-		
-		
-		
-		
-		
-		
-		
-		
+				
 		
         @media (max-width: 599px) {
             .left-aligned-container {
@@ -114,6 +109,14 @@
 
 
     <script>
+	
+	window.onload = adjustPaddingTop;
+window.onresize = adjustPaddingTop;
+
+function adjustPaddingTop() {
+    const navbarHeight = document.querySelector('.navbar').offsetHeight;
+    document.documentElement.style.setProperty('--navbar-height', `${navbarHeight}px`);
+}
         async function uploadFile() {
             // Validate if a file has been selected
 			
