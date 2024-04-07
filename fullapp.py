@@ -834,6 +834,21 @@ def contact():
     return render_template('contactus.html', model_credits=model_credits,song_credits=song_credits,video_credits=video_credits)
 
 
+@app.route('/disclaimer')
+@login_required
+def disclaimer():
+    
+    user_email = session['user_email']
+    
+    model_credits=get_user_credits(user_email,'model')
+    song_credits=get_user_credits(user_email,'song')
+    video_credits=get_user_credits(user_email,'video')
+    local_timezone = str(get_localzone()) # Get the server's timezone
+    
+    return render_template('disclaimer.html', model_credits=model_credits,song_credits=song_credits,video_credits=video_credits)
+
+
+
 @app.route('/terms')
 @login_required
 def terms():

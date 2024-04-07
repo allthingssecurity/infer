@@ -31,24 +31,28 @@
 	            justify-content: space-between;
 	            margin: 20px;
 	        }
-	        .side-image {
-	            flex: 1;
-	            max-width: calc(50% - 40px);
-	            margin: 20px;
-	        }
-	        .instructional-content, .video-container {
-	            flex-basis: 100%;
-	            max-width: 100%;
-	            margin: 20px 0;
-	            text-align: center;
-	        }
-	        video {
-	            width: 100%;
-	            max-width: 640px; /* Adjust based on your preference */
-	            height: auto;
-	        }
-			main {
-    padding-top: 70px; /* Adjust this value based on the actual height of your navbar */
+	              body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background: #f4f4f4;
+        }
+        .content {
+            background: white;
+            padding: 20px;
+            margin: auto;
+            max-width: 800px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        ul {
+            margin: 20px 0;
+        }
+        li {
+            margin-bottom: 10px;
+        }
 }
     </style>
 
@@ -104,36 +108,39 @@
         </div>
     </header>
 
-<main>
-    <!-- Welcome Section -->
-    <section class="welcome-section">
-        <h1>Welcome to Mai Bhi Singer</h1>
-        <p>Explore our features and enjoy the stay.</p>
-    </section>
 
-    <!-- Container for images and video -->
-    <div class="content-container">
-       <!-- <img src="{{ url_for('static', filename='image1.png') }}" alt="Transformation Image" class="side-image left-image">-->
-            <div class="instructional-content">
-			    <h2>Let's Start Your Singing Journey!</h2>
-			    <p>Hello, Future Star! 🌟 Ready to let your voice soar and captivate hearts? If it’s your first time with us, let’s get your voice shining like never before! It’s super simple and fun - think of it as warming up your vocals in our cozy virtual studio to make sure you sound stunning. <a href="/train">Click here to get started.</a></p>
-			    <p>Have you warmed up with us before? Awesome! You’re all set to take your music to the next level. Jump right in and let's turn your vocals into breathtaking songs. <a href="/song_conversion">Start your musical transformation here.</a></p>
-				<p>Please read our disclaimer before starting <a href="/disclaimer">Disclaimer</a></p>
-				<p>Please read our Terms and Conditions before starting <a href="/terms">Terms and Conditions</a></p>
-				<p>Please read our Privacy Policy <a href="/privacy">Privacy Policy</a></p>
-			</div>
 
-        <!-- Video Embed -->
-        <div class="video-container">
-            <video controls class="embedded-video">
-                <source src="{{ url_for('static', filename='demo.mp4') }}" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
-        </div>
-
-        <!--<img src="{{ url_for('static', filename='image2.png') }}" alt="Triumph Image" class="side-image right-image">-->
+    <div class="content">
+        <h1>Disclaimer</h1>
+        <p><strong>General</strong></p>
+        <p>Welcome to Mai Bhi Singer! Before you use our services, please read the following disclaimer carefully.</p>
+        
+        <p><strong>No Responsibility for Content</strong></p>
+        <p>Mai Bhi Singer does not take responsibility for the choice and content of YouTube videos and other media selected by users for morphing and conversion using our platform. Users are solely responsible for ensuring they have the appropriate rights to use the content they upload or modify.</p>
+        
+        <p><strong>Quality of Service</strong></p>
+        <ul>
+            <li>Our platform utilizes advanced machine learning algorithms for song conversion and voice morphing. However, the quality of the output can be affected by various factors including, but not limited to, background noise, music quality, and the clarity of the vocal recordings provided.</li>
+            <li>Due to these factors, we cannot guarantee that the quality of the converted songs will always meet expectations.</li>
+            <li>Mai Bhi Singer is a probabilistic system, and as such, it operates within the limitations inherent to machine learning technologies. Therefore, <strong>Mai Bhi Singer does not take any responsibility for the quality of the generated content</strong>, and <strong>no refunds will be issued based on quality concerns</strong>.</li>
+        </ul>
+        
+        <p><strong>Free Credits</strong></p>
+        <p>To allow users to experience our system and evaluate its capabilities, Mai Bhi Singer provides free credits to new users. We encourage you to use these credits to familiarize yourself with the system and assess its suitability for your needs before making any purchase.</p>
+        
+        <p><strong>Data Privacy and Usage</strong></p>
+        <p>We respect your privacy. Mai Bhi Singer <strong>will not store or use your voice data</strong> for any purpose other than the training and conversion process you initiate. <strong>No other users have access to your model or the ability to use it for conversions</strong>, ensuring that your data remains private and under your control.</p>
+        
+        <p><strong>No Liability for Impersonation</strong></p>
+        <p>Mai Bhi Singer does not assume any liability if an individual attempts to impersonate another person by mimicking their voice for model training and content generation. Users are advised to respect copyright laws and the personal rights of others while using our platform.</p>
+        
+        <p><strong>Conclusion</strong></p>
+        <p>By using our services, you acknowledge that you have read and understood this disclaimer and agree to its terms. If you have any questions or concerns about our services, please contact us at <a href="mailto:support@maibhisinger.com">support@maibhisinger.com</a>.</p>
+        
+        <p>Thank you for choosing Mai Bhi Singer.</p>
     </div>
-</main>
+
+
 
 	<script>
 document.addEventListener('DOMContentLoaded', function() {
