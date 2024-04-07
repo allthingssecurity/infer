@@ -2135,6 +2135,7 @@ def submit_order_confirmation():
         # Assume a function add_credits(user_email, item_type) that adds credits based on item_type
             item_type = order_data['item_type']
             add_credits(app,user_email,item_type,5)
+            app.logger.info(f"5 credits added for type {item_type}")
             #add_credits(user_email, item_type)
             return jsonify({"success": True, "message": "Credits added successfully"}), 200
         else:
