@@ -3,126 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Complete Order and Checkout</title>
-    <script src="https://sdk.cashfree.com/js/v3/cashfree.js" type="text/javascript"></script> <!-- Include the Cashfree SDK for checkout -->
-    <style>
-        body {
-            font-family: Arial, sans-serif; /* Makes the text readable */
-            margin: 20px;
-        }
-        form {
-            margin-bottom: 20px;
-        }
-        input, select, button {
-            margin-top: 8px;
-            width: 200px;
-            height: 30px;
-            display: block;
-        }
-        button {
-            background-color: #4CAF50; /* Green */
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
+    <title>Mai Bhi Singer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+        <style>
+	        body {
+	            font-family: Arial, sans-serif;
+	            margin: 0;
+	            padding: 0;
+	        }
+	      .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    position: fixed; /* Fix navbar at the top */
+    top: 0; /* Align to the top */
+    left: 0; /* Align to the left */
+    width: 100%; /* Ensure it spans the full width */
+    background-color: #000; /* Add a background color to ensure text is visible */
+    z-index: 1000; /* Ensure navbar is above other content */
+}
+
+	        .content-container {
+	            display: flex;
+	            flex-wrap: wrap;
+	            justify-content: space-between;
+	            margin: 20px;
+	        }
+	        .side-image {
+	            flex: 1;
+	            max-width: calc(50% - 40px);
+	            margin: 20px;
+	        }
+	        .instructional-content, .video-container {
+	            flex-basis: 100%;
+	            max-width: 100%;
+	            margin: 20px 0;
+	            text-align: center;
+	        }
+	        video {
+	            width: 100%;
+	            max-width: 640px; /* Adjust based on your preference */
+	            height: auto;
+	        }
+			main {
+    padding-top: 70px; /* Adjust this value based on the actual height of your navbar */
+}
     </style>
+
 </head>
+
 <body>
-    <h1>Order and Checkout</h1>
+    <h1>Create Your Order</h1>
     <form id="orderForm">
-        <input type="number" id="amount" placeholder="Enter amount" required>
-        <select id="orderType" required>
-            <option value="">Choose an order type</option>
-            <option value="song">Songs</option>
-            <option value="model">Model</option>
-            <option value="video">Video</option>
-        </select>
+        <div>
+            <label for="orderType">Order Type:</label>
+            <select id="orderType" name="orderType" required onchange="updatePricingInfo()">
+                <option value="">Choose an Order Type</option>
+                <option value="song">Songs</option>
+                <option value="model">Model Training</option>
+                <option value="video">Video</option>
+            </select>
+        </div>
+        <div>
+            <label for="amount">Amount (in denominations of 100):</label>
+            <select id="amount" name="amount" required>
+                <option value="">Select Amount</option>
+                <option value="100">100</option>
+                <option value="200">200</option>
+                <option value="300">300</option>
+                <option value="400">400</option>
+                <option value="500">500</option>
+                <option value="600">600</option>
+                <option value="700">700</option>
+                <option value="800">800</option>
+                <option value="900">900</option>
+                <option value="1000">1000</option>
+            </select>
+            <div class="info-text">Please select an amount in multiples of 100.</div>
+        </div>
+        <div id="pricePerCredit" class="info-text"></div>
         <button type="submit">Create Order</button>
     </form>
 
     <script>
-  document.getElementById('orderForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-
-    const amount = document.getElementById('amount').value;
-    const orderType = document.getElementById('orderType').value;
-
-    fetch('/create_order', {  // Endpoint to create an order
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            amount: amount,
-            orderType: orderType
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.paymentSessionId) {
-            // Store orderId for later use
-            const orderId = data.orderId; // Capture orderId from the initial API response
-
-            // Use Cashfree's SDK to handle the checkout
-            const cashfree = new Cashfree({
-                mode: "sandbox" // Or "production"
-            });
-
-            const checkoutOptions = {
-                "paymentSessionId": data.paymentSessionId,
-                "redirectTarget": "_modal"
-            };
-
-            // Initiating checkout
-            cashfree.checkout(checkoutOptions)
-            .then(checkoutResponse => {
-                // Attach orderId to checkoutResponse for submission
-                checkoutResponse.orderId = orderId;
-
-                alert("Checkout response: " + JSON.stringify(checkoutResponse, null, 2));
-
-                // Send order confirmation details along with orderId to the server
-                submitOrderConfirmation(checkoutResponse);
-            }).catch(checkoutError => {
-                console.error("Checkout error:", checkoutError);
-            });
-        } else {
-            console.error('Failed to create order:', data);
+        function updatePricingInfo() {
+            var orderType = document.getElementById('orderType').value;
+            var priceInfo = document.getElementById('pricePerCredit');
+            switch (orderType) {
+                case 'song':
+                    priceInfo.textContent = '20 Rs per credit for Songs';
+                    break;
+                case 'model':
+                    priceInfo.textContent = '50 Rs per credit for Model Training';
+                    break;
+                case 'video':
+                    priceInfo.textContent = '';  // Update if pricing info is available for videos
+                    break;
+                default:
+                    priceInfo.textContent = '';
+                    break;
+            }
         }
-    })
-    .catch(error => {
-        console.error('Error creating order:', error);
-    });
-});
-
-function submitOrderConfirmation(checkoutResponse) {
-    // Send orderId and other confirmation details to the server
-    fetch('/submit_order_confirmation', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            order_id: checkoutResponse.orderId,  // Send orderId back to the server
-            status: "Completed", // Assume checkout was successful for this example
-            additional_info: JSON.stringify(checkoutResponse) // Optional: send entire checkoutResponse
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log("Order confirmation response:", data);
-        // Handle additional client-side logic based on the server's response
-    })
-    .catch(error => {
-        console.error("Error submitting order confirmation:", error);
-    });
-}
-
-
     </script>
 </body>
 </html>
