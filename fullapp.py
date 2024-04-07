@@ -2115,6 +2115,7 @@ def submit_order_confirmation():
 
         # Extract order_id and status from the top level of the data
         order_id = data.get('order_id')
+        
         status = data.get('status')
 
         # The additional_info is a JSON string, so parse it into a Python dictionary
@@ -2148,9 +2149,33 @@ def submit_order_confirmation():
         
         if order_data['order_id'] == order_id and status == 'Completed':
         # Assume a function add_credits(user_email, item_type) that adds credits based on item_type
+            amount=0
+            # Convert amount to integer safely
+            try:
+                # Try to convert amount to an integer, if it's not an integer already
+                amount = int(order_data.get('order_amount', 0))  # Default to 0 if not found
+            except ValueError:
+                # Handle the case where the amount is not convertible to integer
+                return jsonify({"success": False, "message": "Amount coundnt be retrieved"}), 400
+            
+            
             item_type = order_data['item_type']
-            add_credits(app,user_email,item_type,5)
-            app.logger.info(f"5 credits added for type {item_type}")
+            
+            
+            if item_type == 'song':
+                credits = amount / 20
+            elif item_type == 'model':
+                credits = amount / 50
+            elif item_type == 'video':
+                credits = amount / 25
+            else:
+                credits = 0  # Default case if the item_type is not recognized
+            
+            
+            #calculate credits 
+            
+            add_credits(app,user_email,item_type,credits)
+            app.logger.info(f"{credits} credits added for type {item_type}")
             #add_credits(user_email, item_type)
             return jsonify({"success": True, "message": "Credits added successfully"}), 200
         else:
