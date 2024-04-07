@@ -6,6 +6,9 @@
     <title>Mai Bhi Singer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
+		:root {
+    --navbar-height: 50px; /* Initial fallback height */
+}
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -25,15 +28,12 @@
             color: white;
             z-index: 1000;
         }
-        .left-aligned-container {
+    .left-aligned-container {
             text-align: left;
             width: 100%;
-            max-width: 600px;
-            margin: 120px auto 50px; /* Increased top margin and centered */
-            background: white;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            border-radius: 8px;
+            max-width: 500px;
+            margin: 0 auto;
+			padding-top: var(--navbar-height);
         }
         form > div {
             margin-bottom: 20px;
@@ -220,6 +220,14 @@
     </form>
 </div>
     <script>
+	
+	window.onload = adjustPaddingTop;
+window.onresize = adjustPaddingTop;
+
+function adjustPaddingTop() {
+    const navbarHeight = document.querySelector('.navbar').offsetHeight;
+    document.documentElement.style.setProperty('--navbar-height', `${navbarHeight}px`);
+}
         function updatePricingInfo() {
             var orderType = document.getElementById('orderType').value;
             var priceInfo = document.getElementById('pricePerCredit');
