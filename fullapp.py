@@ -2054,6 +2054,7 @@ def create_order():
                 'order_amount': api_response.data.order_amount,
                 'order_currency': api_response.data.order_currency,
                 'created_at': api_response.data.created_at.isoformat() if api_response.data.created_at else None,
+                'item_type:'item_type,
                 # Add any other fields you need
             }
             
@@ -2119,6 +2120,32 @@ def submit_order_confirmation():
         #    app.logger.info(existing_order_data)
         #else:
             # If there is no data for this order_id, initialize an empty dictionary
+            
+        
+        key = f"{user_email}_orders"
+        order_data = redis_client.hget(key, order_id)
+        if order_data is None:
+            return jsonify({"success": False, "message": "Order not found"}), 404
+
+        order_data = json.loads(order_data.decode('utf-8'))
+        
+        app.logger.info(f"order data reetieved ={order_data}")
+        
+        if order_data['order_id'] == order_id and order_data.get('status', '') == 'completed':
+        # Assume a function add_credits(user_email, item_type) that adds credits based on item_type
+            item_type = order_data['item_type']
+            add_credits(app,user_email,item_type,5)
+            #add_credits(user_email, item_type)
+            return jsonify({"success": True, "message": "Credits added successfully"}), 200
+        else:
+            return jsonify({"success": False, "message": "Order not completed or ID mismatch"}), 400
+
+        
+        
+        
+        
+        
+        
         existing_order_data = {}
 
         # Update the existing order data with the new order confirmation details
