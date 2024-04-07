@@ -2163,11 +2163,11 @@ def submit_order_confirmation():
             
             
             if item_type == 'song':
-                credits = amount / 20
+                credits = amount // 20
             elif item_type == 'model':
-                credits = amount / 50
+                credits = amount // 50
             elif item_type == 'video':
-                credits = amount / 25
+                credits = amount // 25
             else:
                 credits = 0  # Default case if the item_type is not recognized
             
