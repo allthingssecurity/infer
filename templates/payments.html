@@ -217,6 +217,11 @@
             <div class="info-text">Please select an amount in multiples of 100.</div>
         </div>
         <div id="pricePerCredit" class="info-text"></div>
+		
+		<div id="confirmationModal" style="display:none;">
+    <p id="modalMessage"></p>
+    <button onclick="closeModal()">Close</button>
+</div>
         <button type="submit">Create Order</button>
     </form>
 </div>
@@ -248,6 +253,16 @@ function adjustPaddingTop() {
             }
         }
 		
+		
+		
+		function showModal(message) {
+    document.getElementById('modalMessage').innerText = message;
+    document.getElementById('confirmationModal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('confirmationModal').style.display = 'none';
+}
 		
   document.getElementById('orderForm').addEventListener('submit', function(event) {
     event.preventDefault();
@@ -318,11 +333,17 @@ function submitOrderConfirmation(checkoutResponse) {
     })
     .then(response => response.json())
     .then(data => {
+	    
         console.log("Order confirmation response:", data);
+		     showModal('Order processed successfully. Redirecting...');
+            setTimeout(() => {
+                window.location.href = '/'; // Redirect after showing message
+            }, 2000);
         // Handle additional client-side logic based on the server's response
     })
     .catch(error => {
         console.error("Error submitting order confirmation:", error);
+		showModal('Failed to process order. Please try again.');
     });
 }
 
