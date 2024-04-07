@@ -2054,7 +2054,7 @@ def create_order():
                 'order_amount': api_response.data.order_amount,
                 'order_currency': api_response.data.order_currency,
                 'created_at': api_response.data.created_at.isoformat() if api_response.data.created_at else None,
-                'item_type:'item_type,
+                'item_type': item_type,
                 # Add any other fields you need
             }
             
