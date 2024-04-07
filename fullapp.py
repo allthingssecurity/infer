@@ -2179,7 +2179,8 @@ def submit_order_confirmation():
             #add_credits(user_email, item_type)
             #return jsonify({"success": True, "message": "Credits added successfully"}), 200
         else:
-            return render_template('index.html',model_credits=model_credits,song_credits=song_credits,video_credits=video_credits,order_id=order_id,payment="failure")
+            return jsonify({"success": False, "message": "Credits addition failed"}), 400
+            #return render_template('index.html',model_credits=model_credits,song_credits=song_credits,video_credits=video_credits,order_id=order_id,payment="failure")
 
         
         
@@ -2219,11 +2220,11 @@ def submit_order_confirmation():
 
         # Assume processing is successful and send a response back
         
-        return render_template('index.html',model_credits=model_credits,song_credits=song_credits,video_credits=video_credits,order_id=order_id,payment="success")
-        #return jsonify({"message": "Order confirmation received and processed successfully", "status": "success"}), 200
+        #return render_template('index.html',model_credits=model_credits,song_credits=song_credits,video_credits=video_credits,order_id=order_id,payment="success")
+        return jsonify({"message": "Order confirmation received and processed successfully", "status": "success"}), 200
     else:
-        return render_template('index.html',model_credits=model_credits,song_credits=song_credits,video_credits=video_credits,order_id=order_id,payment="failure")
- #       return jsonify({"error": "Request must be JSON"}), 400
+        #return render_template('index.html',model_credits=model_credits,song_credits=song_credits,video_credits=video_credits,order_id=order_id,payment="failure")
+        return jsonify({"error": "Request must be JSON"}), 400
 
 
 
