@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
+	
+		:root {
+    --navbar-height: 50px; /* Initial fallback height */
+}
+
         body {
             margin: 0;
             padding: 10px;
@@ -16,7 +21,7 @@
             width: 100%;
             max-width: 500px;
             margin: 0 auto;
-			 padding-top: 100px; 
+			 padding-top: var(--navbar-height);
         }
 		
 		      .navbar {
@@ -368,7 +373,13 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
+	window.onload = adjustPaddingTop;
+window.onresize = adjustPaddingTop;
 
+function adjustPaddingTop() {
+    const navbarHeight = document.querySelector('.navbar').offsetHeight;
+    document.documentElement.style.setProperty('--navbar-height', `${navbarHeight}px`);
+}
 
 
 
