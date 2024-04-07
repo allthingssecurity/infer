@@ -120,7 +120,7 @@ function adjustPaddingTop() {
         async function uploadFile() {
             // Validate if a file has been selected
 			
-			    document.getElementById('spinner').style.display = 'block';
+			   
 
     // Reset and show the progress bar
     document.getElementById('progress-bar').style.width = '0%';
@@ -141,6 +141,8 @@ function adjustPaddingTop() {
                 alert('Please select a speaker.');
                 return;
             }
+			
+			 document.getElementById('spinner').style.display = 'block';
 
             // Prepare the form data
             const formData = new FormData(document.getElementById('upload-form'));
