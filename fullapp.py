@@ -44,7 +44,7 @@ import os
 import smtplib
 
 
-from cashfree_pg.models.create_order_request import CreateOrderRequest
+from cashfree_pg.models.create_order_request import CreateOrderRequest,OrderMeta
 from cashfree_pg.api_client import Cashfree
 from cashfree_pg.models.customer_details import CustomerDetails
 
@@ -2056,7 +2056,7 @@ def create_order():
         #x_api_version = "2023-08-01"
 
         customerDetails = CustomerDetails(customer_id="walterwNrcMi", customer_phone="9999999999")
-        orderMeta = CreateOrderRequestOrderMeta(return_url="https://www.maibhisinger.com")
+        orderMeta = OrderMeta(return_url="https://www.maibhisinger.com")
         app.logger.info("after setting meta")
         createOrderRequest = CreateOrderRequest(order_amount=amount, order_currency="INR", customer_details=customerDetails,orderMeta=orderMeta)
         app.logger.info("after cretaing order request")
