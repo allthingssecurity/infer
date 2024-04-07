@@ -2108,7 +2108,7 @@ def submit_order_confirmation():
     
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-   
+    order_id=''
     user_email = session.get('user_email')  # Assuming current_user has an email attribute
     if request.is_json:
         data = request.get_json()  # Get the JSON data sent from the frontend
@@ -2203,6 +2203,11 @@ def submit_order_confirmation():
         key = f"{user_email}_orders_payment"
         
         redis_client.hset(key, order_id, updated_order_data_str)
+        model_credits=get_user_credits(user_email,'model')
+        song_credits=get_user_credits(user_email,'song')
+        video_credits=get_user_credits(user_email,'video')
+        
+        
         app.logger.info("after updating redis with updated info")
         
         
