@@ -2057,8 +2057,9 @@ def create_order():
 
         customerDetails = CustomerDetails(customer_id="walterwNrcMi", customer_phone="9999999999")
         orderMeta = CreateOrderRequestOrderMeta(return_url="https://www.maibhisinger.com")
-
-        createOrderRequest = CreateOrderRequest(order_amount=amount, order_currency="INR", customer_details=customerDetails)
+        app.logger.info("after setting meta")
+        createOrderRequest = CreateOrderRequest(order_amount=amount, order_currency="INR", customer_details=customerDetails,orderMeta=orderMeta)
+        app.logger.info("after cretaing order request")
         try:
             api_response = Cashfree().PGCreateOrder(x_api_version, createOrderRequest, None, None)
             app.logger.info(api_response.data)
