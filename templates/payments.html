@@ -287,7 +287,7 @@ function adjustPaddingTop() {
                 // Attach orderId to checkoutResponse for submission
                 checkoutResponse.orderId = orderId;
 
-                alert("Checkout response: " + JSON.stringify(checkoutResponse, null, 2));
+                //alert("Checkout response: " + JSON.stringify(checkoutResponse, null, 2));
 
                 // Send order confirmation details along with orderId to the server
                 submitOrderConfirmation(checkoutResponse);
