@@ -2213,9 +2213,12 @@ def submit_order_confirmation():
         # such as updating a database or initiating other business processes
 
         # Assume processing is successful and send a response back
-        return jsonify({"message": "Order confirmation received and processed successfully", "status": "success"}), 200
+        
+        return render_template('index.html',model_credits=model_credits,song_credits=song_credits,video_credits=video_credits,order_id=order_id,payment="success")
+        #return jsonify({"message": "Order confirmation received and processed successfully", "status": "success"}), 200
     else:
-        return jsonify({"error": "Request must be JSON"}), 400
+        return render_template('index.html',model_credits=model_credits,song_credits=song_credits,video_credits=video_credits,order_id=order_id,payment="failure")
+ #       return jsonify({"error": "Request must be JSON"}), 400
 
 
 

@@ -25,6 +25,31 @@
     z-index: 1000; /* Ensure navbar is above other content */
 }
 
+
+        .popup {
+            display: none;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            z-index: 1001;
+        }
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
 	        .content-container {
 	            display: flex;
 	            flex-wrap: wrap;
@@ -104,6 +129,8 @@
         </div>
     </header>
 
+
+
 <main>
     <!-- Welcome Section -->
     <section class="welcome-section">
@@ -134,6 +161,13 @@
         <!--<img src="{{ url_for('static', filename='image2.png') }}" alt="Triumph Image" class="side-image right-image">-->
     </div>
 </main>
+
+    <div id="overlay"></div>
+    <div class="popup" id="popup">
+        <p id="popupMessage"></p>
+        <button onclick="closePopup()">OK</button>
+    </div>
+
 
 	<script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -172,6 +206,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+      function showPopup(message) {
+            document.getElementById('popupMessage').innerText = message;
+            document.getElementById('popup').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        window.onload = function() {
+            var paymentStatus = "{{ payment }}";
+            var orderId = "{{ order_id }}";
+            if (paymentStatus !== '') {
+                var message = `Order ID ${orderId} - ${paymentStatus.toUpperCase()}`;
+                showPopup(message);
+            }
+        };
 
 </script>
 
