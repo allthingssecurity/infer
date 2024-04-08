@@ -21,7 +21,7 @@ from pydub import AudioSegment
 import io
 from rq.job import Job
 from logging.handlers import RotatingFileHandler
-
+import json
 from datetime import datetime, timedelta
 import time
 from myemail import send_email
@@ -132,15 +132,15 @@ def create_order():
 
                 "success": True
             }
-            #app.logger.info("before dumping json")
-            #json_data_string = json.dumps(data_to_store)
-            #app.logger.info(json_data_string)
+            app.logger.info("before dumping json")
+            json_data_string = json.dumps(data_to_store)
+            app.logger.info(json_data_string)
             
             key = f"{user_email}_paymentlink"
             
             app.logger.info("before  storing in redis")
             
-            redis_client.hset(key, link_id, data_to_store)
+            redis_client.hset(key, link_id, json_data_string)
     
             app.logger.info("after storing in redis")
 
