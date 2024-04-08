@@ -188,7 +188,7 @@
 
  // Modify the existing checkPaymentStatus function to use submitPaymentDetails
 function checkPaymentStatus(orderId) {
-    fetch(`/check_payment_status/${orderId}`)
+    fetch(`/payment/check_payment_status/${orderId}`)
     .then(response => response.json())
     .then(data => {
         if (data.status === 'PAID') {
@@ -203,7 +203,7 @@ function checkPaymentStatus(orderId) {
 
 // Update cancelPayment to use submitPaymentDetails
 function cancelPayment(orderId) {
-    fetch('/cancel_payment/' + orderId, {
+    fetch('/payment/cancel_payment/' + orderId, {
         method: 'POST'
     })
     .then(response => response.json())
