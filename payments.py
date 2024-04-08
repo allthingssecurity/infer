@@ -132,15 +132,15 @@ def create_order():
 
                 "success": True
             }
-            app.logger.info("before dumping json")
-            json_data_string = json.dumps(data_to_store)
-            app.logger.info(json_data_string)
+            #app.logger.info("before dumping json")
+            #json_data_string = json.dumps(data_to_store)
+            #app.logger.info(json_data_string)
             
             key = f"{user_email}_paymentlink"
             
             app.logger.info("before  storing in redis")
             
-            redis_client.hset(key, link_id, json_data_string)
+            redis_client.hset(key, link_id, data_to_store)
     
             app.logger.info("after storing in redis")
 
