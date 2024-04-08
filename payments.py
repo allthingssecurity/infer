@@ -194,6 +194,8 @@ def submit_payment_details():
     
     orderId = data['orderId']
     status = data['status']
+    app.logger.info(f"orderId={orderId}")
+    
     # Print the data received to the console (server-side)
     app.logger.info("Received payment details:", data)
     
@@ -202,7 +204,7 @@ def submit_payment_details():
     # Optionally, you can perform any processing here, such as updating a database
     # For now, we just return a success message
     if redis_client.exists(key_for_link):
-        app.logger,info("found key")
+        app.logger.info("found key")
         stored_data = redis_client.get(key_for_link)
         stored_data = json.loads(stored_data.decode('utf-8'))  # Decoding from bytes to string, then to dict
         app.logger.info(stored_data)
@@ -210,8 +212,38 @@ def submit_payment_details():
         if status == 'PAID':
             # You may want to store additional data such as payment status
             app.logger.info(f"successfully paid for user {user_email} with link {orderId}")
+            orderType=stored_data['link_purpose']
             key_for_status = f"{user_email}_paymentstatus_{orderId}"
-            app.logger.info(f"amount={stored_data['link_amount']}")
+            amount=0
+            
+            try:
+                # Try to convert amount to an integer, if it's not an integer already
+                amount = int(stored_data['link_amount'])  # Default to 0 if not found
+                app.logger.info(f"amount to be credited={amount}")
+            except ValueError:
+                # Handle the case where the amount is not convertible to integer
+                return jsonify({"success": False, "message": "Amount coundnt be retrieved"}), 400
+            credits=0
+            if orderType == 'song':
+                credits = amount // 20
+            elif orderType == 'model':
+                credits = amount // 50
+            elif orderType == 'video':
+                credits = amount // 25
+            else:
+                credits = 0  # Default case if the item_type is not recognized
+            
+            
+            #calculate credits 
+            
+            add_credits(app,user_email,orderType,credits)
+            
+
+            app.logger.info(f"added credits={credits} for user {user_email}")
+
+            
+            
+            
             status_data = {
                 'status': status,
                 'amount': stored_data['link_amount']  # Assume amount is part of stored data
