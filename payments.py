@@ -126,6 +126,7 @@ def create_order():
             data_to_store = {
                 "orderId": link_id,                
                 "link_url": link_url,
+                "link_qrcode" :link_qrcode,
                 "link_amount": amount,
                 "link_currency": "INR",
                 "link_purpose": orderType,
@@ -149,7 +150,7 @@ def create_order():
             
             
             
-            return jsonify(data_to_store)
+            return jsonify(data_to_store),200
             
             
             
