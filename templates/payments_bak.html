@@ -124,7 +124,66 @@
 
 
  
+</body>
+</html>
 
+
+
+
+
+
+
+
+<body>
+    <header>
+        <div class="navbar">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" class="logo">
+            <nav>
+        <ul>
+            <li class="dropdown">
+                <a href="javascript:void(0)">Generation &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="/train">Model Training</a>
+                    <a href="/song_conversion">Song Conversion</a>
+                    <a href="/gen_video">Generate Video</a>
+                </div>
+            </li>
+            
+			<li class="dropdown">
+                        <a href="javascript:void(0)">Credits &#9662;</a>
+                        <div class="dropdown-content">
+						    <a href="/payments">Recharge</a>
+                            
+                            <a href="javascript:void(0)">Model Credits: {{ model_credits }}</a>
+                            <a href="javascript:void(0)">Song Credits: {{ song_credits }}</a>
+                            <a href="javascript:void(0)">Singing Head Credits: {{ video_credits }}</a>
+                        </div>
+                    </li>
+					
+		     <li class="dropdown">
+                    <a href="javascript:void(0)">Others &#9662;</a>
+                    <div class="dropdown-content">
+                        <a href="/get_samples">Samples</a>
+                        <a href="/get-jobs">Tracking</a>
+						<a href="/contact">Contact Us</a>
+                    </div>
+                </li>
+
+           
+			
+        </ul>
+    </nav>
+            <div class="user-info">
+                <img src="{{ session['user_image'] if session['user_image'] else url_for('static', filename='default-user-icon.png') }}" alt="User Icon" class="user-icon">
+                <span>Welcome, {{ session['username'] }}</span>
+                <!-- Displaying Credits Information -->
+            <!-- Dropdown Trigger -->
+
+                <a href="/logout" class="logout-btn">Logout</a>
+				
+            </div>
+        </div>
+    </header>
 
 
 <div class="left-aligned-container">
@@ -133,7 +192,6 @@
     <form id="orderForm">
         <div>
             <label for="orderType">Order Type:</label>
-			<input type="text" id="phoneNumber" placeholder="Enter phone number" required>
             <select id="orderType" name="orderType" required onchange="updatePricingInfo()">
                 <option value="">Choose an Order Type</option>
                 <option value="song">Songs</option>
@@ -160,6 +218,10 @@
         </div>
         <div id="pricePerCredit" class="info-text"></div>
 		
+		<div id="confirmationModal" style="display:none;">
+    <p id="modalMessage"></p>
+    <button onclick="closeModal()">Close</button>
+</div>
         <button type="submit">Create Order</button>
     </form>
 </div>
@@ -193,48 +255,98 @@ function adjustPaddingTop() {
 		
 		
 		
-   document.getElementById('orderForm').addEventListener('submit', function(event) {
-        event.preventDefault();  // Prevent the default form submission behavior
-        const amount = document.getElementById('amount').value;
-        const phoneNumber = document.getElementById('phoneNumber').value;
-        const orderType = document.getElementById('orderType').value;
+		function showModal(message) {
+    document.getElementById('modalMessage').innerText = message;
+    document.getElementById('confirmationModal').style.display = 'block';
+}
 
-        // Use fetch API to send data to your Flask backend
-        fetch('/payment/create_order', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                amount: amount,
-                phoneNumber: phoneNumber,
-                orderType: orderType
-            })
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok ' + response.statusText);
-            }
-            return response.json();  // Parse JSON data from the response
-        })
-        .then(data => {
-            if (data.link_qrcode) {
-                // Redirect to a new page which displays the QR code, using the provided order ID
-				//alert(data.link_qrcode)
-                // When redirecting, encode the QR code properly
-				window.location.href = `/payment/display_qr/${data.orderId}?qr_code=${encodeURIComponent(data.link_qrcode)}`;
+function closeModal() {
+    document.getElementById('confirmationModal').style.display = 'none';
+}
+		
+  document.getElementById('orderForm').addEventListener('submit', function(event) {
+    event.preventDefault();
 
+    const amount = document.getElementById('amount').value;
+    const orderType = document.getElementById('orderType').value;
 
-            } else {
-                alert('Failed to create order. Please try again.');
-            }
+    fetch('/create_order', {  // Endpoint to create an order
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            amount: amount,
+            orderType: orderType
         })
-        .catch(error => {
-            console.error('Error creating order:', error);
-            alert('Error creating order: ' + error.message);
-        });
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.paymentSessionId) {
+            // Store orderId for later use
+            const orderId = data.orderId; // Capture orderId from the initial API response
+
+            // Use Cashfree's SDK to handle the checkout
+            const cashfree = new Cashfree({
+                mode: "sandbox" // Or "production"
+            });
+
+            const checkoutOptions = {
+                "paymentSessionId": data.paymentSessionId,
+                "redirectTarget": "_self"
+            };
+
+            // Initiating checkout
+            cashfree.checkout(checkoutOptions)
+            .then(checkoutResponse => {
+                // Attach orderId to checkoutResponse for submission
+                checkoutResponse.orderId = orderId;
+
+                //alert("Checkout response: " + JSON.stringify(checkoutResponse, null, 2));
+
+                // Send order confirmation details along with orderId to the server
+                submitOrderConfirmation(checkoutResponse);
+            }).catch(checkoutError => {
+                console.error("Checkout error:", checkoutError);
+            });
+        } else {
+            console.error('Failed to create order:', data);
+        }
+    })
+    .catch(error => {
+        console.error('Error creating order:', error);
     });
- 
+});
+
+function submitOrderConfirmation(checkoutResponse) {
+    // Send orderId and other confirmation details to the server
+    fetch('/submit_order_confirmation', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            order_id: checkoutResponse.orderId,  // Send orderId back to the server
+            status: "Completed", // Assume checkout was successful for this example
+            additional_info: JSON.stringify(checkoutResponse) // Optional: send entire checkoutResponse
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+	    
+        console.log("Order confirmation response:", data);
+		     showModal('Order processed successfully. Redirecting...');
+            setTimeout(() => {
+                window.location.href = '/'; // Redirect after showing message
+            }, 2000);
+        // Handle additional client-side logic based on the server's response
+    })
+    .catch(error => {
+        console.error("Error submitting order confirmation:", error);
+		showModal('Failed to process order. Please try again.');
+    });
+}
+
     </script>
 </body>
 </html>

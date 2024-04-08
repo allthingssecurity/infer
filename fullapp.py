@@ -26,6 +26,7 @@ import requests
 from pydub import AudioSegment
 import io
 from admin import admin_blueprint
+from payments import payment_blueprint
 from status import set_job_attributes,update_job_status,get_job_attributes,add_job_to_user_index,get_user_job_ids,update_job_progress,get_job_progress,get_job_status,check_existing_jobs
 from pydub import AudioSegment
 import io
@@ -64,6 +65,7 @@ from tzlocal import get_localzone # Import tzlocal
 
 app = Flask(__name__)
 app.register_blueprint(admin_blueprint)
+app.register_blueprint(payment_blueprint)
 app.secret_key = 'your_secret_key'
 UPLOAD_FOLDER = 'uploads'
 MAX_WORKERS = 20  # Adjust based on your requirements

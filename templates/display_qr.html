@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Display</title>
+     <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+            font-family: 'Arial', sans-serif;
+        }
+        .container {
+            text-align: center;
+            background: #fff;
+            padding: 40px;
+            margin: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        img.qr-code {
+            width: 200px;
+            height: 200px;
+            margin: 20px;
+        }
+        #timer {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        #statusMessage {
+            color: red;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+		
+				:root {
+    --navbar-height: 50px; /* Initial fallback height */
+}
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #000;
+            color: white;
+            z-index: 1000;
+        }
+    .left-aligned-container {
+            text-align: left;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+			padding-top: var(--navbar-height);
+        }
+        form > div {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #5cb85c; /* Bootstrap 'success' green */
+            color: white;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        .info-text {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+		
+    </style>
+</head>
+<body>
+
+   <header>
+        <div class="navbar">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" class="logo">
+            <nav>
+        <ul>
+            <li class="dropdown">
+                <a href="javascript:void(0)">Generation &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="/train">Model Training</a>
+                    <a href="/song_conversion">Song Conversion</a>
+                    <a href="/gen_video">Generate Video</a>
+                </div>
+            </li>
+            
+			<li class="dropdown">
+                        <a href="javascript:void(0)">Credits &#9662;</a>
+                        <div class="dropdown-content">
+						    <a href="/payments">Recharge</a>
+                            
+                            <a href="javascript:void(0)">Model Credits: {{ model_credits }}</a>
+                            <a href="javascript:void(0)">Song Credits: {{ song_credits }}</a>
+                            <a href="javascript:void(0)">Singing Head Credits: {{ video_credits }}</a>
+                        </div>
+                    </li>
+					
+		     <li class="dropdown">
+                    <a href="javascript:void(0)">Others &#9662;</a>
+                    <div class="dropdown-content">
+                        <a href="/get_samples">Samples</a>
+                        <a href="/get-jobs">Tracking</a>
+						<a href="/contact">Contact Us</a>
+                    </div>
+                </li>
+
+           
+			
+        </ul>
+    </nav>
+            <div class="user-info">
+                <img src="{{ session['user_image'] if session['user_image'] else url_for('static', filename='default-user-icon.png') }}" alt="User Icon" class="user-icon">
+                <span>Welcome, {{ session['username'] }}</span>
+                <!-- Displaying Credits Information -->
+            <!-- Dropdown Trigger -->
+
+                <a href="/logout" class="logout-btn">Logout</a>
+				
+            </div>
+        </div>
+    </header>
+
+
+
+    <div class="container">
+        <h1>Scan this QR Code to Make Payment</h1>
+        <img class="qr-code" src="{{ link_qrcode }}" alt="Payment QR Code">
+        <div id="timer">Time remaining: 7:00</div>
+        <div id="statusMessage"></div>
+    </div>
+
+
+    <script>
+    let checkStatusInterval = null;
+    let timerInterval = null;
+    let timeLeft = 30;  // Time in seconds (7 minutes)
+
+ 
+    function startTimer() {
+        const timerDisplay = document.getElementById('timer');
+        const statusMessage = document.getElementById('statusMessage');
+        timerInterval = setInterval(() => {
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                clearInterval(checkStatusInterval);
+                timerDisplay.textContent = "Time Expired";
+                statusMessage.textContent = "This QR code has expired and can no longer be used.";
+                cancelPayment("{{ order_id }}");  // Call to cancel payment
+            } else {
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                timerDisplay.textContent = `Time remaining: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+                timeLeft--;
+            }
+        }, 1000);
+    }
+
+ // Modify the existing checkPaymentStatus function to use submitPaymentDetails
+function checkPaymentStatus(orderId) {
+    fetch(`/check_payment_status/${orderId}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'PAID') {
+            clearInterval(timerInterval);
+            clearInterval(checkStatusInterval);
+            document.getElementById('statusMessage').textContent = "Payment confirmed!";
+            submitPaymentDetails(orderId, 'PAID');
+        }
+    })
+    .catch(error => console.error('Error checking payment status:', error));
+}
+
+// Update cancelPayment to use submitPaymentDetails
+function cancelPayment(orderId) {
+    fetch('/cancel_payment/' + orderId, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Payment cancellation response:', data);
+        if (data.success) {
+            // Only submit the cancellation details if the cancellation was successful
+            submitPaymentDetails(orderId, 'CANCELED');
+        } else {
+            console.error('Payment cancellation failed:', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error cancelling payment:', error);
+    });
+}
+
+ function submitPaymentDetails(orderId, status) {
+    fetch('/payment/submit_payment_details', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            orderId: orderId,
+            status: status  // Pass the payment status ('PAID' or 'CANCELED')
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Payment details submitted:', data);
+        if (status === 'CANCELED') {
+            // Additional logic for when the payment is canceled
+            document.getElementById('statusMessage').textContent = "Payment has been canceled.";
+        }
+    })
+    .catch(error => console.error('Error submitting payment details:', error));
+}
+
+    function cancelPayment(orderId) {
+        fetch('/payment/cancel_payment/' + orderId, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Payment cancellation response:', data);
+        })
+        .catch(error => {
+            console.error('Error cancelling payment:', error);
+        });
+    }
+
+    window.onload = function () {
+        const orderId = '{{ order_id }}';
+        startTimer();
+        checkStatusInterval = setInterval(() => checkPaymentStatus(orderId), 5000);  // Poll every 5 seconds
+    };
+	
+		window.onload = adjustPaddingTop;
+window.onresize = adjustPaddingTop;
+
+function adjustPaddingTop() {
+    const navbarHeight = document.querySelector('.navbar').offsetHeight;
+    document.documentElement.style.setProperty('--navbar-height', `${navbarHeight}px`);
+}
+        function updatePricingInfo() {
+            var orderType = document.getElementById('orderType').value;
+            var priceInfo = document.getElementById('pricePerCredit');
+            switch (orderType) {
+                case 'song':
+                    priceInfo.textContent = '20 Rs per credit for Songs';
+                    break;
+                case 'model':
+                    priceInfo.textContent = '50 Rs per credit for Model Training';
+                    break;
+                case 'video':
+                    priceInfo.textContent = '';  // Update if pricing info is available for videos
+                    break;
+                default:
+                    priceInfo.textContent = '';
+                    break;
+            }
+        }
+		
+
+	
+    </script>
+
+</body>
+</html>
