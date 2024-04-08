@@ -119,8 +119,10 @@ def create_order():
             response_data = response.json()
             code=response_data.get('link_qrcode', '')
             app.logger.info(f"code={code}")
-            
-            
+            link_qrcode= response_data.get('link_qrcode', '')
+            link_url=response_data.get('link_url', '')
+            app.logger.info(f"link qr code={link_qrcode}")
+            app.logger.info(f"link_url={link_url}")
             data_to_store = {
                 "orderId": link_id,
                 "link_qrcode": response_data.get('link_qrcode', ''),
@@ -131,10 +133,11 @@ def create_order():
 
                 "success": True
             }
-            
+            app.logger.info("before dumping json")
             json_data_string = json.dumps(data_to_store)
+            app.logger.info(json_data_string)
             
-            key = f"{user_email}_orders"
+            key = f"{user_email}_paymentlink"
             
             app.logger.info("before  storing in redis")
             
