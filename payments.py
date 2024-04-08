@@ -206,7 +206,7 @@ def submit_payment_details():
     if redis_client.exists(key_for_link):
         app.logger.info("found key")
         
-        stored_data = redis_client.hget(key_for_link, link_id)
+        stored_data = redis_client.hget(key_for_link, orderId)
         if stored_data:
             stored_data = stored_data.decode('utf-8')  # Decode bytes to string if necessary
             stored_data = json.loads(stored_data)  # Convert JSON string back to dictionary
