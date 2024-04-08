@@ -124,9 +124,8 @@ def create_order():
             app.logger.info(f"link qr code={link_qrcode}")
             app.logger.info(f"link_url={link_url}")
             data_to_store = {
-                "orderId": link_id,
-                "link_qrcode": response_data.get('link_qrcode', ''),
-                "link_url": response_data.get('link_url', ''),
+                "orderId": link_id,                
+                "link_url": link_url,
                 "link_amount": amount,
                 "link_currency": "INR",
                 "link_purpose": orderType,
