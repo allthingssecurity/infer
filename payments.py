@@ -205,8 +205,17 @@ def submit_payment_details():
     # For now, we just return a success message
     if redis_client.exists(key_for_link):
         app.logger.info("found key")
-        stored_data = redis_client.get(key_for_link)
-        stored_data = json.loads(stored_data.decode('utf-8'))  # Decoding from bytes to string, then to dict
+        
+        stored_data = redis_client.hget(key_for_link, link_id)
+        if stored_data:
+            stored_data = stored_data.decode('utf-8')  # Decode bytes to string if necessary
+            stored_data = json.loads(stored_data)  # Convert JSON string back to dictionary
+        else:
+    # Handle the case where the key or field does not exist
+            return jsonify({"error": "No data found for the provided link_id", "success": False}), 404
+        
+        
+        
         app.logger.info(stored_data)
         # If payment is confirmed as 'PAID'
         if status == 'PAID':
@@ -249,7 +258,7 @@ def submit_payment_details():
                 'amount': stored_data['link_amount']  # Assume amount is part of stored data
             }
             redis_client.set(key_for_status, json.dumps(status_data))
-
+        
         return jsonify({
             'success': True,
             'message': 'Payment details updated successfully.',
