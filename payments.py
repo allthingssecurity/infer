@@ -211,6 +211,7 @@ def submit_payment_details():
             # You may want to store additional data such as payment status
             app.logger.info(f"successfully paid for user {user_email} with link {orderId}")
             key_for_status = f"{user_email}_paymentstatus_{orderId}"
+            app.logger.info(f"amount={stored_data['link_amount']}")
             status_data = {
                 'status': status,
                 'amount': stored_data['link_amount']  # Assume amount is part of stored data
