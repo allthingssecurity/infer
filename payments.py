@@ -137,7 +137,7 @@ def create_order():
             json_data_string = json.dumps(data_to_store)
             app.logger.info(json_data_string)
             
-            key = f"{user_email}_paymentlink"
+            key = f"{user_email}_paymentlink_{link_id}"
             
             app.logger.info("before  storing in redis")
             
@@ -188,18 +188,45 @@ def check_payment_status(link_id):
 @login_required
 def submit_payment_details():
     # Retrieve JSON data from the request
+    user_email = session.get('user_email')
     data = request.get_json()
     
+    
+    orderId = data['orderId']
+    status = data['status']
     # Print the data received to the console (server-side)
     app.logger.info("Received payment details:", data)
     
+    key_for_link = f"{user_email}_paymentlink_{orderId}"
+    
     # Optionally, you can perform any processing here, such as updating a database
     # For now, we just return a success message
+    if redis_client.exists(key_for_link):
+        app.logger,info("found key")
+        stored_data = redis_client.get(key_for_link)
+        stored_data = json.loads(stored_data.decode('utf-8'))  # Decoding from bytes to string, then to dict
+        app.logger.info(stored_data)
+        # If payment is confirmed as 'PAID'
+        if status == 'PAID':
+            # You may want to store additional data such as payment status
+            app.logger.info(f"successfully paid for user {user_email} with link {orderId}")
+            key_for_status = f"{user_email}_paymentstatus_{orderId}"
+            status_data = {
+                'status': status,
+                'amount': stored_data['link_amount']  # Assume amount is part of stored data
+            }
+            redis_client.set(key_for_status, json.dumps(status_data))
 
-    return jsonify({
-        'success': True,
-        'message': 'Payment details received and processed.'
-    })
+        return jsonify({
+            'success': True,
+            'message': 'Payment details updated successfully.',
+            'data': stored_data
+        }), 200
+    else:
+        return jsonify({
+            'success': False,
+            'message': 'No payment link found for this order ID.'
+        }), 404
 
 
 @payment_blueprint.route('/payment/display_qr/<link_id>')
