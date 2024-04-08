@@ -86,12 +86,15 @@ def create_order():
         amount = request.json['amount']
         phoneNumber = request.json['phoneNumber']
         orderType = request.json['orderType']
-        link_id = f"order_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
         
+        app.logger.info(f"amount={amount},phoneNumber={phoneNumber},orderType={orderType}")
+        link_id = f"order_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+        app.logger.info(link_id)
         expiry_time = datetime.utcnow() + timedelta(minutes=10)
         link_expiry_time = expiry_time.isoformat() + 'Z'  # Append 'Z' to indicate UTC
-
+        app.logger.info(link_expiry_time)
         url = PAYMENT_URL
+        app.logger.info(f"url={url}")
         headers = {
             'accept': 'application/json',
             'content-type': 'application/json',
