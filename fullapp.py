@@ -12,7 +12,7 @@ import base64
 from flask import request
 import logging
 from logging.handlers import RotatingFileHandler
-from trainendtoend import train_model,convert_voice,generate_video_job,convert_voice_youtube
+from trainendtoend import train_model,convert_voice,generate_video_job,convert_voice_youtube,get_queued_jobs_on_restart
 import os
 import uuid
 from rq import Worker, Queue, Connection
@@ -176,8 +176,13 @@ def start_workers():
     # Wait for all processes to finish
     for process in processes:
         process.join()
-
-
+    
+    q = Queue(connection=redis_client)
+    job = q.enqueue_call(
+            func=get_queued_jobs_on_restart,            
+            timeout=2500  # Job-specific parameters like timeout
+        )
+    app.logger.info("enqued a job to get details of jobs which were running when server restarted")
 
 def create_app():
     app = Flask(__name__)

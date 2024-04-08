@@ -20,7 +20,7 @@ from urllib3.util.retry import Retry
 from status import set_job_attributes,update_job_status,get_job_attributes,add_job_to_user_index,get_user_job_ids,update_job_progress,get_job_progress
 from youtube import download_video_as_mp3
 from myemail import send_email
-
+import pandas as pd
 
 
 import os
@@ -785,10 +785,28 @@ def convert_audio_to_mp3(filepath, upload_folder='/tmp'):
 
 
 
+def retrieve_jobs():
+    
+    job_keys = redis_client.keys('job:*')
+    job_ids = []
+    
+    for key in job_keys:
+        status = redis_client.hget(key, "status").decode("utf-8")
+        if status in ['queued', 'started']:
+            job_id = key.split(':')[1]
+            job_ids.append(job_id)
+    
+    return job_ids
+
+def get_queued_jobs_on_restart():
+    job_ids = retrieve_jobs()
+    csv_file = create_csv(job_ids)
 
 
-
-
+def create_csv(job_ids, filename='jobs.csv'):
+    df = pd.DataFrame(job_ids, columns=['Job ID'])
+    df.to_csv(filename, index=False)
+    return filename
 
 
 def train_model(file_name, model_name, user_email):
