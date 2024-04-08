@@ -235,6 +235,19 @@ function cancelPayment(orderId) {
     .then(response => response.json())
     .then(data => {
         console.log('Payment details submitted:', data);
+		
+		if (data.success) {
+            // Success popup message
+            alert('Payment details submitted successfully. Click OK to continue.');
+            // Redirect to index page
+            window.location.href = '/'; // Assuming '/' is your index page
+        } else {
+            // Failure popup message
+            alert('Failed to submit payment details: ' + data.message);
+            // Optionally, redirect or perform other actions after alert
+			window.location.href = '/'; // Assuming '/' is your index page
+        }
+		
         if (status === 'CANCELED') {
             // Additional logic for when the payment is canceled
             document.getElementById('statusMessage').textContent = "Payment has been canceled.";
