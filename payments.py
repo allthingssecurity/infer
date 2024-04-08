@@ -3,7 +3,7 @@ from flask import Flask, session, redirect, url_for, request,render_template,fla
 from functools import wraps
 from redis import Redis
 import os
-
+import logging
 import uuid
 from rq import Worker, Queue, Connection
 from redis import Redis
