@@ -19,7 +19,7 @@ from status import set_job_attributes,update_job_status,get_job_attributes,add_j
 from pydub import AudioSegment
 import io
 from rq.job import Job
-
+from logging.handlers import RotatingFileHandler
 
 from datetime import datetime, timedelta
 import time
@@ -29,7 +29,7 @@ from cashfree_pg.api_client import Cashfree
 from cashfree_pg.models.customer_details import CustomerDetails
 
 
-
+app = Flask(__name__)
 payment_blueprint = Blueprint('payment', __name__)
 
 redis_host = os.getenv('REDIS_HOST', 'default_host')
@@ -46,6 +46,16 @@ Cashfree.XClientSecret = os.getenv('CASHFREE_CLIENT_SECRET', '')
 Cashfree.XEnvironment = os.getenv('CASHFREE_ENVIRONMENT', '')
 
 PAYMENT_URL=os.getenv('CASHFREE_LINK_URL','')
+
+logger = logging.getLogger('my_app_logger')
+
+handler = RotatingFileHandler('payments.log', maxBytes=10000, backupCount=3)
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+
+app.logger.addHandler(handler)
+app.logger.setLevel(logging.INFO)
 
 
 def login_required(f):
@@ -68,8 +78,10 @@ def home():
 @login_required
 def create_order():
     try:
-        user_email = request.json.get('user_email')
+        #user_email = request.json.get('user_email')
         
+        user_email = session.get('user_email')
+        app.logger.info(f"user email={user_email}")
         amount = request.json['amount']
         phoneNumber = request.json['phoneNumber']
         orderType = request.json['orderType']
@@ -98,11 +110,11 @@ def create_order():
 
         response = requests.post(url, json=data, headers=headers)
         
-        print(url)
+        app.logger.info(url)
         if response.status_code == 200:
             response_data = response.json()
             code=response_data.get('link_qrcode', '')
-            print (f"code={code}")
+            app.logger.info(f"code={code}")
             
             
             data_to_store = {
@@ -120,9 +132,11 @@ def create_order():
             
             key = f"{user_email}_orders"
             
+            app.logger.info("before  storing in redis")
+            
             redis_client.hset(key, link_id, json_data_string)
     
-            
+            app.logger.info("after storing in redis")
 
     # Use the user_email and order_id as the key for the Redis hash
             
@@ -146,6 +160,7 @@ def create_order():
 @login_required
 def check_payment_status(link_id):
     url = f"{PAYMENT_URL}/{link_id}"
+    app.logger.info("in check payment status")
     headers = {
         'accept': 'application/json',
         'x-api-version': '2023-08-01',
@@ -169,7 +184,7 @@ def submit_payment_details():
     data = request.get_json()
     
     # Print the data received to the console (server-side)
-    print("Received payment details:", data)
+    app.logger.info("Received payment details:", data)
     
     # Optionally, you can perform any processing here, such as updating a database
     # For now, we just return a success message
