@@ -5,16 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Display</title>
      <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f4f4f4;
-            font-family: 'Arial', sans-serif;
-        }
+       
         .container {
             text-align: center;
             background: #fff;
@@ -266,11 +257,12 @@ function cancelPayment(orderId) {
 
     window.onload = function () {
         const orderId = '{{ order_id }}';
+		adjustPaddingTop
         startTimer();
         checkStatusInterval = setInterval(() => checkPaymentStatus(orderId), 5000);  // Poll every 5 seconds
     };
 	
-		window.onload = adjustPaddingTop;
+		
 window.onresize = adjustPaddingTop;
 
 function adjustPaddingTop() {
