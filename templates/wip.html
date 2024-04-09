@@ -4,29 +4,124 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mai Bhi Singer</title>
+	
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+		:root {
+    --navbar-height: 50px; /* Initial fallback height */
+}
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #000;
+            color: white;
+            z-index: 1000;
+        }
+    .left-aligned-container {
+            text-align: left;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+			padding-top: var(--navbar-height);
+        }
+        form > div {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #5cb85c; /* Bootstrap 'success' green */
+            color: white;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        .info-text {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+
+
 </head>
+
+
+
+
 <body>
-    <header>
+     <header>
         <div class="navbar">
             <img src="{{ url_for('static', filename='logo.png') }}" alt="Application Logo" class="logo">
             <nav>
-                <ul>
-                    <li><a href="/train">Model Training</a></li>
-                    <li><a href="/song_conversion">Song Conversion</a></li>
-                    <li><a href="/samples">Samples</a></li>
-                    <li><a href="/rechargeModel">Recharge Model</a></li>
-                    <li><a href="/rechargeSong">Recharge Song</a></li>
-                </ul>
-            </nav>
+        <ul>
+            <li class="dropdown">
+                <a href="javascript:void(0)">Generation &#9662;</a>
+                <div class="dropdown-content">
+                    <a href="/train">Model Training</a>
+                    <a href="/song_conversion">Song Conversion</a>
+                    <a href="/gen_video">Generate Video</a>
+                </div>
+            </li>
+            
+			<li class="dropdown">
+                        <a href="javascript:void(0)">Credits &#9662;</a>
+                        <div class="dropdown-content">
+						    <a href="/payments">Recharge</a>
+                            
+                            <a href="javascript:void(0)">Model Credits: {{ model_credits }}</a>
+                            <a href="javascript:void(0)">Song Credits: {{ song_credits }}</a>
+                            <a href="javascript:void(0)">Singing Head Credits: {{ video_credits }}</a>
+                        </div>
+                    </li>
+					
+		     <li class="dropdown">
+                    <a href="javascript:void(0)">Others &#9662;</a>
+                    <div class="dropdown-content">
+                        <a href="/get_samples">Samples</a>
+                        <a href="/get-jobs">Tracking</a>
+						<a href="/contact">Contact Us</a>
+                    </div>
+                </li>
+
+           
+			
+        </ul>
+    </nav>
             <div class="user-info">
                 <img src="{{ session['user_image'] if session['user_image'] else url_for('static', filename='default-user-icon.png') }}" alt="User Icon" class="user-icon">
                 <span>Welcome, {{ session['username'] }}</span>
-                <div class="credits-info">
-                    <span>Model Credits: {{ model_credits }}</span>
-                    <span>Song Credits: {{ song_credits }}</span>
-                </div>
+                <!-- Displaying Credits Information -->
+            <!-- Dropdown Trigger -->
+
                 <a href="/logout" class="logout-btn">Logout</a>
+				
             </div>
         </div>
     </header>

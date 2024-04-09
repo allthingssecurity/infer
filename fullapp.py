@@ -1080,7 +1080,7 @@ def gen_video():
         song_credits=get_user_credits(user_email,'song')
         video_credits=get_user_credits(user_email,'video')
         
-        return render_template('video.html',model_credits=model_credits,song_credits=song_credits,video_credits=video_credits,image_url=image_url,image_name=object_name)
+        return render_template('wip.html',model_credits=model_credits,song_credits=song_credits,video_credits=video_credits,image_url=image_url,image_name=object_name)
 
 
 
