@@ -681,7 +681,7 @@ from pydub import AudioSegment
 import os
 import logging  # Consider using the logging module
 
-def analyze_audio_file1(file_path, max_size_bytes=10*1024*1024, max_duration_minutes=6, min_duration_minutes=2):
+def analyze_audio_file1(file_path, max_size_bytes=10*1024*1024, max_duration_minutes=15, min_duration_minutes=1):
     """
     Analyzes an uploaded audio file for size, format, and duration.
 
