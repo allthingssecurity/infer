@@ -1005,6 +1005,7 @@ def train_model(file_name, model_name, user_email):
         final_model_name = f"{user_email}_{model_name}"
         
         process_audio_url = f'https://{pod_id}--5000.proxy.runpod.net/process_audio'
+        status_url = f'https://{pod_id}--5000.proxy.runpod.net/status'
         app.logger.info('before call to upload files for training done')
         response = upload_files_for_training(process_audio_url, converted_path, final_model_name)
         
