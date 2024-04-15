@@ -936,9 +936,9 @@ def train_model_old(file_name, model_name, user_email):
             terminate_pod(pod_id)
             
 
+import requests  # Ensure you import requests
 
-
-def upload_file_for_training(url, file_path, model_name):
+def upload_files_for_training(url, file_path, model_name):
     """
     Uploads a single file to the specified endpoint with a given model name.
     """
@@ -994,7 +994,7 @@ def train_model(file_name, model_name, user_email):
         
         bucket_name = "sing"
         #pod_id = create_pod_and_get_id("train", "smjain/train:v7", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
-        pod_id = create_pod_and_get_id1(name="train", image_name="smjain/train:v7", gpu_models=gpu_models, ports="5000/http", container_disk_in_gb=20, env_vars=env_vars)
+        pod_id = create_pod_and_get_id1(name="train", image_name="smjain/train:v8", gpu_models=gpu_models, ports="5000/http", container_disk_in_gb=20, env_vars=env_vars)
         
         #pod_id = create_pod_and_get_id("train", "smjain/train:v7", "NVIDIA RTX A4500", "5000/http", 20, env_vars,"SECURE")
         app.logger.info('After creating pod for training')
@@ -1014,15 +1014,6 @@ def train_model(file_name, model_name, user_email):
             # Begin status checks
             print("Checking status...")
             check_status(status_url)
-        else:
-            print("Failed to upload files:", response.text)
-
-        
-
-        success, message = upload_files(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, converted_path)
-        #success, message = asyncio.run(upload_files_async(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, file_path))
-        if success:
-            
             app.logger.info(f'Job {job.id} success during file upload: {message}')
             app.logger.info('file check done')
             #file_key = f'{model_name}.pth'
@@ -1032,8 +1023,7 @@ def train_model(file_name, model_name, user_email):
             app.logger.info('added model to user')
             use_credit(user_email,'model')
             app.logger.info('credit consumed')
-            
-            
+                  
             update_job_status(redis_client,job_id,'finished')
             app.logger.info('updated model state to finished')
             #use_credit(user_email,'model')
@@ -1042,8 +1032,14 @@ def train_model(file_name, model_name, user_email):
             app.logger.info('pushed model to infer engine')
             redis_client.decr(WORKER_COUNT_KEY)
             send_email(user_email, 'model_training', 'success',job_id=job_id)
-        # Proceed with additional job steps as needed
+
+            
+            
+            
+            
         else:
+            print("Failed to upload files:", response.text)
+       
             app.logger.info('got false return from upload_files so setting job status fail')
             
             update_job_status(redis_client,job_id,'failed')
