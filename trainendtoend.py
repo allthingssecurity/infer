@@ -365,6 +365,25 @@ def add_model_to_user(user_email, model_name):
     training_done_key = f"{user_email}:trained"
     redis_client.set(training_done_key, "true")
 
+
+def check_status(url):
+    """
+    Periodically checks the status of the processing task.
+    """
+    while True:
+        response = requests.get(url)
+        if response.status_code == 200:
+            status = response.json()
+            print("Current Status:", status)
+            if status['status'] in ['completed', 'failed']:
+                print("Processing finished with status:", status['status'])
+                break
+        else:
+            print("Failed to fetch status:", response.text)
+            break
+        time.sleep(10)
+
+
     
 def convert_voice(filename, spk_id, user_email):
     """
@@ -809,7 +828,7 @@ def create_csv(job_ids, filename='jobs.csv'):
     return filename
 
 
-def train_model(file_name, model_name, user_email):
+def train_model_old(file_name, model_name, user_email):
     job = get_current_job()
     job_id=job.id
     update_job_status(redis_client,job_id,'started')
@@ -867,6 +886,10 @@ def train_model(file_name, model_name, user_email):
         
         url = f'https://{pod_id}--5000.proxy.runpod.net/process_audio'
         app.logger.info('before call to upload files for training done')
+        
+        
+        
+        
         success, message = upload_files(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, converted_path)
         #success, message = asyncio.run(upload_files_async(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, file_path))
         if success:
@@ -912,6 +935,135 @@ def train_model(file_name, model_name, user_email):
         if pod_id:
             terminate_pod(pod_id)
             
+
+
+
+def upload_file_for_training(url, file_path, model_name):
+    """
+    Uploads a single file to the specified endpoint with a given model name.
+    """
+    # Prepare the file tuple for the 'file' form field
+    file = ('file', (os.path.basename(file_path), open(file_path, 'rb')))
+    
+    # Form data including the model name
+    data = {'model_name': model_name}
+    
+    # POST request with the single file
+    response = requests.post(url, files={'file': file}, data=data)
+    
+    # It's a good practice to close the file after sending it
+    file[1][1].close()  # Close the file explicitly after the upload
+
+    return response
+
+
+
+
+def train_model(file_name, model_name, user_email):
+    job = get_current_job()
+    job_id=job.id
+    update_job_status(redis_client,job_id,'started')
+    
+    gpu_models = [
+    "NVIDIA RTX A4500",
+    "NVIDIA RTX A5000",
+    "NVIDIA RTX A6000",
+    "NVIDIA RTX A4000",
+    "NVIDIA RTX A3090",
+    # Add more GPU models here as needed.
+]
+
+    
+    pod_id=''
+    try:
+        
+        file_path = download_from_do(file_name)
+        
+        
+        
+        converted_path = convert_audio_to_mp3(file_path)
+        
+        app.logger.info(f"converted path={converted_path}")
+        
+        
+        analysis_results = analyze_audio_file1(converted_path)
+        app.logger.info("After analysing audio")
+        if not analysis_results['success']:
+            raise Exception("Audio analysis failed. either audio is too short in length or too large.")
+    
+        
+        bucket_name = "sing"
+        #pod_id = create_pod_and_get_id("train", "smjain/train:v7", "NVIDIA RTX A4500", "5000/http", 20, env_vars)
+        pod_id = create_pod_and_get_id1(name="train", image_name="smjain/train:v7", gpu_models=gpu_models, ports="5000/http", container_disk_in_gb=20, env_vars=env_vars)
+        
+        #pod_id = create_pod_and_get_id("train", "smjain/train:v7", "NVIDIA RTX A4500", "5000/http", 20, env_vars,"SECURE")
+        app.logger.info('After creating pod for training')
+
+        if not pod_id:
+            raise Exception("Failed to create the pod or retrieve the pod ID.")
+
+        check_pod_is_ready(pod_id)
+        app.logger.info('checked that pod is ready now')
+        final_model_name = f"{user_email}_{model_name}"
+        
+        url = f'https://{pod_id}--5000.proxy.runpod.net/process_audio'
+        app.logger.info('before call to upload files for training done')
+        response = upload_files_for_training(process_audio_url, converted_path, final_model_name)
+        if response.status_code == 200:
+            print("Upload successful:", response.json())
+            # Begin status checks
+            print("Checking status...")
+            check_status(status_url)
+        else:
+            print("Failed to upload files:", response.text)
+
+        
+
+        success, message = upload_files(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, converted_path)
+        #success, message = asyncio.run(upload_files_async(ACCESS_ID, SECRET_KEY, url, final_model_name, bucket_name, file_path))
+        if success:
+            
+            app.logger.info(f'Job {job.id} success during file upload: {message}')
+            app.logger.info('file check done')
+            #file_key = f'{model_name}.pth'
+            #file_exists = check_file_in_space(ACCESS_ID, SECRET_KEY, bucket_name, file_key)
+            terminate_pod(pod_id)
+            add_model_to_user(user_email, model_name)
+            app.logger.info('added model to user')
+            use_credit(user_email,'model')
+            app.logger.info('credit consumed')
+            
+            
+            update_job_status(redis_client,job_id,'finished')
+            app.logger.info('updated model state to finished')
+            #use_credit(user_email,'model')
+            app.logger.info('credit consumed')
+            #push_model_to_infer(final_model_name)
+            app.logger.info('pushed model to infer engine')
+            redis_client.decr(WORKER_COUNT_KEY)
+            send_email(user_email, 'model_training', 'success',job_id=job_id)
+        # Proceed with additional job steps as needed
+        else:
+            app.logger.info('got false return from upload_files so setting job status fail')
+            
+            update_job_status(redis_client,job_id,'failed')
+            redis_client.decr(WORKER_COUNT_KEY)
+            send_email(user_email,'model_training', 'failure',job_id=job_id)
+            if pod_id:
+                terminate_pod(pod_id)
+                
+        
+        
+    except Exception as e:
+        app.logger.error(f'Error during model training: {e}')
+        errorMessage = str(e)
+        update_job_status(redis_client,job_id,'failed')
+        print(f"Operation failed: {e}")
+        redis_client.decr(WORKER_COUNT_KEY)
+        send_email(user_email, 'model_training', 'failure',job_id=job_id,errorMessage=errorMessage)
+        if pod_id:
+            terminate_pod(pod_id)
+
 
 
 def generate_video_call(image_file_path, audio_file_path,audio_job_id, key,url):
