@@ -1006,7 +1006,7 @@ def train_model(file_name, model_name, user_email):
         app.logger.info('checked that pod is ready now')
         final_model_name = f"{user_email}_{model_name}"
         
-        url = f'https://{pod_id}--5000.proxy.runpod.net/process_audio'
+        process_audio_url = f'https://{pod_id}--5000.proxy.runpod.net/process_audio'
         app.logger.info('before call to upload files for training done')
         response = upload_files_for_training(process_audio_url, converted_path, final_model_name)
         if response.status_code == 200:
