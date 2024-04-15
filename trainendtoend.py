@@ -936,26 +936,24 @@ def train_model_old(file_name, model_name, user_email):
             terminate_pod(pod_id)
             
 
-import requests  # Ensure you import requests
+
 
 def upload_files_for_training(url, file_path, model_name):
     """
     Uploads a single file to the specified endpoint with a given model name.
+    This function ensures that the file is read as a bytes-like object.
     """
-    # Prepare the file tuple for the 'file' form field
-    file = ('file', (os.path.basename(file_path), open(file_path, 'rb')))
-    
-    # Form data including the model name
-    data = {'model_name': model_name}
-    
-    # POST request with the single file
-    response = requests.post(url, files={'file': file}, data=data)
-    
-    # It's a good practice to close the file after sending it
-    file[1][1].close()  # Close the file explicitly after the upload
-
-    return response
-
+    try:
+        with open(file_path, 'rb') as file_object:
+            files = {
+                'file': (os.path.basename(file_path), file_object, 'audio/mpeg')
+            }
+            data = {'model_name': model_name}
+            response = requests.post(url, files=files, data=data)
+        return response
+    except Exception as e:
+        print(f"Failed to upload file: {e}")
+        return None
 
 
 
@@ -1009,7 +1007,9 @@ def train_model(file_name, model_name, user_email):
         process_audio_url = f'https://{pod_id}--5000.proxy.runpod.net/process_audio'
         app.logger.info('before call to upload files for training done')
         response = upload_files_for_training(process_audio_url, converted_path, final_model_name)
-        if response.status_code == 200:
+        
+        if response.status_code in [200, 429]:
+        #if response.status_code == 200:
             print("Upload successful:", response.json())
             # Begin status checks
             print("Checking status...")
