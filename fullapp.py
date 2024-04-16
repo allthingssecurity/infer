@@ -536,16 +536,10 @@ def verify_email():
         # Add the user to the waitlist and clear the verification code
         redis_client.sadd("waitlist_users", user_email)
         redis_client.delete(f"waitlist_verification:{user_email}")
-        
+        #def send_email(to_email, event_type, outcome, object_name=None, verification_code=None):
         try:
         # Attempt to send an email notification
-            send_email(to_email="jain.sm@gmail.com",
-                   event_type="waitlist_added_admin",
-                   outcome="success",
-                   job_id=None,
-                   object_name=None,
-                   verification_code=None,
-                   errorMessage=None)
+            send_email(to_email="jain.sm@gmail.com",event_type="waitlist_added_admin",outcome="success")
         except Exception as e:
         # Handle email sending errors gracefully
             print(f"Failed to send email: {e}")
