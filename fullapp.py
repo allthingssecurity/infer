@@ -414,7 +414,7 @@ def send_email(to_email, event_type, outcome, object_name=None, verification_cod
             server.send_message(msg)
             print("Email sent successfully!")
     except Exception as e:
-        print(f"Failed to send email: {e}")
+        app.logger.info(f"Failed to send email: {e}")
 
 
 
@@ -542,7 +542,7 @@ def verify_email():
             send_email(to_email="jain.sm@gmail.com",event_type="waitlist_added_admin",outcome="success")
         except Exception as e:
         # Handle email sending errors gracefully
-            print(f"Failed to send email: {e}")
+            app.logger.info(f"Failed to send email: {e}")
         
         #send email to myself
         #send_email(to_email,event_type, outcome,job_id=None, object_name=None, verification_code=None,errorMessage=None):
