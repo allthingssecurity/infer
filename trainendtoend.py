@@ -784,7 +784,14 @@ def convert_audio_to_mp3(filepath, upload_folder='/tmp'):
     elif mime_type in ['audio/wav', 'audio/webm', 'audio/ogg', 'video/webm', 'video/mp4']:
         logging.info("Converting to MP3...")
         # Convert to MP3 using FFmpeg
-        command = ['ffmpeg', '-i', filepath, '-vn', '-ar', '44100', '-ac', '2', '-b:a', '192k', output_path]
+        #command = ['ffmpeg', '-i', filepath, '-vn', '-ar', '44100', '-ac', '2', '-b:a', '192k', output_path]
+        command = [
+            'ffmpeg', '-i', filepath, '-filter_complex', 
+            'loudnorm=I=-16:LRA=11:TP=-1.5', '-vn', '-ar', '44100', '-ac', '2', '-b:a', '192k', 
+            output_path
+        ]
+        
+        
         logging.info(f"Executing command: {' '.join(command)}")
         subprocess.run(command, check=True)
         
