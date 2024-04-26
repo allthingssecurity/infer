@@ -946,8 +946,8 @@ def login():
     redirect_uri = url_for('authorize', _external=True)
     app.logger.info(f'Redirect URI for OAuth: {redirect_uri}')
     print(f"Redirect URI for OAuth: {redirect_uri}")
-    #return google.authorize_redirect("https://www.maibhisinger.com/login/callback", nonce=nonce)
-    return google.authorize_redirect(redirect_uri, state=nonce)  # Use state instead of nonce if applicable
+    return google.authorize_redirect("https://www.maibhisinger.com/login/callback", nonce=nonce)
+    #return google.authorize_redirect(redirect_uri, state=nonce)  # Use state instead of nonce if applicable
 
 
 
