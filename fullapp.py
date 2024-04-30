@@ -140,7 +140,7 @@ app.logger.setLevel(logging.INFO)
 
 q = Queue(connection=redis_client)
 # Initialize Redis
-FEATURE_FLAG_WAITLIST = True 
+FEATURE_FLAG_WAITLIST = False 
 
 
 from multiprocessing import Process
