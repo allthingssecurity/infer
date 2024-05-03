@@ -30,6 +30,8 @@ from payments import payment_blueprint
 from status import set_job_attributes,update_job_status,get_job_attributes,add_job_to_user_index,get_user_job_ids,update_job_progress,get_job_progress,get_job_status,check_existing_jobs
 from pydub import AudioSegment
 import io
+import secrets
+
 from rq.job import Job
 import tempfile
 import click
@@ -666,7 +668,11 @@ def authorize():
     
     app.logger.info(user_info['email'])
     
-    
+    session_state = session.get('oauth_state')
+    request_state = request.args.get('state')
+
+    if not session_state or session_state != request_state:
+        return "State mismatch error", 400
     
     if 'email' in user_info:
         session['user_email'] = user_info['email']
@@ -942,11 +948,16 @@ def login():
     nonce = generate_nonce()
     session['oauth_nonce'] = nonce
     
+    state = secrets.token_urlsafe(16)
+    session['oauth_state'] = state
+
+    
+    
     # Include the nonce in your authorization request
-    redirect_uri = url_for('authorize', _external=True)
+    redirect_uri = url_for('authorize', _external=True,_scheme='https')
     app.logger.info(f'Redirect URI for OAuth: {redirect_uri}')
     print(f"Redirect URI for OAuth: {redirect_uri}")
-    return google.authorize_redirect("https://www.maibhisinger.com/login/callback", nonce=nonce)
+    return google.authorize_redirect("https://www.maibhisinger.com/login/callback", nonce=nonce,state=state)
     #return google.authorize_redirect(redirect_uri, state=nonce)  # Use state instead of nonce if applicable
 
 
