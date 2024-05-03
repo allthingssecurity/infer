@@ -967,10 +967,10 @@ def login():
     state = secrets.token_urlsafe(16)
     session['oauth_state'] = state
     print(f"session state={state} in login endpoint after setting in redis")
-    
+    app.logger.info(f"session state={state} in login endpoint after setting in redis")
     session_state = session.get('oauth_state')
     print(f"session state={session_state} after fetching from redis")
-    
+    app.logger.info(f"session state={session_state} after fetching from redis")
     # Include the nonce in your authorization request
     redirect_uri = url_for('authorize', _external=True,_scheme='https')
     app.logger.info(f'Redirect URI for OAuth: {redirect_uri}')
