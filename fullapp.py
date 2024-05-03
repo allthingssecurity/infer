@@ -31,7 +31,7 @@ from status import set_job_attributes,update_job_status,get_job_attributes,add_j
 from pydub import AudioSegment
 import io
 import secrets
-from flask import request, redirect
+
 from rq.job import Job
 import tempfile
 import click
@@ -221,20 +221,6 @@ def login_required(f):
     return decorated_function
 
 
-
-
-def redirect_www():
-    """Redirect to www if not already there."""
-    server = request.host.lower()
-    if not server.startswith('www.'):
-        new_url = request.url.replace(server, f'www.{server}', 1)
-        return redirect(new_url, code=301)
-
-@app.before_request
-def ensure_domain():
-    """Ensure all requests are redirected to www."""
-    if not request.host.startswith('www.'):
-        return redirect_www()
 
 
 def is_feature_waitlist_enabled():
