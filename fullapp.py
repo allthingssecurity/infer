@@ -122,6 +122,9 @@ app.config['SESSION_COOKIE_SECURE'] = True  # Use Secure cookies if using HTTPS
 app.config['SESSION_COOKIE_HTTPONLY'] = True  # Avoid access to cookies via client-side scripts
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Avoid CSRF risks
 
+app.config['SESSION_COOKIE_DOMAIN'] = '.maibhisinger.com'
+
+
 # Initialize Flask-Session
 Session(app)
 
