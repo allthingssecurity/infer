@@ -118,6 +118,9 @@ app.config['SESSION_TYPE'] = 'redis'
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True
 app.config['SESSION_REDIS'] = redis_client
+app.config['SESSION_COOKIE_SECURE'] = True  # Use Secure cookies if using HTTPS
+app.config['SESSION_COOKIE_HTTPONLY'] = True  # Avoid access to cookies via client-side scripts
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Avoid CSRF risks
 
 # Initialize Flask-Session
 Session(app)
@@ -146,9 +149,6 @@ FEATURE_FLAG_WAITLIST = False
 
 
 
-app.config['SESSION_COOKIE_SECURE'] = True  # Use Secure cookies if using HTTPS
-app.config['SESSION_COOKIE_HTTPONLY'] = True  # Avoid access to cookies via client-side scripts
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Avoid CSRF risks
 
 
 
