@@ -664,6 +664,14 @@ def authorize():
     app.logger.info(f'Request URL:: {request.args}')
     print("Query Parameters::", request.url)
     print("Query Parameters:", request.args)
+    session_state = session.get('oauth_state')
+    request_state = request.args.get('state')
+    
+    app.logger.info(f"session state: {session_state}, request state: {request_state}")
+    print(f"session state: {session_state}, request state: {request_state}")
+
+
+
     token = google.authorize_access_token()
     app.logger.info(f"token={token}")
     nonce = session.pop('oauth_nonce', None)
@@ -678,11 +686,6 @@ def authorize():
     
     app.logger.info(user_info['email'])
     
-    session_state = session.get('oauth_state')
-    request_state = request.args.get('state')
-    
-    app.logger.info(f"session state: {session_state}, request state: {request_state}")
-    print(f"session state: {session_state}, request state: {request_state}")
 
     if not session_state or session_state != request_state:
         return "State mismatch error", 400
