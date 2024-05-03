@@ -680,6 +680,9 @@ def authorize():
     
     session_state = session.get('oauth_state')
     request_state = request.args.get('state')
+    
+    app.logger.info(f"session state: {session_state}, request state: {request_state}")
+    print(f"session state: {session_state}, request state: {request_state}")
 
     if not session_state or session_state != request_state:
         return "State mismatch error", 400
