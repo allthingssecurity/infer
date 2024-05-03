@@ -124,7 +124,7 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Avoid CSRF risks
 
 app.config['SESSION_COOKIE_DOMAIN'] = '.maibhisinger.com'
 
-app.config['SESSION_COOKIE_PATH'] = '/'
+
 
 # Initialize Flask-Session
 Session(app)
