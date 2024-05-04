@@ -686,6 +686,9 @@ def authorize():
 
     app.logger.info(f"session state: {session_state}, request state: {request_state}")
     print(f"session state: {session_state}, request state: {request_state}")
+    redis_session_key = f"{app.config['SESSION_KEY_PREFIX']}{session.sid}"
+    print(f"Redis Session Key in login: {redis_session_key}")  # This will log the key used in Redis
+    app.logger.info(f"Redis Session Key in login : {redis_session_key}")  # This will log the key used in Redis
 
 
     token = google.authorize_access_token()
@@ -996,7 +999,9 @@ def login():
     session.modified = True  # Ensure the session is saved
     print(f"Session Cookie in login: {request.cookies.get('session')}")
     app.logger.info(f"Session Cookie in login: {request.cookies.get('session')}")
-
+    redis_session_key = f"{app.config['SESSION_KEY_PREFIX']}{session.sid}"
+    print(f"Redis Session Key in login: {redis_session_key}")  # This will log the key used in Redis
+    app.logger.info(f"Redis Session Key in login : {redis_session_key}")  # This will log the key used in Redis
     
     #return google.authorize_redirect("https://www.maibhisinger.com/login/callback", nonce=nonce,state=state)
     return google.authorize_redirect(redirect_uri, nonce=nonce,state=state)  # Use state instead of nonce if applicable
