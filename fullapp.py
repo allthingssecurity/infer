@@ -677,6 +677,8 @@ def authorize():
     app.logger.info("entered authorize code")
     app.logger.info(f'Request URL:: {request.url}')
     app.logger.info(f'Request URL:: {request.args}')
+    app.logger.info(f'session in callback:: {session}')
+    print(f'session in callback:: {session}')
     print("Query Parameters::", request.url)
     print("Query Parameters:", request.args)
 
@@ -988,6 +990,9 @@ def login():
     redirect_uri = url_for('authorize', _external=True,_scheme='https')
     app.logger.info(f'Redirect URI for OAuth: {redirect_uri}')
     print(f"Redirect URI for OAuth: {redirect_uri}")
+    app.logger.info(f'session in login:: {session}')
+    print(f'session in callback:: {session}')
+
     return google.authorize_redirect("https://www.maibhisinger.com/login/callback", nonce=nonce,state=state)
     #return google.authorize_redirect(redirect_uri, state=nonce)  # Use state instead of nonce if applicable
 
