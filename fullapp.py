@@ -89,7 +89,8 @@ google = oauth.register(
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_kwargs={
         'scope': 'openid email profile',
-    }
+    },
+    authorize_state='your_secret_key'
 )
 
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10 MB
