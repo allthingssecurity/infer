@@ -993,8 +993,8 @@ def login():
     app.logger.info(f'session in login:: {session}')
     print(f'session in callback:: {session}')
 
-    return google.authorize_redirect("https://www.maibhisinger.com/login/callback", nonce=nonce,state=state)
-    #return google.authorize_redirect(redirect_uri, state=nonce)  # Use state instead of nonce if applicable
+    #return google.authorize_redirect("https://www.maibhisinger.com/login/callback", nonce=nonce,state=state)
+    return google.authorize_redirect(redirect_uri, nonce=nonce,state=state)  # Use state instead of nonce if applicable
 
 
 
