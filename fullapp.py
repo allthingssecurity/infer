@@ -703,8 +703,8 @@ def authorize():
     
     app.logger.info(user_info['email'])
     
-    print(f"Session Key in callback: {request.cookies.get(session.session_cookie_name)}")
-    app.logger.info(f"Session Key in callback: {request.cookies.get(session.session_cookie_name)}")
+    print(f"Session Cookie in callback: {request.cookies.get('session')}")
+    app.logger.info(f"Session Cookie in callback: {request.cookies.get('session')}")
     
 
     if not session_state or session_state != request_state:
@@ -997,8 +997,8 @@ def login():
     print(f'session in callback:: {session}')
     
     session.modified = True  # Ensure the session is saved
-    print(f"Session Key in login: {request.cookies.get(session.session_cookie_name)}")
-    app.logger.info(f"Session Key in login: {request.cookies.get(session.session_cookie_name)}")
+    print(f"Session Cookie in login: {request.cookies.get('session')}")
+    app.logger.info(f"Session Cookie in login: {request.cookies.get('session')}")
 
     
     #return google.authorize_redirect("https://www.maibhisinger.com/login/callback", nonce=nonce,state=state)
