@@ -31,7 +31,7 @@ from status import set_job_attributes,update_job_status,get_job_attributes,add_j
 from pydub import AudioSegment
 import io
 import secrets
-
+from werkzeug.middleware.proxy_fix import ProxyFix
 from rq.job import Job
 import tempfile
 import click
@@ -65,6 +65,12 @@ from tzlocal import get_localzone # Import tzlocal
 
 
 
+
+
+
+
+
+
 app = Flask(__name__)
 app.register_blueprint(admin_blueprint)
 app.register_blueprint(payment_blueprint)
@@ -72,7 +78,7 @@ app.secret_key = 'your_secret_key'
 UPLOAD_FOLDER = 'uploads'
 MAX_WORKERS = 20  # Adjust based on your requirements
 WORKER_COUNT_KEY = 'worker_count'
-
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
 
 
 oauth = OAuth(app)
@@ -118,6 +124,14 @@ app.config['SESSION_TYPE'] = 'redis'
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True
 app.config['SESSION_REDIS'] = redis_client
+app.config['PREFERRED_URL_SCHEME'] = 'https'
+
+app.config['SESSION_COOKIE_SECURE'] = True  # Only send cookies over HTTPS
+app.config['SESSION_COOKIE_HTTPONLY'] = True  # Avoid access to cookies via client-side scripts
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Necessary if your application involves cross-origin requests
+app.config['SESSION_COOKIE_DOMAIN'] = '.maibhisinger.com'  # Adjust as needed for your domain
+
+
 
 # Initialize Flask-Session
 Session(app)
