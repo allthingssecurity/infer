@@ -703,6 +703,9 @@ def authorize():
     
     app.logger.info(user_info['email'])
     
+    print(f"Session Key in callback: {request.cookies.get(session.session_cookie_name)}")
+    app.logger.info(f"Session Key in callback: {request.cookies.get(session.session_cookie_name)}")
+    
 
     if not session_state or session_state != request_state:
         return "State mismatch error", 400
@@ -992,7 +995,12 @@ def login():
     print(f"Redirect URI for OAuth: {redirect_uri}")
     app.logger.info(f'session in login:: {session}')
     print(f'session in callback:: {session}')
+    
+    session.modified = True  # Ensure the session is saved
+    print(f"Session Key in login: {request.cookies.get(session.session_cookie_name)}")
+    app.logger.info(f"Session Key in login: {request.cookies.get(session.session_cookie_name)}")
 
+    
     #return google.authorize_redirect("https://www.maibhisinger.com/login/callback", nonce=nonce,state=state)
     return google.authorize_redirect(redirect_uri, nonce=nonce,state=state)  # Use state instead of nonce if applicable
 
