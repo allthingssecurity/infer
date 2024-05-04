@@ -74,7 +74,7 @@ from tzlocal import get_localzone # Import tzlocal
 app = Flask(__name__)
 app.register_blueprint(admin_blueprint)
 app.register_blueprint(payment_blueprint)
-app.secret_key = 'your_secret_key'
+#app.secret_key = 'your_secret_key'
 UPLOAD_FOLDER = 'uploads'
 MAX_WORKERS = 20  # Adjust based on your requirements
 WORKER_COUNT_KEY = 'worker_count'
@@ -120,7 +120,7 @@ redis_password = os.getenv('REDIS_PASSWORD', '')
 
 
 redis_client = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
-
+app.config['SECRET_KEY'] = os.urandom(16)
 app.config['SESSION_TYPE'] = 'redis'
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True
