@@ -119,7 +119,7 @@ redis_password = os.getenv('REDIS_PASSWORD', '')
 
 
 redis_client = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
-app.config['SECRET_KEY'] = os.urandom(16)
+app.config['SECRET_KEY'] = 'my_random_key'#os.urandom(16)
 app.config['SESSION_TYPE'] = 'redis'
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True
@@ -131,7 +131,7 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True  # Avoid access to cookies via clie
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Necessary if your application involves cross-origin requests
 app.config['SESSION_COOKIE_DOMAIN'] = '.maibhisinger.com'  # Adjust as needed for your domain
 
-app.config['PERMANENT_SESSION_LIFETIME'] = 1800  # Time in seconds
+#app.config['PERMANENT_SESSION_LIFETIME'] = 1800  # Time in seconds
 
 # Initialize Flask-Session
 Session(app)
@@ -160,9 +160,6 @@ FEATURE_FLAG_WAITLIST = False
 
 
 
-app.config['SESSION_COOKIE_SECURE'] = True  # Use Secure cookies if using HTTPS
-app.config['SESSION_COOKIE_HTTPONLY'] = True  # Avoid access to cookies via client-side scripts
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Avoid CSRF risks
 
 
 
