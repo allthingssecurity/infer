@@ -685,6 +685,9 @@ def authorize():
     session_state = session.get('oauth_state')
     request_state = request.args.get('state')
     
+    print(f"Session Cookie in callback: {request.cookies.get('session')}")
+    app.logger.info(f"Session Cookie in callback: {request.cookies.get('session')}")
+
     app.logger.info(f"session state: {session_state}, request state: {request_state}")
     print(f"session state: {session_state}, request state: {request_state}")
 
@@ -703,8 +706,6 @@ def authorize():
     
     app.logger.info(user_info['email'])
     
-    print(f"Session Cookie in callback: {request.cookies.get('session')}")
-    app.logger.info(f"Session Cookie in callback: {request.cookies.get('session')}")
     
 
     if not session_state or session_state != request_state:
