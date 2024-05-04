@@ -132,7 +132,7 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True  # Avoid access to cookies via clie
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Necessary if your application involves cross-origin requests
 app.config['SESSION_COOKIE_DOMAIN'] = '.maibhisinger.com'  # Adjust as needed for your domain
 
-
+app.config['PERMANENT_SESSION_LIFETIME'] = 1800  # Time in seconds
 
 # Initialize Flask-Session
 Session(app)
