@@ -2390,7 +2390,13 @@ def payment_webhook():
 @app.route('/logout')
 def logout():
     # Clear the session, effectively logging the user out of your application
-    session.clear()
+    #session.clear()
+    # Remove specific keys from the session
+    session.pop('user_email', None)
+    session.pop('logged_in', None)
+    # ...
+    return redirect(google_logout_url)
+    
     # Redirect to homepage or login page after logout
     google_logout_url = 'https://accounts.google.com/Logout?continue=https://appengine.google.com/_ah/logout?continue=' + url_for('login', _external=True)
 
