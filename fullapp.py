@@ -120,10 +120,10 @@ redis_password = os.getenv('REDIS_PASSWORD', '')
 
 redis_client = Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password, ssl=True, ssl_cert_reqs=None)
 app.config['SECRET_KEY'] = 'my_random_key'#os.urandom(16)
-app.config['SESSION_TYPE'] = 'redis'
+app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True
-app.config['SESSION_REDIS'] = redis_client
+#app.config['SESSION_REDIS'] = redis_client
 app.config['PREFERRED_URL_SCHEME'] = 'https'
 
 app.config['SESSION_COOKIE_SECURE'] = True  # Only send cookies over HTTPS
