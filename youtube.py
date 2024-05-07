@@ -32,7 +32,7 @@ from moviepy.editor import AudioFileClip
 import os
 import uuid
 
-def download_video_as_mp3(url, output_path, max_length=180,max_duration=600):
+def download_video_as_mp3_ytl1(url, output_path, max_length=180,max_duration=600):
     # Generate a unique filename without an extension
     duration=get_video_duration(url)
     if duration > max_duration:
