@@ -77,9 +77,6 @@ def download_video_as_mp3_ytl1(url, output_path, max_length=180,max_duration=600
             os.remove(temp_file)
 
 # Example usage
-youtube_url = 'https://youtu.be/-rhPlLYCcg8?si=4g8wI7noXEfGoqb3'
-output_mp3_path = 'output_audio.mp3'
-download_video_as_mp3(youtube_url, output_mp3_path)
 
 
 
