@@ -32,7 +32,7 @@ from moviepy.editor import AudioFileClip
 import os
 import uuid
 
-def download_video_as_mp3_ytl1(url, output_path, max_length=180,max_duration=600):
+def download_video_as_mp3(url, output_path, max_length=180,max_duration=600):
     # Generate a unique filename without an extension
     duration=get_video_duration(url)
     if duration > max_duration:
@@ -50,7 +50,8 @@ def download_video_as_mp3_ytl1(url, output_path, max_length=180,max_duration=600
         }],
         'outtmpl': f"{unique_filename}.%(ext)s",  # This will create files like <uuid>.mp3 directly
         'noplaylist': True,
-        'quiet': False
+        'quiet': False,
+        'keepvideo': True
     }
 
     # Downloading and processing the video using yt-dlp
@@ -58,7 +59,7 @@ def download_video_as_mp3_ytl1(url, output_path, max_length=180,max_duration=600
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
         # Since the file is already in MP3, just check if we need to trim it
-        video = AudioFileClip(f"{unique_filename}.mp3")
+        video = AudioFileClip(f"{unique_filename}.webm")
         if video.duration > max_length:
             video = video.subclip(0, max_length)
             video.write_audiofile(output_path, codec='mp3', bitrate="320k")
@@ -72,7 +73,7 @@ def download_video_as_mp3_ytl1(url, output_path, max_length=180,max_duration=600
         return False
     finally:
         # Cleanup: ensure no temporary files remain
-        temp_file = f"{unique_filename}.mp3"
+        temp_file = f"{unique_filename}.webm"
         if os.path.exists(temp_file):
             os.remove(temp_file)
 
