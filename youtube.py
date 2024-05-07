@@ -27,6 +27,64 @@ def get_video_duration(url):
 
 
 
+import yt_dlp
+from moviepy.editor import AudioFileClip
+import os
+import uuid
+
+def download_video_as_mp3(url, output_path, max_length=180,max_duration=600):
+    # Generate a unique filename without an extension
+    duration=get_video_duration(url)
+    if duration > max_duration:
+        raise ValueError(f"Video duration is {duration} seconds, which exceeds the maximum allowed length of {max_duration} seconds.")
+
+    unique_filename = f"{uuid.uuid4()}"
+
+    # Setup yt-dlp options with modified output template
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }],
+        'outtmpl': f"{unique_filename}.%(ext)s",  # This will create files like <uuid>.mp3 directly
+        'noplaylist': True,
+        'quiet': False
+    }
+
+    # Downloading and processing the video using yt-dlp
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+        # Since the file is already in MP3, just check if we need to trim it
+        video = AudioFileClip(f"{unique_filename}.mp3")
+        if video.duration > max_length:
+            video = video.subclip(0, max_length)
+            video.write_audiofile(output_path, codec='mp3', bitrate="320k")
+        else:
+            # If no trimming is needed, simply rename the file
+            os.rename(f"{unique_filename}.mp3", output_path)
+        video.close()
+        return True
+    except Exception as e:
+        print(f"Error downloading or processing video: {e}")
+        return False
+    finally:
+        # Cleanup: ensure no temporary files remain
+        temp_file = f"{unique_filename}.mp3"
+        if os.path.exists(temp_file):
+            os.remove(temp_file)
+
+# Example usage
+youtube_url = 'https://youtu.be/-rhPlLYCcg8?si=4g8wI7noXEfGoqb3'
+output_mp3_path = 'output_audio.mp3'
+download_video_as_mp3(youtube_url, output_mp3_path)
+
+
+
+
+
 
 def download_video_as_mp3(url, output_path, max_length=180,max_duration=600):
     # Generate a unique filename for the temporary download
