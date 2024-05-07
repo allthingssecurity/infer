@@ -20,3 +20,4 @@ moviepy
 tzlocal
 cashfree_pg
 pandas
+yt-dlp

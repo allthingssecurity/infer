@@ -3,6 +3,10 @@ from moviepy.editor import *
 import os
 import uuid
 from pytube.exceptions import PytubeError
+import yt_dlp
+from moviepy.editor import AudioFileClip
+import os
+import uuid
 
 
 
