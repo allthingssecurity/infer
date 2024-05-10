@@ -233,6 +233,8 @@ def check_pod_is_ready(pod_id):
         data = data_template % pod_id
         response = requests.post(url, headers=headers, data=data)
         response_data = response.json()
+        app.logger.info(response_data)
+        print(response_data)
         if 'data' in response_data and 'pod' in response_data['data'] and response_data['data']['pod']:
             pod_info = response_data['data']['pod']
             if pod_info.get('runtime') and pod_info.get('runtime').get('uptimeInSeconds', 0) > 0:
