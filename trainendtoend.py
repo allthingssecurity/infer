@@ -237,7 +237,7 @@ def check_pod_is_ready(pod_id):
         print(response_data)
         if 'data' in response_data and 'pod' in response_data['data'] and response_data['data']['pod']:
             pod_info = response_data['data']['pod']
-            if pod_info.get('runtime') and pod_info.get('runtime').get('uptimeInSeconds', 0) > 0:
+            if pod_info.get('runtime') and pod_info.get('runtime').get('uptimeInSeconds', 0) >= 0:
                 print(f"Pod {pod_id} is up and running.")
                 app.logger.info(f"Pod {pod_id} is up and running.")
                 break
