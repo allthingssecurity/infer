@@ -1545,7 +1545,9 @@ def process_audio():
     user_email = session.get('user_email')
     
     # Insert your feature waitlist and credit checks here.
-    
+    credit_count = get_user_credits(user_email, 'model')
+    if credit_count <= 0:
+        return jsonify({'error': 'No more credits available'}), 403
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
     
