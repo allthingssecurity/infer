@@ -4,8 +4,8 @@ Dear {username},
 
 
 🎶 Here’s what you can do next:
-- Login to https://www.maibhinsinger.com
-- From Generate menu, click Song Conversion or directly click here https://www.maibhisinger.com/song_conversion
+- Login to https://www.maibhisinger.com
+- From Generate menu, click Song Conversion or directly click here https://www.maibhisinger.com/song_conversion .
 - Upload youtube video link of the song of your choosing and select your trained model name from the drop down and submit
 
 Thank you for choosing MaiBhiSinger to bring your musical visions to life. We can't wait to see what you create next!
