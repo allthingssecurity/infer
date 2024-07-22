@@ -13,6 +13,8 @@ import time
 import uuid
 import os
 import requests
+from pydub import AudioSegment
+
 
 
 def is_video_downloadable(url):
@@ -39,7 +41,7 @@ import uuid
 
 
 
-def download_youtube_mp3(url, api_key, output_file):
+def download_youtube_mp3(url, api_key, output_file,max_length_seconds=180):
     conn = http.client.HTTPSConnection("youtube-to-mp315.p.rapidapi.com")
     
     headers = {
@@ -87,21 +89,32 @@ def download_youtube_mp3(url, api_key, output_file):
 
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
+        
     
-    file_path = os.path.join(output_directory, original_filename)
+    temp_file_path = os.path.join(output_directory, "temp_" + original_filename)
+    final_file_path = os.path.join(output_directory, original_filename)
 
     # Download the file
     response = requests.get(download_url, stream=True)
     response.raise_for_status()
 
-    with open(file_path, 'wb') as file:
+    with open(temp_file_path, 'wb') as file:
         for chunk in response.iter_content(chunk_size=8192): 
             if chunk:
                 file.write(chunk)
 
+    audio = AudioSegment.from_mp3(temp_file_path)
+    if len(audio) > max_length_seconds * 1000:  # pydub works in milliseconds
+        audio = audio[:max_length_seconds * 1000]
+        print(f"Audio trimmed to {max_length_seconds} seconds")
 
-    print(f"File downloaded successfully: {file_path}")
-    return file_path
+    audio.export(final_file_path, format="mp3")
+
+    # Remove the temporary file
+    os.remove(temp_file_path)
+
+    print(f"File downloaded successfully: {final_file_path}")
+    return final_file_path
 
 # Example usage
 
