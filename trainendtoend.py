@@ -532,9 +532,10 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
     #new_filename = f"{job_id}{os.path.splitext(filename)[1]}"  # Preserves original file extension
     #new_filename = f"{job_id}.mp3"
     new_filename = f"{job_id}.mp4"
+    new_filename1 = f"{job_id}.mp3"
     app.logger.error(f'new file name=: {new_filename}')
     #app.logger.error(f'directory=: {directory}')
-    file_path = os.path.join(UPLOAD_FOLDER, new_filename)
+    file_path = os.path.join(UPLOAD_FOLDER, new_filename1)
     #os.rename(file_path1, file_path)
     #app.logger.error(f'new file path=: {file_path}')
     
