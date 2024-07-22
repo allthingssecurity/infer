@@ -7,7 +7,12 @@ import yt_dlp
 from moviepy.editor import AudioFileClip
 import os
 import uuid
-
+import http.client
+import json
+import time
+import uuid
+import os
+import requests
 
 
 def is_video_downloadable(url):
@@ -31,6 +36,75 @@ import yt_dlp
 from moviepy.editor import AudioFileClip
 import os
 import uuid
+
+
+
+def download_youtube_mp3(url, api_key, output_file):
+    conn = http.client.HTTPSConnection("youtube-to-mp315.p.rapidapi.com")
+    
+    headers = {
+        'x-rapidapi-key': api_key,
+        'x-rapidapi-host': "youtube-to-mp315.p.rapidapi.com",
+        'Content-Type': "application/json"
+    }
+
+    # Start conversion process
+    payload = "{}"
+    conn.request("POST", f"/download?url={url}&format=mp3", payload, headers)
+    res = conn.getresponse()
+    data = json.loads(res.read().decode("utf-8"))
+
+    if 'id' not in data:
+        raise Exception("Failed to start conversion process")
+
+    conversion_id = data['id']
+    print(f"Conversion started with ID: {conversion_id}")
+
+    # Check status until available
+    while True:
+        conn.request("GET", f"/status/{conversion_id}", headers=headers)
+        res = conn.getresponse()
+        status_data = json.loads(res.read().decode("utf-8"))
+
+        if status_data['status'] == 'AVAILABLE':
+            print("Conversion completed. Downloading file...")
+            break
+        elif status_data['status'] == 'CONVERSION_ERROR':
+            raise Exception("Conversion failed")
+        
+        print("Converting... Please wait.")
+        time.sleep(5)  # Wait for 5 seconds before checking again
+
+    # Prepare for download
+    download_url = status_data['downloadUrl']
+    title = status_data.get('title', 'Unknown Title')
+    
+    # Create a sanitized filename with UUID
+    safe_title = ''.join(c for c in title if c.isalnum() or c in (' ', '-', '_')).rstrip()
+    #filename = f"{safe_title}_{uuid.uuid4()}.mp3"
+    #filename = f"{uuid.uuid4()}.mp3"
+    output_directory, original_filename = os.path.split(output_file)
+
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+    
+    file_path = os.path.join(output_directory, original_filename)
+
+    # Download the file
+    response = requests.get(download_url, stream=True)
+    response.raise_for_status()
+
+    with open(file_path, 'wb') as file:
+        for chunk in response.iter_content(chunk_size=8192): 
+            if chunk:
+                file.write(chunk)
+
+
+    print(f"File downloaded successfully: {file_path}")
+    return file_path
+
+# Example usage
+
 
 def download_video_as_mp3(url, output_path, max_length=180,max_duration=600):
     # Generate a unique filename without an extension

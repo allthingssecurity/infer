@@ -18,7 +18,7 @@ from credit import get_user_credits,update_user_credits,use_credit
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from status import set_job_attributes,update_job_status,get_job_attributes,add_job_to_user_index,get_user_job_ids,update_job_progress,get_job_progress
-from youtube import download_video_as_mp3
+from youtube import download_video_as_mp3,download_youtube_mp3
 from myemail import send_email
 import pandas as pd
 
@@ -530,8 +530,8 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
 # Generate the new file path with job_id as the filename, preserving the original extension
     
     #new_filename = f"{job_id}{os.path.splitext(filename)[1]}"  # Preserves original file extension
-    #new_filename = f"{job_id}.mp3"
-    new_filename = f"{job_id}.mp4"
+    new_filename = f"{job_id}.mp3"
+    #new_filename = f"{job_id}.mp4"
     app.logger.error(f'new file name=: {new_filename}')
     #app.logger.error(f'directory=: {directory}')
     file_path = os.path.join(UPLOAD_FOLDER, new_filename)
@@ -559,8 +559,9 @@ def convert_voice_youtube(youtube_link, spk_id, user_email):
         
         
         
-        
-        download_video_as_mp3(youtube_link,file_path)
+        rapid_api_key =os.getenv("RAPIDAPI_KEY")
+        download_youtube_mp3(youtube_link,rapid_api_key,file_path)
+        #download_video_as_mp3(youtube_link,rapid_api_key,file_path)
         app.logger.info(f'After downloading audio from youtube to filepath={file_path}')
         
         
