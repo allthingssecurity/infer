@@ -20,4 +20,4 @@ moviepy
 tzlocal
 cashfree_pg
 pandas
-yt-dlp==2024.5.26
+yt-dlp
