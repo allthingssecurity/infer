@@ -363,13 +363,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Enable or disable the upload button based on validation
-        //uploadButton.disabled = !isValidModelName(this.value);
+        uploadButton.disabled = !isValidModelName(this.value);
     });
 
     function isValidModelName(modelName) {
         // Check if modelName is lowercase, no special characters, and 1-8 characters long
         return /^[a-z0-9]{1,8}$/.test(modelName);
     }
+	
+	
+	   document.getElementById('upload').addEventListener('click', function(event) {
+        if (!isValidModelName(modelNameInput.value)) {
+            event.preventDefault();
+            alert('Model name is invalid. Please enter a valid model name.');
+        }
+    });
+	
+	
 });
 
 
