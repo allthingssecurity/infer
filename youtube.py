@@ -41,82 +41,130 @@ import uuid
 
 
 
-def download_youtube_mp3(url, api_key, output_file,max_length_seconds=180):
-    conn = http.client.HTTPSConnection("youtube-to-mp315.p.rapidapi.com")
+import os
+import http.client
+import json
+import requests
+import time
+import uuid
+from pydub import AudioSegment
+import subprocess
+
+def fallback_download_with_ytdlp(url, output_file, max_length_seconds=180):
+    output_directory, original_filename = os.path.split(output_file)
+    temp_file_path = os.path.join(output_directory, "temp_" + original_filename)
+    final_file_path = os.path.join(output_directory, original_filename)
     
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Prepare yt-dlp command
+    cmd = [
+        'yt-dlp',
+        '-x', '--audio-format', 'mp3', # Extract audio and convert to mp3
+        '-o', temp_file_path,          # Output file path
+        '--username', 'oauth2',        # Using oauth2
+        '--password', '',              # Empty password (for fallback compatibility)
+        url                            # YouTube URL
+    ]
+
+    try:
+        # Execute the yt-dlp command
+        subprocess.run(cmd, check=True)
+        print(f"yt-dlp download successful. File saved as {temp_file_path}")
+
+        # Load the downloaded file and trim it if necessary
+        audio = AudioSegment.from_mp3(temp_file_path)
+        if len(audio) > max_length_seconds * 1000:  # pydub works in milliseconds
+            audio = audio[:max_length_seconds * 1000]
+            print(f"Audio trimmed to {max_length_seconds} seconds")
+
+        audio.export(final_file_path, format="mp3")
+        os.remove(temp_file_path)  # Remove the temporary file after processing
+        print(f"File successfully saved and trimmed as {final_file_path}")
+
+        return final_file_path
+    except subprocess.CalledProcessError as e:
+        print(f"yt-dlp fallback failed: {str(e)}")
+        raise Exception("yt-dlp fallback failed")
+
+def download_youtube_mp3(url, api_key, output_file, max_length_seconds=180):
+    conn = http.client.HTTPSConnection("youtube-to-mp315.p.rapidapi.com")
+
     headers = {
         'x-rapidapi-key': api_key,
         'x-rapidapi-host': "youtube-to-mp315.p.rapidapi.com",
         'Content-Type': "application/json"
     }
 
-    # Start conversion process
-    payload = "{}"
-    conn.request("POST", f"/download?url={url}&format=mp3", payload, headers)
-    res = conn.getresponse()
-    data = json.loads(res.read().decode("utf-8"))
-
-    if 'id' not in data:
-        raise Exception("Failed to start conversion process")
-
-    conversion_id = data['id']
-    print(f"Conversion started with ID: {conversion_id}")
-
-    # Check status until available
-    while True:
-        conn.request("GET", f"/status/{conversion_id}", headers=headers)
+    try:
+        # Start conversion process
+        payload = "{}"
+        conn.request("POST", f"/download?url={url}&format=mp3", payload, headers)
         res = conn.getresponse()
-        status_data = json.loads(res.read().decode("utf-8"))
+        data = json.loads(res.read().decode("utf-8"))
 
-        if status_data['status'] == 'AVAILABLE':
-            print("Conversion completed. Downloading file...")
-            break
-        elif status_data['status'] == 'CONVERSION_ERROR':
-            raise Exception("Conversion failed")
-        
-        print("Converting... Please wait.")
-        time.sleep(5)  # Wait for 5 seconds before checking again
+        if 'id' not in data:
+            raise Exception("Failed to start conversion process")
 
-    # Prepare for download
-    download_url = status_data['downloadUrl']
-    title = status_data.get('title', 'Unknown Title')
-    
-    # Create a sanitized filename with UUID
-    safe_title = ''.join(c for c in title if c.isalnum() or c in (' ', '-', '_')).rstrip()
-    #filename = f"{safe_title}_{uuid.uuid4()}.mp3"
-    #filename = f"{uuid.uuid4()}.mp3"
-    output_directory, original_filename = os.path.split(output_file)
+        conversion_id = data['id']
+        print(f"Conversion started with ID: {conversion_id}")
 
-    if not os.path.exists(output_directory):
-        os.makedirs(output_directory)
-        
-    
-    temp_file_path = os.path.join(output_directory, "temp_" + original_filename)
-    final_file_path = os.path.join(output_directory, original_filename)
+        # Check status until available
+        while True:
+            conn.request("GET", f"/status/{conversion_id}", headers=headers)
+            res = conn.getresponse()
+            status_data = json.loads(res.read().decode("utf-8"))
 
-    # Download the file
-    response = requests.get(download_url, stream=True)
-    response.raise_for_status()
+            if status_data['status'] == 'AVAILABLE':
+                print("Conversion completed. Downloading file...")
+                break
+            elif status_data['status'] == 'CONVERSION_ERROR':
+                raise Exception("Conversion failed")
 
-    with open(temp_file_path, 'wb') as file:
-        for chunk in response.iter_content(chunk_size=8192): 
-            if chunk:
-                file.write(chunk)
+            print("Converting... Please wait.")
+            time.sleep(5)  # Wait for 5 seconds before checking again
 
-    audio = AudioSegment.from_mp3(temp_file_path)
-    if len(audio) > max_length_seconds * 1000:  # pydub works in milliseconds
-        audio = audio[:max_length_seconds * 1000]
-        print(f"Audio trimmed to {max_length_seconds} seconds")
+        # Prepare for download
+        download_url = status_data['downloadUrl']
+        title = status_data.get('title', 'Unknown Title')
 
-    audio.export(final_file_path, format="mp3")
+        # Create a sanitized filename with UUID
+        output_directory, original_filename = os.path.split(output_file)
 
-    # Remove the temporary file
-    os.remove(temp_file_path)
+        if not os.path.exists(output_directory):
+            os.makedirs(output_directory)
 
-    print(f"File downloaded successfully: {final_file_path}")
-    return final_file_path
+        temp_file_path = os.path.join(output_directory, "temp_" + original_filename)
+        final_file_path = os.path.join(output_directory, original_filename)
+
+        # Download the file
+        response = requests.get(download_url, stream=True)
+        response.raise_for_status()
+
+        with open(temp_file_path, 'wb') as file:
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    file.write(chunk)
+
+        audio = AudioSegment.from_mp3(temp_file_path)
+        if len(audio) > max_length_seconds * 1000:  # pydub works in milliseconds
+            audio = audio[:max_length_seconds * 1000]
+            print(f"Audio trimmed to {max_length_seconds} seconds")
+
+        audio.export(final_file_path, format="mp3")
+        os.remove(temp_file_path)
+
+        print(f"File downloaded successfully: {final_file_path}")
+        return final_file_path
+    except Exception as e:
+        print(f"Failed to download via API: {str(e)}")
+        print("Falling back to yt-dlp...")
+        return fallback_download_with_ytdlp(url, output_file, max_length_seconds)
 
 # Example usage
+# download_youtube_mp3("https://youtube.com/video", "your_api_key", "output_path.mp3")
+
 
 
 def download_video_as_mp3(url, output_path, max_length=180,max_duration=600):
