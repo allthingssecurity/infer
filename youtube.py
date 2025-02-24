@@ -14,7 +14,8 @@ import uuid
 import os
 import requests
 from pydub import AudioSegment
-
+from pytubefix import YouTube
+import ffmpeg
 
 
 def is_video_downloadable(url):
@@ -49,6 +50,70 @@ import time
 import uuid
 from pydub import AudioSegment
 import subprocess
+
+
+def fallback_download_with_pytubefix(url, output_file, max_length_seconds=180):
+    """
+    Fallback method using pytubefix and ffmpeg:
+      1. Downloads a video from YouTube (prefers a progressive stream if available).
+      2. If no progressive stream is found, downloads video and audio separately and merges them.
+      3. Extracts the audio from the downloaded video.
+      4. Trims the audio if necessary and saves it as an MP3.
+    """
+    try:
+        yt = YouTube(url)
+        temp_dir = "temp"
+        if not os.path.exists(temp_dir):
+            os.makedirs(temp_dir)
+        
+        # Attempt to download a progressive video (video+audio in one file)
+        progressive_streams = yt.streams.filter(progressive=True, type="video").order_by('resolution').desc()
+        if progressive_streams:
+            selected_stream = progressive_streams.first()
+            print(f"Downloading progressive video: {yt.title} ({selected_stream.resolution})")
+            video_file = selected_stream.download(output_path=temp_dir, filename_prefix="video_")
+        else:
+            # Otherwise, download the best available video and audio separately and merge them
+            video_stream = yt.streams.filter(type="video").order_by('resolution').desc().first()
+            audio_stream = yt.streams.filter(only_audio=True).first()
+            print(f"Downloading adaptive video: {yt.title} ({video_stream.resolution})")
+            video_file = video_stream.download(output_path=temp_dir, filename_prefix="video_")
+            print("Downloading audio stream...")
+            audio_file = audio_stream.download(output_path=temp_dir, filename_prefix="audio_")
+            
+            merged_file = os.path.join(temp_dir, f"{yt.title}_merged.mp4")
+            print("Merging video and audio...")
+            # Note: ffmpeg.input can be chained for multiple inputs
+            video_input = ffmpeg.input(video_file)
+            audio_input = ffmpeg.input(audio_file)
+            ffmpeg.output(video_input, audio_input, merged_file,
+                          vcodec='libx264', acodec='aac', strict='experimental').run(overwrite_output=True)
+            os.remove(video_file)
+            os.remove(audio_file)
+            video_file = merged_file
+        
+        # Extract audio from the video file and save as MP3
+        temp_audio_file = os.path.join(temp_dir, "temp_audio.mp3")
+        ffmpeg.input(video_file).output(temp_audio_file, acodec='mp3').run(overwrite_output=True)
+        
+        # Trim audio if it exceeds max_length_seconds
+        audio = AudioSegment.from_mp3(temp_audio_file)
+        if len(audio) > max_length_seconds * 1000:
+            audio = audio[:max_length_seconds * 1000]
+            print(f"Audio trimmed to {max_length_seconds} seconds")
+        audio.export(output_file, format="mp3")
+        
+        # Clean up temporary files
+        os.remove(video_file)
+        os.remove(temp_audio_file)
+        
+        print(f"Fallback with pytubefix successful: {output_file}")
+        return output_file
+
+    except Exception as e:
+        print(f"Fallback with pytubefix encountered an error: {str(e)}")
+        raise
+
 
 def fallback_download_with_ytdlp(url, output_file, max_length_seconds=180):
     output_directory, original_filename = os.path.split(output_file)
@@ -89,8 +154,8 @@ def fallback_download_with_ytdlp(url, output_file, max_length_seconds=180):
         raise Exception("yt-dlp fallback failed")
 
 def download_youtube_mp3(url, api_key, output_file, max_length_seconds=180):
-    conn = http.client.HTTPSConnection("youtube-to-mp315.p.rapidapi.com")
-
+    api_url = "https://youtube-to-mp315.p.rapidapi.com"
+    
     headers = {
         'x-rapidapi-key': api_key,
         'x-rapidapi-host': "youtube-to-mp315.p.rapidapi.com",
@@ -98,23 +163,27 @@ def download_youtube_mp3(url, api_key, output_file, max_length_seconds=180):
     }
 
     try:
-        # Start conversion process
-        payload = "{}"
-        conn.request("POST", f"/download?url={url}&format=mp3", payload, headers)
-        res = conn.getresponse()
-        data = json.loads(res.read().decode("utf-8"))
+        # Step 1: Start the conversion process
+        response = requests.post(f"{api_url}/download", headers=headers, params={"url": url, "format": "mp3"})
+        data = response.json()
+
+        print("API Response:", data)  # Debugging API response
 
         if 'id' not in data:
-            raise Exception("Failed to start conversion process")
+            raise Exception("Failed to start conversion process. API Response:", data)
 
         conversion_id = data['id']
         print(f"Conversion started with ID: {conversion_id}")
 
-        # Check status until available
-        while True:
-            conn.request("GET", f"/status/{conversion_id}", headers=headers)
-            res = conn.getresponse()
-            status_data = json.loads(res.read().decode("utf-8"))
+        # Step 2: Poll the API for status
+        max_attempts = 10
+        attempts = 0
+
+        while attempts < max_attempts:
+            response = requests.get(f"{api_url}/status/{conversion_id}", headers=headers)
+            status_data = response.json()
+            
+            print("Status API Response:", status_data)  # Debugging API response
 
             if status_data['status'] == 'AVAILABLE':
                 print("Conversion completed. Downloading file...")
@@ -123,45 +192,38 @@ def download_youtube_mp3(url, api_key, output_file, max_length_seconds=180):
                 raise Exception("Conversion failed")
 
             print("Converting... Please wait.")
-            time.sleep(5)  # Wait for 5 seconds before checking again
+            time.sleep(5)
+            attempts += 1
+        else:
+            raise Exception("Conversion timed out.")
 
-        # Prepare for download
-        download_url = status_data['downloadUrl']
-        title = status_data.get('title', 'Unknown Title')
+        # Step 3: Download the file
+        download_url = status_data.get('downloadUrl')
+        if not download_url:
+            raise Exception("No download URL provided by API.")
 
-        # Create a sanitized filename with UUID
-        output_directory, original_filename = os.path.split(output_file)
-
-        if not os.path.exists(output_directory):
-            os.makedirs(output_directory)
-
-        temp_file_path = os.path.join(output_directory, "temp_" + original_filename)
-        final_file_path = os.path.join(output_directory, original_filename)
-
-        # Download the file
         response = requests.get(download_url, stream=True)
         response.raise_for_status()
 
-        with open(temp_file_path, 'wb') as file:
+        # Ensure output directory exists
+        output_directory = os.path.dirname(output_file)
+        if output_directory and not os.path.exists(output_directory):
+            os.makedirs(output_directory)
+
+        # Save file
+        with open(output_file, 'wb') as file:
             for chunk in response.iter_content(chunk_size=8192):
-                if chunk:
-                    file.write(chunk)
+                file.write(chunk)
 
-        audio = AudioSegment.from_mp3(temp_file_path)
-        if len(audio) > max_length_seconds * 1000:  # pydub works in milliseconds
-            audio = audio[:max_length_seconds * 1000]
-            print(f"Audio trimmed to {max_length_seconds} seconds")
+        print(f"File downloaded successfully: {output_file}")
+        return output_file
 
-        audio.export(final_file_path, format="mp3")
-        os.remove(temp_file_path)
-
-        print(f"File downloaded successfully: {final_file_path}")
-        return final_file_path
     except Exception as e:
         print(f"Failed to download via API: {str(e)}")
         print("Falling back to yt-dlp...")
-        return fallback_download_with_ytdlp(url, output_file, max_length_seconds)
+        return fallback_download_with_ytdlp(url, output_file)
 
+    
 # Example usage
 # download_youtube_mp3("https://youtube.com/video", "your_api_key", "output_path.mp3")
 
