@@ -168,6 +168,8 @@ from flask import current_app as app  # assuming Flask logging
 
 
 
+
+
 def fallback_download_with_ytdlp(url, output_file, max_length_seconds=180):
     output_directory, original_filename = os.path.split(output_file)
     temp_file_path = os.path.join(output_directory, "temp_" + original_filename)
@@ -181,46 +183,49 @@ def fallback_download_with_ytdlp(url, output_file, max_length_seconds=180):
     # Step 1: Get proxy credentials from environment
     username = os.getenv("SMARTPROXY_USERNAME")
     raw_password = os.getenv("SMARTPROXY_PASSWORD")
-    endpoint = os.getenv("SMARTPROXY_ENDPOINT")  # e.g., gate.smartproxy.com:10001
+    base_endpoint = os.getenv("SMARTPROXY_BASE_ENDPOINT")  # e.g., gate.smartproxy.com
 
-    if not username or not raw_password or not endpoint:
-        raise EnvironmentError("SMARTPROXY_USERNAME, PASSWORD, or ENDPOINT not set")
+    if not username or not raw_password or not base_endpoint:
+        raise EnvironmentError("SMARTPROXY_USERNAME, PASSWORD, or BASE_ENDPOINT not set")
 
     password = quote(raw_password)
-    proxy_url = f"http://{username}:{password}@{endpoint}"
 
-    # Step 2: yt-dlp command
-    cmd = [
-        'yt-dlp',
-        '--proxy', proxy_url,
-        '-x', '--audio-format', 'mp3',
-        '-o', temp_file_path,
-        url
-    ]
+    for port in range(10001, 10011):  # Tries ports 10001 to 10010
+        endpoint = f"{base_endpoint}:{port}"
+        proxy_url = f"http://{username}:{password}@{endpoint}"
+        cmd = [
+            'yt-dlp',
+            '--proxy', proxy_url,
+            '-x', '--audio-format', 'mp3',
+            '-o', temp_file_path,
+            url
+        ]
 
-    try:
-        app.logger.info(f"▶️ Running yt-dlp for: {url}")
-        subprocess.run(cmd, check=True)
+        try:
+            app.logger.info(f"▶️ Trying yt-dlp via {endpoint}")
+            subprocess.run(cmd, check=True)
 
-        app.logger.info("🎧 yt-dlp download successful. Now trimming audio if needed...")
-        audio = AudioSegment.from_mp3(temp_file_path)
+            app.logger.info("🎧 yt-dlp download successful. Now trimming audio if needed...")
+            audio = AudioSegment.from_mp3(temp_file_path)
 
-        if len(audio) > max_length_seconds * 1000:
-            audio = audio[:max_length_seconds * 1000]
-            app.logger.info(f"⏱️ Trimmed audio to {max_length_seconds} seconds")
+            if len(audio) > max_length_seconds * 1000:
+                audio = audio[:max_length_seconds * 1000]
+                app.logger.info(f"⏱️ Trimmed audio to {max_length_seconds} seconds")
 
-        audio.export(final_file_path, format="mp3")
-        app.logger.info(f"✅ Final MP3 saved to: {final_file_path}")
-        return final_file_path
+            audio.export(final_file_path, format="mp3")
+            app.logger.info(f"✅ Final MP3 saved to: {final_file_path}")
+            return final_file_path
 
-    except subprocess.CalledProcessError as e:
-        app.logger.error(f"❌ yt-dlp failed: {e}")
-        raise Exception("yt-dlp fallback failed")
+        except subprocess.CalledProcessError as e:
+            app.logger.warning(f"⚠️ yt-dlp failed with port {port}: {e}. Trying next...")
 
-    finally:
-        if os.path.exists(temp_file_path):
-            os.remove(temp_file_path)
+        finally:
+            if os.path.exists(temp_file_path):
+                os.remove(temp_file_path)
 
+    # All attempts failed
+    app.logger.error("❌ All proxy ports failed. yt-dlp fallback failed.")
+    raise Exception("yt-dlp fallback failed after trying all proxy ports.")
 
 def download_youtube_mp3(url, api_key, output_file, max_length_seconds=180):
     api_url = "https://youtube-to-mp315.p.rapidapi.com"
