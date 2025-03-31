@@ -16,6 +16,8 @@ import requests
 from pydub import AudioSegment
 from pytubefix import YouTube
 import ffmpeg
+import logging
+from logging.handlers import RotatingFileHandler
 
 
 def is_video_downloadable(url):
