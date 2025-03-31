@@ -136,28 +136,67 @@ import uuid
 import subprocess
 from pydub import AudioSegment
 
+
+import base64
+import os
+import uuid
+
+def write_cookies_from_env(tmp_dir):
+    cookies_b64 = os.getenv("YOUTUBE_COOKIES_B64")
+    if not cookies_b64:
+        raise ValueError("YOUTUBE_COOKIES_B64 env var is not set")
+
+    cookies_txt = base64.b64decode(cookies_b64).decode("utf-8")
+
+    os.makedirs(tmp_dir, exist_ok=True)
+    temp_cookie_file = os.path.join(tmp_dir, f"{uuid.uuid4().hex}.cookies.txt")
+
+    with open(temp_cookie_file, "w", encoding="utf-8") as f:
+        f.write(cookies_txt)
+
+    return temp_cookie_file
+
+
+
+
+import os
+import uuid
+import base64
+import subprocess
+from pydub import AudioSegment
+
 def fallback_download_with_ytdlp(url, output_file, max_length_seconds=180):
     output_directory, original_filename = os.path.split(output_file)
     temp_file_path = os.path.join(output_directory, "temp_" + original_filename)
     final_file_path = os.path.join(output_directory, original_filename)
-    app.logger.info("entered dlp fallback")
+
+    app.logger.info("➡️ Entered yt-dlp fallback")
+
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
 
-    # 🔁 Step 1: Write cookies to local ./tmp/ directory
-    cookies_txt = os.getenv("YOUTUBE_COOKIES")
-    app.logger.info("checking for cookies")
-    if not cookies_txt:
-        raise EnvironmentError("YOUTUBE_COOKIES environment variable is not set.")
-    app.logger.info("checked for cookies succesfully")
+    # Step 1: Decode base64 cookies from environment and write to file
+    app.logger.info("🔍 Checking for YOUTUBE_COOKIES_B64 in environment...")
+    cookies_b64 = os.getenv("YOUTUBE_COOKIES_B64")
+    if not cookies_b64:
+        raise EnvironmentError("YOUTUBE_COOKIES_B64 environment variable is not set.")
+
+    try:
+        cookies_txt = base64.b64decode(cookies_b64).decode("utf-8")
+    except Exception as decode_err:
+        app.logger.error(f"❌ Failed to decode base64 cookie: {decode_err}")
+        raise
+
     tmp_dir = os.path.join(os.getcwd(), "tmp")
     os.makedirs(tmp_dir, exist_ok=True)
 
     temp_cookie_file = os.path.join(tmp_dir, f"{uuid.uuid4().hex}.cookies.txt")
-    with open(temp_cookie_file, "w") as f:
+    with open(temp_cookie_file, "w", encoding="utf-8") as f:
         f.write(cookies_txt)
 
-    # 🔁 Step 2: yt-dlp command
+    app.logger.info(f"✅ Cookie file written to: {temp_cookie_file}")
+
+    # Step 2: Prepare yt-dlp command
     cmd = [
         'yt-dlp',
         '-x', '--audio-format', 'mp3',
@@ -167,30 +206,30 @@ def fallback_download_with_ytdlp(url, output_file, max_length_seconds=180):
     ]
 
     try:
-        app.logger.info(f"▶️ Running yt-dlp with cookies at: {temp_cookie_file}")
-       
+        app.logger.info(f"▶️ Running yt-dlp on {url}")
         subprocess.run(cmd, check=True)
 
-        # 🔁 Step 3: Trim audio if needed
+        app.logger.info("🎧 yt-dlp download successful. Now trimming audio if needed.")
         audio = AudioSegment.from_mp3(temp_file_path)
         if len(audio) > max_length_seconds * 1000:
             audio = audio[:max_length_seconds * 1000]
-            print(f"⏱️ Trimmed to {max_length_seconds} seconds")
+            app.logger.info(f"⏱️ Trimmed audio to {max_length_seconds} seconds")
 
         audio.export(final_file_path, format="mp3")
-        print(f"✅ Final MP3 saved to: {final_file_path}")
+        app.logger.info(f"✅ Final MP3 saved to: {final_file_path}")
         return final_file_path
 
     except subprocess.CalledProcessError as e:
-        print(f"❌ yt-dlp failed: {e}")
+        app.logger.error(f"❌ yt-dlp failed: {e}")
         raise Exception("yt-dlp fallback failed")
 
     finally:
-        # 🔁 Step 4: Cleanup temp files
+        # Step 4: Cleanup
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
         if os.path.exists(temp_cookie_file):
             os.remove(temp_cookie_file)
+
 
 def download_youtube_mp3(url, api_key, output_file, max_length_seconds=180):
     api_url = "https://youtube-to-mp315.p.rapidapi.com"
