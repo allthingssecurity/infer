@@ -119,39 +119,48 @@ def fallback_download_with_ytdlp(url, output_file, max_length_seconds=180):
     output_directory, original_filename = os.path.split(output_file)
     temp_file_path = os.path.join(output_directory, "temp_" + original_filename)
     final_file_path = os.path.join(output_directory, original_filename)
-    
+
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
+
+    # Create a temporary cookies file from env
+    cookies_txt = os.getenv("YOUTUBE_COOKIES")
+    if not cookies_txt:
+        raise EnvironmentError("YOUTUBE_COOKIES environment variable is not set.")
+
+    temp_cookie_file = f"/tmp/{uuid.uuid4().hex}.cookies.txt"
+    with open(temp_cookie_file, "w") as f:
+        f.write(cookies_txt)
 
     # Prepare yt-dlp command
     cmd = [
         'yt-dlp',
-        '-x', '--audio-format', 'mp3', # Extract audio and convert to mp3
-        '-o', temp_file_path,          # Output file path
-        '--username', 'oauth2',        # Using oauth2
-        '--password', '',              # Empty password (for fallback compatibility)
-        url                            # YouTube URL
+        '-x', '--audio-format', 'mp3',
+        '--cookies', temp_cookie_file,
+        '-o', temp_file_path,
+        url
     ]
 
     try:
-        # Execute the yt-dlp command
         subprocess.run(cmd, check=True)
-        print(f"yt-dlp download successful. File saved as {temp_file_path}")
 
-        # Load the downloaded file and trim it if necessary
+        # Trim audio if needed
         audio = AudioSegment.from_mp3(temp_file_path)
-        if len(audio) > max_length_seconds * 1000:  # pydub works in milliseconds
+        if len(audio) > max_length_seconds * 1000:
             audio = audio[:max_length_seconds * 1000]
             print(f"Audio trimmed to {max_length_seconds} seconds")
 
         audio.export(final_file_path, format="mp3")
-        os.remove(temp_file_path)  # Remove the temporary file after processing
-        print(f"File successfully saved and trimmed as {final_file_path}")
-
         return final_file_path
     except subprocess.CalledProcessError as e:
         print(f"yt-dlp fallback failed: {str(e)}")
         raise Exception("yt-dlp fallback failed")
+    finally:
+        # Cleanup
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
+        if os.path.exists(temp_cookie_file):
+            os.remove(temp_cookie_file)
 
 def download_youtube_mp3(url, api_key, output_file, max_length_seconds=180):
     api_url = "https://youtube-to-mp315.p.rapidapi.com"
