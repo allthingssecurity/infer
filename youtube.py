@@ -160,10 +160,13 @@ def write_cookies_from_env(tmp_dir):
 
 
 import os
-import uuid
-import base64
 import subprocess
+import uuid
+from urllib.parse import quote
 from pydub import AudioSegment
+from flask import current_app as app  # assuming Flask logging
+
+
 
 def fallback_download_with_ytdlp(url, output_file, max_length_seconds=180):
     output_directory, original_filename = os.path.split(output_file)
@@ -175,42 +178,33 @@ def fallback_download_with_ytdlp(url, output_file, max_length_seconds=180):
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
 
-    # Step 1: Decode base64 cookies from environment and write to file
-    app.logger.info("🔍 Checking for YOUTUBE_COOKIES_B64 in environment...")
-    cookies_b64 = os.getenv("YOUTUBE_COOKIES_B64")
-    if not cookies_b64:
-        raise EnvironmentError("YOUTUBE_COOKIES_B64 environment variable is not set.")
+    # Step 1: Get proxy credentials from environment
+    username = os.getenv("SMARTPROXY_USERNAME")
+    raw_password = os.getenv("SMARTPROXY_PASSWORD")
+    endpoint = os.getenv("SMARTPROXY_ENDPOINT")  # e.g., gate.smartproxy.com:10001
 
-    try:
-        cookies_txt = base64.b64decode(cookies_b64).decode("utf-8")
-    except Exception as decode_err:
-        app.logger.error(f"❌ Failed to decode base64 cookie: {decode_err}")
-        raise
+    if not username or not raw_password or not endpoint:
+        raise EnvironmentError("SMARTPROXY_USERNAME, PASSWORD, or ENDPOINT not set")
 
-    tmp_dir = os.path.join(os.getcwd(), "tmp")
-    os.makedirs(tmp_dir, exist_ok=True)
+    password = quote(raw_password)
+    proxy_url = f"http://{username}:{password}@{endpoint}"
 
-    temp_cookie_file = os.path.join(tmp_dir, f"{uuid.uuid4().hex}.cookies.txt")
-    with open(temp_cookie_file, "w", encoding="utf-8") as f:
-        f.write(cookies_txt)
-
-    app.logger.info(f"✅ Cookie file written to: {temp_cookie_file}")
-
-    # Step 2: Prepare yt-dlp command
+    # Step 2: yt-dlp command
     cmd = [
         'yt-dlp',
+        '--proxy', proxy_url,
         '-x', '--audio-format', 'mp3',
-        '--cookies', temp_cookie_file,
         '-o', temp_file_path,
         url
     ]
 
     try:
-        app.logger.info(f"▶️ Running yt-dlp on {url}")
+        app.logger.info(f"▶️ Running yt-dlp for: {url}")
         subprocess.run(cmd, check=True)
 
-        app.logger.info("🎧 yt-dlp download successful. Now trimming audio if needed.")
+        app.logger.info("🎧 yt-dlp download successful. Now trimming audio if needed...")
         audio = AudioSegment.from_mp3(temp_file_path)
+
         if len(audio) > max_length_seconds * 1000:
             audio = audio[:max_length_seconds * 1000]
             app.logger.info(f"⏱️ Trimmed audio to {max_length_seconds} seconds")
@@ -224,11 +218,8 @@ def fallback_download_with_ytdlp(url, output_file, max_length_seconds=180):
         raise Exception("yt-dlp fallback failed")
 
     finally:
-        # Step 4: Cleanup
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
-        if os.path.exists(temp_cookie_file):
-            os.remove(temp_cookie_file)
 
 
 def download_youtube_mp3(url, api_key, output_file, max_length_seconds=180):
