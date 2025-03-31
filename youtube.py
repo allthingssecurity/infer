@@ -142,15 +142,16 @@ def fallback_download_with_ytdlp(url, output_file, max_length_seconds=180):
     output_directory, original_filename = os.path.split(output_file)
     temp_file_path = os.path.join(output_directory, "temp_" + original_filename)
     final_file_path = os.path.join(output_directory, original_filename)
-
+    app.logger.info("entered dlp fallback")
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
 
     # 🔁 Step 1: Write cookies to local ./tmp/ directory
     cookies_txt = os.getenv("YOUTUBE_COOKIES")
+    app.logger.info("checking for cookies")
     if not cookies_txt:
         raise EnvironmentError("YOUTUBE_COOKIES environment variable is not set.")
-
+    app.logger.info("checked for cookies succesfully")
     tmp_dir = os.path.join(os.getcwd(), "tmp")
     os.makedirs(tmp_dir, exist_ok=True)
 
