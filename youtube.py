@@ -54,10 +54,6 @@ from pydub import AudioSegment
 import subprocess
 logger = logging.getLogger('my_app_logger')
 
-env_vars = {
-    "ACCESS_ID": ACCESS_ID,
-    "SECRET_KEY": SECRET_KEY,
-}
 
 
 
