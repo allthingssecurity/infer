@@ -52,9 +52,9 @@ import time
 import uuid
 from pydub import AudioSegment
 import subprocess
-logger = logging.getLogger('my_app_logger')
+logger = logging.getLogger('my_app_logger1')
 
-
+app = Flask(__name__)
 
 
 
