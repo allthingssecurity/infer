@@ -50,7 +50,25 @@ import time
 import uuid
 from pydub import AudioSegment
 import subprocess
+logger = logging.getLogger('my_app_logger')
 
+env_vars = {
+    "ACCESS_ID": ACCESS_ID,
+    "SECRET_KEY": SECRET_KEY,
+}
+
+
+
+
+
+
+handler = RotatingFileHandler('app.log', maxBytes=10000, backupCount=3)
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+
+app.logger.addHandler(handler)
+app.logger.setLevel(logging.INFO)
 
 def fallback_download_with_pytubefix(url, output_file, max_length_seconds=180):
     """
@@ -115,6 +133,11 @@ def fallback_download_with_pytubefix(url, output_file, max_length_seconds=180):
         raise
 
 
+import os
+import uuid
+import subprocess
+from pydub import AudioSegment
+
 def fallback_download_with_ytdlp(url, output_file, max_length_seconds=180):
     output_directory, original_filename = os.path.split(output_file)
     temp_file_path = os.path.join(output_directory, "temp_" + original_filename)
@@ -123,16 +146,19 @@ def fallback_download_with_ytdlp(url, output_file, max_length_seconds=180):
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
 
-    # Create a temporary cookies file from env
+    # 🔁 Step 1: Write cookies to local ./tmp/ directory
     cookies_txt = os.getenv("YOUTUBE_COOKIES")
     if not cookies_txt:
         raise EnvironmentError("YOUTUBE_COOKIES environment variable is not set.")
 
-    temp_cookie_file = f"/tmp/{uuid.uuid4().hex}.cookies.txt"
+    tmp_dir = os.path.join(os.getcwd(), "tmp")
+    os.makedirs(tmp_dir, exist_ok=True)
+
+    temp_cookie_file = os.path.join(tmp_dir, f"{uuid.uuid4().hex}.cookies.txt")
     with open(temp_cookie_file, "w") as f:
         f.write(cookies_txt)
 
-    # Prepare yt-dlp command
+    # 🔁 Step 2: yt-dlp command
     cmd = [
         'yt-dlp',
         '-x', '--audio-format', 'mp3',
@@ -142,21 +168,26 @@ def fallback_download_with_ytdlp(url, output_file, max_length_seconds=180):
     ]
 
     try:
+        app.logger.info(f"▶️ Running yt-dlp with cookies at: {temp_cookie_file}")
+       
         subprocess.run(cmd, check=True)
 
-        # Trim audio if needed
+        # 🔁 Step 3: Trim audio if needed
         audio = AudioSegment.from_mp3(temp_file_path)
         if len(audio) > max_length_seconds * 1000:
             audio = audio[:max_length_seconds * 1000]
-            print(f"Audio trimmed to {max_length_seconds} seconds")
+            print(f"⏱️ Trimmed to {max_length_seconds} seconds")
 
         audio.export(final_file_path, format="mp3")
+        print(f"✅ Final MP3 saved to: {final_file_path}")
         return final_file_path
+
     except subprocess.CalledProcessError as e:
-        print(f"yt-dlp fallback failed: {str(e)}")
+        print(f"❌ yt-dlp failed: {e}")
         raise Exception("yt-dlp fallback failed")
+
     finally:
-        # Cleanup
+        # 🔁 Step 4: Cleanup temp files
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
         if os.path.exists(temp_cookie_file):
