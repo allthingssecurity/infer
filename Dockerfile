@@ -7,8 +7,8 @@ RUN apt-get update && \
     git \
     git-lfs \
     ffmpeg \
-	libmagic1 \
-	libmagic-dev \
+    libmagic1 \
+    libmagic-dev \
     x264 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -16,44 +16,23 @@ RUN apt-get update && \
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy the dependencies file to the working directory
+# COPY dependencies first
 COPY requirements.txt .
 
-# Install any dependencies
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of your application's code
+# COPY only your app code AFTER deps
 COPY . .
 
-# Make port 5000 available to the world outside this container
-
-
-# Define environment variables for Redis connection and AWS credentials
-
-
-
-
-
-
-# Command to run the Flask application
-
-#CMD gunicorn --worker-tmp-dir /dev/shm --config gunicorn_config.py --log-level=info --access-logfile - --error-logfile - fullapp:app
-
+# Set environment variables
 ENV FLASK_APP=fullapp.py
 
-# Expose the port Flask is running on
+# Make port 5000 available
 EXPOSE 5000
-
-# Command to run the Flask application
-#CMD ["flask", "run", "--host=0.0.0.0"]
 
 # Make the shell script executable
 RUN chmod +x start.sh
 
-# Run start.sh when the container launches
+# Entry point
 CMD ["/bin/bash", "./start.sh"]
-
-
-
-
-
